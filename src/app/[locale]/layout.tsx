@@ -39,6 +39,7 @@ export default async function RootLayout({ children, params }: Props) {
   return (
     <html lang={locale} className={inter.variable}>
       <head>
+        <meta name="google-adsense-account" content="ca-pub-2897114925732533"></meta>
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2897114925732533"
           crossOrigin="anonymous"></script>
       </head>
