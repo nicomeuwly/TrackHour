@@ -1,0 +1,100 @@
+{
+    "HomePage": {
+        "title": "Suivez vos heures de travail en ligne — Gratuit et privé",
+        "subtitle": "Enregistrez vos heures quotidiennes en quelques secondes. Sans compte, vos données restent dans votre navigateur — pour toujours.",
+        "howItWorksTitle": "Comment ça marche",
+        "step1Title": "Définissez votre planning",
+        "step1Desc": "Configurez vos heures et jours de travail contractuels en quelques secondes.",
+        "step2Title": "Notez vos heures",
+        "step2Desc": "Enregistrez vos heures d'arrivée, de départ et la durée de vos pauses.",
+        "step3Title": "Voyez votre solde",
+        "step3Desc": "Sachez instantanément si vous êtes en avance ou en retard sur vos heures.",
+        "whyTitle": "Pourquoi TrackHour ?",
+        "feature1Title": "100 % gratuit",
+        "feature1Desc": "Sans abonnement, sans frais cachés. Gratuit pour toujours.",
+        "feature2Title": "Sans inscription",
+        "feature2Desc": "Commencez immédiatement — aucun compte requis.",
+        "feature3Title": "Entièrement privé",
+        "feature3Desc": "Vos données ne quittent jamais votre appareil. Aucun serveur, aucun cloud.",
+        "feature4Title": "Ultra simple",
+        "feature4Desc": "Conçu pour être utilisé en moins de 10 secondes par jour.",
+        "ctaButton": "Commencer gratuitement"
+    },
+    "TimeTracker": {
+        "title": "Pointeuse en ligne gratuite — Sans inscription",
+        "intro": "Enregistrez vos heures de travail quotidiennes avec notre pointeuse en ligne gratuite. Sans compte, sans inscription — vos données sont stockées localement dans votre navigateur et ne sont jamais partagées.",
+        "comingSoon": "Pointeuse — bientôt disponible"
+    },
+    "Calculator": {
+        "title": "Calcul des heures travaillées — Outil gratuit en ligne",
+        "intro": "Calculez le total de vos heures travaillées par jour, semaine ou mois instantanément. Entrez vos heures de début, de fin et vos pauses pour obtenir votre total exact.",
+        "comingSoon": "Calculateur — bientôt disponible"
+    },
+    "Guide": {
+        "title": "Comment suivre ses heures de travail efficacement",
+        "whyMattersTitle": "Pourquoi suivre ses heures de travail ?",
+        "whyMattersText": "Lorsque vous suivez vos heures régulièrement, vous savez exactement combien d'heures supplémentaires vous avez accumulées, vous pouvez vérifier que votre rémunération correspond au temps réellement travaillé, et vous disposez de relevés précis pour vos fiches de paie ou factures. Que vous soyez salarié, freelance ou manager, un journal de travail quotidien évite les litiges et vous donne une vision claire de votre temps.",
+        "dailyLogTitle": "La méthode la plus simple : le journal quotidien",
+        "dailyLogText": "La façon la plus efficace de suivre ses heures est de les noter immédiatement — à l'arrivée et au départ. Un journal de travail quotidien n'a pas besoin d'être complexe. Trois informations suffisent : l'heure de début, l'heure de fin, et la durée des pauses.",
+        "whatToRecordTitle": "Ce qu'il faut noter chaque jour",
+        "whatToRecord1": "Heure d'arrivée (pointage entrée)",
+        "whatToRecord2": "Heure de départ (pointage sortie)",
+        "whatToRecord3": "Durée des pauses (déjeuner, pauses courtes)",
+        "whatToRecord4": "Heures travaillées = départ - arrivée - pauses",
+        "overtimeTitle": "Comment calculer les heures supplémentaires",
+        "overtimeText": "Les heures supplémentaires sont les heures travaillées au-delà de vos heures contractuelles journalières ou hebdomadaires. Par exemple, si votre contrat prévoit 8 heures par jour et que vous en avez travaillé 9h30, vous avez 1h30 d'heures supplémentaires. En fin de semaine, additionnez tous les soldes journaliers pour obtenir votre solde hebdomadaire.",
+        "usingTrackHourTitle": "Utiliser TrackHour pour automatiser votre pointage",
+        "usingTrackHourText": "TrackHour effectue tous les calculs automatiquement. Configurez vos heures contractuelles une seule fois, notez vos heures d'arrivée et de départ chaque jour, et TrackHour vous affiche un solde en temps réel. Pas de tableur, pas de calcul manuel — notez et partez.",
+        "ctaText": "Commencer à suivre vos heures gratuitement"
+    },
+    "PrivacyPolicy": {
+        "title": "Politique de confidentialité",
+        "lastUpdated": "Dernière mise à jour : avril 2026",
+        "intro": "TrackHour s'engage à protéger votre vie privée. Cette politique explique comment nous traitons vos informations lorsque vous utilisez trackhour.app.",
+        "dataTitle": "Données collectées",
+        "dataText": "Nous ne collectons aucune donnée personnelle sur nos serveurs. TrackHour est une application entièrement côté client. Toutes vos données d'heures de travail sont stockées exclusivement dans le stockage local de votre navigateur (IndexedDB) et ne sont jamais transmises à un serveur.",
+        "adsenseTitle": "Google AdSense",
+        "adsenseText": "Nous diffusons des publicités via Google AdSense. Google peut utiliser des cookies et des technologies de suivi similaires pour afficher des publicités personnalisées. Pour plus d'informations, consultez la Politique de confidentialité de Google sur policies.google.com/privacy. Vous pouvez vous désinscrire de la publicité personnalisée sur adssettings.google.com.",
+        "analyticsTitle": "Vercel Analytics",
+        "analyticsText": "Nous utilisons Vercel Analytics pour comprendre les tendances générales d'utilisation. Ce service collecte des données anonymisées et agrégées (comme les vues de pages) et ne collecte pas d'informations personnelles.",
+        "cookiesTitle": "Cookies",
+        "cookiesText": "Nous ne déposons aucun cookie nous-mêmes. Les services tiers (Google AdSense) peuvent déposer des cookies dans votre navigateur à des fins publicitaires.",
+        "rightsTitle": "Vos droits sur vos données",
+        "rightsText": "Vos données de travail sont stockées localement dans votre navigateur. Vous pouvez les consulter via les outils de développement de votre navigateur et les supprimer à tout moment en effaçant le stockage de ce site. Nous n'avons aucun accès à vos données.",
+        "changesTitle": "Modifications de cette politique",
+        "changesText": "Nous pouvons mettre à jour cette politique de temps à autre. Les modifications seront publiées sur cette page avec une date de mise à jour.",
+        "contactTitle": "Contact",
+        "contactText": "Pour toute question concernant cette politique, contactez-nous à : privacy@trackhour.app"
+    },
+    "TermsOfUse": {
+        "title": "Mentions légales",
+        "lastUpdated": "Dernière mise à jour : avril 2026",
+        "acceptanceTitle": "Acceptation des conditions",
+        "acceptanceText": "En accédant à TrackHour (trackhour.app) et en utilisant le service, vous acceptez ces mentions légales. Si vous n'acceptez pas, veuillez ne pas utiliser le service.",
+        "descriptionTitle": "Description du service",
+        "descriptionText": "TrackHour est un outil gratuit de suivi des heures de travail qui fonctionne entièrement dans votre navigateur web. Aucun compte n'est requis. Toutes les données sont stockées localement sur votre appareil.",
+        "dataTitle": "Vos données",
+        "dataText": "Toutes les données d'heures de travail que vous saisissez sont stockées exclusivement dans le stockage local de votre navigateur (IndexedDB). Vous êtes seul responsable de vos données. Nous n'avons aucun accès à ces données.",
+        "noWarrantiesTitle": "Absence de garanties",
+        "noWarrantiesText": "Le service est fourni « tel quel », sans garantie d'aucune sorte. Nous ne garantissons pas que le service sera ininterrompu, exempt d'erreurs ou disponible à tout moment.",
+        "liabilityTitle": "Limitation de responsabilité",
+        "liabilityText": "Dans toute la mesure permise par la loi, TrackHour ne saurait être tenu responsable de dommages indirects ou consécutifs découlant de votre utilisation du service.",
+        "personalUseTitle": "Usage acceptable",
+        "personalUseText": "TrackHour est destiné au suivi personnel et professionnel des heures de travail. Vous vous engagez à ne pas utiliser le service à des fins illicites.",
+        "changesTitle": "Modifications des conditions",
+        "changesText": "Nous nous réservons le droit de modifier ces conditions à tout moment. La poursuite de l'utilisation du service vaut acceptation des nouvelles conditions.",
+        "contactTitle": "Contact",
+        "contactText": "Pour toute question, contactez-nous à : contact@trackhour.app"
+    },
+    "Header": {
+        "home": "Accueil",
+        "timeTracker": "Pointeuse",
+        "calculator": "Calculateur",
+        "guide": "Guide"
+    },
+    "Footer": {
+        "copyright": "© 2026 TrackHour. Tous droits réservés.",
+        "privacyPolicy": "Politique de confidentialité",
+        "termsOfUse": "Mentions légales"
+    }
+}

@@ -1,0 +1,100 @@
+{
+    "HomePage": {
+        "title": "Track Your Work Hours Online — Free & Private",
+        "subtitle": "Log your daily work hours in seconds. No account needed, your data stays private in your browser — forever.",
+        "howItWorksTitle": "How It Works",
+        "step1Title": "Set Your Schedule",
+        "step1Desc": "Define your weekly work hours and days in a few seconds.",
+        "step2Title": "Log Your Hours",
+        "step2Desc": "Record your arrival, departure, and break time each day.",
+        "step3Title": "See Your Balance",
+        "step3Desc": "Instantly see if you're ahead or behind on your hours.",
+        "whyTitle": "Why TrackHour?",
+        "feature1Title": "100% Free",
+        "feature1Desc": "No subscription, no hidden fees. Always free.",
+        "feature2Title": "No Account Needed",
+        "feature2Desc": "Start tracking immediately — no sign-up required.",
+        "feature3Title": "Fully Private",
+        "feature3Desc": "Your data never leaves your device. No server, no cloud.",
+        "feature4Title": "Dead Simple",
+        "feature4Desc": "Designed to be used in under 10 seconds per day.",
+        "ctaButton": "Start Tracking — It's Free"
+    },
+    "TimeTracker": {
+        "title": "Free Time Tracker — Log Your Work Hours Daily",
+        "intro": "Log your work hours daily with our free online time tracker. No sign-up required — your data is stored locally in your browser and never shared with anyone.",
+        "comingSoon": "Time tracker — coming soon"
+    },
+    "Calculator": {
+        "title": "Work Hours Calculator — Calculate Your Hours Worked",
+        "intro": "Calculate your total hours worked per day, week, or month with our free online work hours calculator. Enter your start time, end time, and breaks to get your exact total instantly.",
+        "comingSoon": "Calculator — coming soon"
+    },
+    "Guide": {
+        "title": "How to Track Work Hours Effectively",
+        "whyMattersTitle": "Why Tracking Work Hours Matters",
+        "whyMattersText": "When you track your hours consistently, you always know how many overtime hours you have accumulated, can verify that your compensation matches what you have actually worked, and have accurate records for timesheets or invoicing. Whether you are an employee, freelancer, or manager, a daily work log prevents disputes and gives you a clear picture of where your time goes.",
+        "dailyLogTitle": "The Simplest Method: A Daily Work Log",
+        "dailyLogText": "The most effective way to track work hours is to log them immediately — at the start and end of each shift. A daily work log does not need to be complex. You need just three pieces of information: when you started, when you finished, and how long you took for breaks.",
+        "whatToRecordTitle": "What to Record Each Day",
+        "whatToRecord1": "Arrival time (clock-in)",
+        "whatToRecord2": "Departure time (clock-out)",
+        "whatToRecord3": "Break duration (lunch, rest breaks)",
+        "whatToRecord4": "Total working hours = departure - arrival - breaks",
+        "overtimeTitle": "How to Calculate Overtime",
+        "overtimeText": "Overtime hours are the hours worked beyond your contracted daily or weekly hours. For example, if your contract requires 8 hours per day and you worked 9.5 hours, you have 1.5 hours of overtime for that day. At the end of the week, sum all daily overtime values to get your weekly overtime balance.",
+        "usingTrackHourTitle": "Using TrackHour to Automate Your Timesheet",
+        "usingTrackHourText": "TrackHour handles all calculations automatically. Set your contracted hours once, log your arrival and departure each day, and TrackHour gives you a running overtime balance. No spreadsheet needed, no manual arithmetic — just log and go.",
+        "ctaText": "Start tracking your hours for free"
+    },
+    "PrivacyPolicy": {
+        "title": "Privacy Policy",
+        "lastUpdated": "Last updated: April 2026",
+        "intro": "TrackHour is committed to protecting your privacy. This policy explains how we handle your information when you use trackhour.app.",
+        "dataTitle": "Data We Collect",
+        "dataText": "We do not collect any personal data on our servers. TrackHour is a fully client-side application. All your work hours data is stored exclusively in your browser's local storage (IndexedDB) and never transmitted to any server.",
+        "adsenseTitle": "Google AdSense",
+        "adsenseText": "We display advertising through Google AdSense. Google may use cookies and similar tracking technologies to show personalized advertisements. For more information, review Google's Privacy Policy at policies.google.com/privacy. You can opt out of personalized advertising at adssettings.google.com.",
+        "analyticsTitle": "Vercel Analytics",
+        "analyticsText": "We use Vercel Analytics to understand general usage patterns. This service collects anonymized, aggregated data (such as page views) and does not collect personally identifiable information.",
+        "cookiesTitle": "Cookies",
+        "cookiesText": "We do not set any cookies ourselves. Third-party services (Google AdSense) may set cookies in your browser for advertising purposes.",
+        "rightsTitle": "Your Data Rights",
+        "rightsText": "Your work data is stored locally in your browser. You can view it via your browser's developer tools, and delete it at any time by clearing this site's storage. We have no access to your data.",
+        "changesTitle": "Changes to This Policy",
+        "changesText": "We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated date.",
+        "contactTitle": "Contact",
+        "contactText": "For questions about this Privacy Policy, contact us at: privacy@trackhour.app"
+    },
+    "TermsOfUse": {
+        "title": "Terms of Use",
+        "lastUpdated": "Last updated: April 2026",
+        "acceptanceTitle": "Acceptance of Terms",
+        "acceptanceText": "By accessing and using TrackHour (trackhour.app), you agree to be bound by these Terms of Use. If you do not agree, please do not use the service.",
+        "descriptionTitle": "Description of Service",
+        "descriptionText": "TrackHour is a free online work hours tracking tool that operates entirely in your web browser. No account creation is required. All data is stored locally on your device.",
+        "dataTitle": "Your Data",
+        "dataText": "All work hours data you enter is stored exclusively in your browser's local storage (IndexedDB). You are solely responsible for your data. We have no access to, and cannot recover, data stored in your browser.",
+        "noWarrantiesTitle": "No Warranties",
+        "noWarrantiesText": "The service is provided as-is without warranties of any kind. We do not warrant that the service will be uninterrupted, error-free, or available at all times.",
+        "liabilityTitle": "Limitation of Liability",
+        "liabilityText": "To the maximum extent permitted by law, TrackHour shall not be liable for any indirect, incidental, or consequential damages arising from your use of the service.",
+        "personalUseTitle": "Acceptable Use",
+        "personalUseText": "TrackHour is intended for personal and professional work hours tracking. You agree not to use the service for any unlawful purpose.",
+        "changesTitle": "Changes to Terms",
+        "changesText": "We reserve the right to modify these Terms at any time. Continued use of the service after changes constitutes acceptance of the updated terms.",
+        "contactTitle": "Contact",
+        "contactText": "For questions about these Terms, contact us at: legal@trackhour.app"
+    },
+    "Header": {
+        "home": "Home",
+        "timeTracker": "Time Tracker",
+        "calculator": "Calculator",
+        "guide": "Guide"
+    },
+    "Footer": {
+        "copyright": "© 2026 TrackHour. All rights reserved.",
+        "privacyPolicy": "Privacy Policy",
+        "termsOfUse": "Terms of Use"
+    }
+}
