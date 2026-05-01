@@ -22,13 +22,11 @@
     },
     "TimeTracker": {
         "title": "Free Time Tracker — Log Your Work Hours Daily",
-        "intro": "Log your work hours daily with our free online time tracker. No sign-up required — your data is stored locally in your browser and never shared with anyone.",
-        "comingSoon": "Time tracker — coming soon"
+        "intro": "Log your work hours daily with our free online time tracker. No sign-up required — your data is stored locally in your browser and never shared with anyone."
     },
-    "Calculator": {
-        "title": "Work Hours Calculator — Calculate Your Hours Worked",
-        "intro": "Calculate your total hours worked per day, week, or month with our free online work hours calculator. Enter your start time, end time, and breaks to get your exact total instantly.",
-        "comingSoon": "Calculator — coming soon"
+    "Stats": {
+        "title": "Work Hours Statistics — Weekly & Monthly Overview",
+        "intro": "View your work hours by week or month, track your overtime balance, and manage your data. Everything is stored privately in your browser — no account needed."
     },
     "Guide": {
         "title": "How to Track Work Hours Effectively",
@@ -89,7 +87,7 @@
     "Header": {
         "home": "Home",
         "timeTracker": "Time Tracker",
-        "calculator": "Calculator",
+        "stats": "Stats",
         "guide": "Guide"
     },
     "Footer": {

@@ -22,13 +22,11 @@
     },
     "TimeTracker": {
         "title": "Pointeuse en ligne gratuite — Sans inscription",
-        "intro": "Enregistrez vos heures de travail quotidiennes avec notre pointeuse en ligne gratuite. Sans compte, sans inscription — vos données sont stockées localement dans votre navigateur et ne sont jamais partagées.",
-        "comingSoon": "Pointeuse — bientôt disponible"
+        "intro": "Enregistrez vos heures de travail quotidiennes avec notre pointeuse en ligne gratuite. Sans compte, sans inscription — vos données sont stockées localement dans votre navigateur et ne sont jamais partagées."
     },
-    "Calculator": {
-        "title": "Calcul des heures travaillées — Outil gratuit en ligne",
-        "intro": "Calculez le total de vos heures travaillées par jour, semaine ou mois instantanément. Entrez vos heures de début, de fin et vos pauses pour obtenir votre total exact.",
-        "comingSoon": "Calculateur — bientôt disponible"
+    "Stats": {
+        "title": "Statistiques des heures de travail — Vue hebdomadaire et mensuelle",
+        "intro": "Consultez vos heures de travail par semaine ou par mois, suivez votre solde d'heures supplémentaires et gérez vos données. Tout est stocké en toute confidentialité dans votre navigateur — sans inscription."
     },
     "Guide": {
         "title": "Comment suivre ses heures de travail efficacement",
@@ -89,7 +87,7 @@
     "Header": {
         "home": "Accueil",
         "timeTracker": "Pointeuse",
-        "calculator": "Calculateur",
+        "stats": "Statistiques",
         "guide": "Guide"
     },
     "Footer": {
