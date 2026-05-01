@@ -20,8 +20,8 @@ export default async function Header() {
                     <Link href="/time-tracker" className="hover:opacity-70 transition-opacity">
                         {t('timeTracker')}
                     </Link>
-                    <Link href="/work-hours-calculator" className="hover:opacity-70 transition-opacity">
-                        {t('calculator')}
+                    <Link href="/stats" className="hover:opacity-70 transition-opacity">
+                        {t('stats')}
                     </Link>
                     <Link href="/how-to-track-work-hours" className="hover:opacity-70 transition-opacity">
                         {t('guide')}

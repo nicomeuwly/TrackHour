@@ -1,9 +1,13 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { buildMetadata } from '@/lib/metadata';
 import { getPathname } from '@/i18n/navigation';
-import AdSenseUnit from '@/components/ads/AdSenseUnit';
+import DashboardLoader from '@/components/tracker/DashboardLoader';
 
 type Props = { params: Promise<{ locale: string }> };
+
+export function generateStaticParams() {
+    return [{ locale: 'en' }, { locale: 'fr' }];
+}
 
 export async function generateMetadata({ params }: Props) {
     const { locale } = await params;
@@ -30,29 +34,15 @@ export default async function TimeTrackerPage({ params }: Props) {
     const t = await getTranslations('TimeTracker');
 
     return (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-            <div className="grid lg:grid-cols-[1fr_300px] gap-10">
-                <div>
-                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-6">
-                        {t('title')}
-                    </h1>
-                    <p className="text-foreground/60 text-lg mb-10 max-w-2xl">
-                        {t('intro')}
-                    </p>
-
-                    <div
-                        id="time-tracker-app"
-                        className="border-2 border-dashed border-foreground/20 rounded-xl p-12 text-center text-foreground/40 text-sm"
-                    >
-                        {t('comingSoon')}
-                    </div>
-                </div>
-
-                {/* AdSense sidebar */}
-                <aside className="hidden lg:block">
-                    <AdSenseUnit slot="sidebar-tracker" format="rectangle" />
-                    {/* AdSense sidebar */}
-                </aside>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+            <div className="flex flex-col gap-10">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
+                    {t('title')}
+                </h1>
+                <p className="text-foreground/60 text-base mb-8 max-w-2xl">
+                    {t('intro')}
+                </p>
+                <DashboardLoader />
             </div>
         </div>
     );

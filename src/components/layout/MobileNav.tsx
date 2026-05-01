@@ -8,7 +8,7 @@ import LocaleSwitcher from './LocaleSwitcher';
 const NAV_LINKS = [
     { href: '/' as const, key: 'home' as const },
     { href: '/time-tracker' as const, key: 'timeTracker' as const },
-    { href: '/work-hours-calculator' as const, key: 'calculator' as const },
+    { href: '/stats' as const, key: 'stats' as const },
     { href: '/how-to-track-work-hours' as const, key: 'guide' as const },
 ];
 

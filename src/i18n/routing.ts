@@ -10,9 +10,9 @@ export const routing = defineRouting({
             en: '/time-tracker',
             fr: '/pointeuse-en-ligne'
         },
-        '/work-hours-calculator': {
-            en: '/work-hours-calculator',
-            fr: '/calcul-heures-travaillees'
+        '/stats': {
+            en: '/stats',
+            fr: '/statistiques'
         },
         '/how-to-track-work-hours': {
             en: '/how-to-track-work-hours',
