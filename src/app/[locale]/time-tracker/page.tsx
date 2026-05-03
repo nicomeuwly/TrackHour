@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { buildMetadata } from '@/lib/metadata';
 import { getPathname } from '@/i18n/navigation';
 import DashboardLoader from '@/components/tracker/DashboardLoader';
+import AdSenseUnit from '@/components/ads/AdSenseUnit';
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -35,15 +36,16 @@ export default async function TimeTrackerPage({ params }: Props) {
 
     return (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-            <div className="flex flex-col gap-10">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
-                    {t('title')}
-                </h1>
-                <p className="text-foreground/60 text-base mb-8 max-w-2xl">
-                    {t('intro')}
-                </p>
-                <DashboardLoader />
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
+                {t('title')}
+            </h1>
+            <p className="text-foreground/60 text-base mb-8 max-w-2xl">
+                {t('intro')}
+            </p>
+            <div className="my-6 flex justify-center">
+                <AdSenseUnit slot="mid-tracker" format="horizontal" className="w-full max-w-2xl" />
             </div>
+            <DashboardLoader />
         </div>
     );
 }

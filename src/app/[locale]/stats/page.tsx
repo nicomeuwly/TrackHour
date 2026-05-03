@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { buildMetadata } from '@/lib/metadata';
 import { getPathname } from '@/i18n/navigation';
 import DataTabLoader from '@/components/tracker/DataTabLoader';
+import AdSenseUnit from '@/components/ads/AdSenseUnit';
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -41,7 +42,9 @@ export default async function StatsPage({ params }: Props) {
             <p className="text-foreground/60 text-base mb-8 max-w-2xl">
                 {t('intro')}
             </p>
-
+            <div className="my-6 flex justify-center">
+                <AdSenseUnit slot="mid-stats" format="horizontal" className="w-full max-w-2xl" />
+            </div>
             <DataTabLoader />
         </div>
     );

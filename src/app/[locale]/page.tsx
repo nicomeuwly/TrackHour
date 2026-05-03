@@ -73,10 +73,8 @@ export default async function HomePage({ params }: Props) {
                 </div>
             </section>
 
-            {/* AdSense mid */}
             <div className="my-10 flex justify-center">
                 <AdSenseUnit slot="mid-home" format="horizontal" className="w-full max-w-2xl" />
-                {/* AdSense mid */}
             </div>
 
             {/* Why TrackHour */}

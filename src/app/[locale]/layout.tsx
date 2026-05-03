@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import AdSidebar from '@/components/ads/AdSidebar';
 import '../globals.css';
 
 const inter = Inter({
@@ -50,6 +51,7 @@ export default async function RootLayout({ children, params }: Props) {
             {children}
           </main>
           <Footer />
+          <AdSidebar />
         </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />

@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link, getPathname } from '@/i18n/navigation';
 import { buildMetadata } from '@/lib/metadata';
+import AdSenseUnit from '@/components/ads/AdSenseUnit';
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -45,12 +46,16 @@ export default async function GuidePage({ params }: Props) {
                     <p className="text-foreground/70 leading-relaxed">{t('dailyLogText')}</p>
                 </section>
 
+                <div className="flex justify-center">
+                    <AdSenseUnit slot="mid-guide" format="horizontal" className="w-full max-w-2xl" />
+                </div>
+
                 <section>
                     <h2 className="text-2xl font-bold mb-4">{t('whatToRecordTitle')}</h2>
                     <ul className="space-y-2 text-foreground/70">
                         {(['whatToRecord1', 'whatToRecord2', 'whatToRecord3', 'whatToRecord4'] as const).map((key) => (
                             <li key={key} className="flex items-start gap-2">
-                                <span className="text-foreground/30 mt-1">→</span>
+                                <span className="text-foreground/30">→</span>
                                 <span>{t(key)}</span>
                             </li>
                         ))}
