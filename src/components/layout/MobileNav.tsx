@@ -1,20 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
 import LocaleSwitcher from './LocaleSwitcher';
-
-const NAV_LINKS = [
-    { href: '/' as const, key: 'home' as const },
-    { href: '/time-tracker' as const, key: 'timeTracker' as const },
-    { href: '/stats' as const, key: 'stats' as const },
-    { href: '/how-to-track-work-hours' as const, key: 'guide' as const },
-];
+import ThemeToggle from './ThemeToggle';
+import NavLinks from './NavLinks';
 
 export default function MobileNav() {
     const [open, setOpen] = useState(false);
-    const t = useTranslations('Header');
 
     return (
         <div className="sm:hidden">
@@ -40,18 +32,10 @@ export default function MobileNav() {
 
             {open && (
                 <div className="absolute left-0 right-0 top-16 bg-background border-b border-foreground/10 z-50 px-4 py-6 flex flex-col gap-5">
-                    {NAV_LINKS.map(({ href, key }) => (
-                        <Link
-                            key={href}
-                            href={href}
-                            onClick={() => setOpen(false)}
-                            className="text-base font-medium hover:opacity-70 transition-opacity"
-                        >
-                            {t(key)}
-                        </Link>
-                    ))}
-                    <div className="pt-4 border-t border-foreground/10">
+                    <NavLinks onClick={() => setOpen(false)} />
+                    <div className="pt-4 border-t border-foreground/10 flex items-center justify-between">
                         <LocaleSwitcher />
+                        <ThemeToggle />
                     </div>
                 </div>
             )}
