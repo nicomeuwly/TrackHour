@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { useClockDay } from '@/lib/hooks/useClockDay';
 import { useSettings } from '@/lib/hooks/useSettings';
 import {
@@ -43,13 +45,27 @@ function timeToSeconds(time: string): number {
 
 // ── Punch timeline ──────────────────────────────────────────────────────────
 
-function PunchTimeline({ punches, onDelete }: { punches: Punch[]; onDelete: (id: string) => void }) {
-  const [confirmId, setConfirmId] = useState<string | null>(null);
+type PunchAction =
+  | { kind: 'confirmDelete'; id: string }
+  | { kind: 'edit'; id: string; value: string }
+  | null;
+
+function PunchTimeline({
+  punches,
+  onDelete,
+  onEdit,
+}: {
+  punches: Punch[];
+  onDelete: (id: string) => void;
+  onEdit: (id: string, newTime: string) => Promise<void>;
+}) {
+  const t = useTranslations('ClockTab');
+  const [action, setAction] = useState<PunchAction>(null);
 
   if (punches.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-1" role="list" aria-label="Punch timeline">
+    <div className="flex flex-col gap-1" role="list" aria-label={t('punchTimeline')}>
       {punches.map((punch, idx) => {
         const prev = punches[idx - 1];
         let duration: string | null = null;
@@ -59,6 +75,39 @@ function PunchTimeline({ punches, onDelete }: { punches: Punch[]; onDelete: (id:
           duration = formatDuration(mins);
         }
         const isIn = punch.type === 'in';
+        const isEditing = action?.kind === 'edit' && action.id === punch.id;
+        const isConfirmingDelete = action?.kind === 'confirmDelete' && action.id === punch.id;
+
+        if (isEditing) {
+          const editValue = (action as { kind: 'edit'; id: string; value: string }).value;
+          return (
+            <div key={punch.id} role="listitem" className="flex items-center gap-2 px-3 py-2 rounded-xl bg-foreground/4">
+              <span className={`flex-none w-2 h-2 rounded-full ${isIn ? 'bg-green-500' : 'bg-red-400'}`} aria-hidden />
+              <span className="text-xs text-foreground/50 whitespace-nowrap">{isIn ? t('punchIn') : t('punchOut')}</span>
+              <input
+                type="time"
+                value={editValue}
+                onChange={e => setAction({ kind: 'edit', id: punch.id, value: e.target.value })}
+                className="rounded-lg border border-foreground/15 bg-background px-2 py-1 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+                autoFocus
+              />
+              <button
+                onClick={async () => {
+                  if (!editValue) return;
+                  await onEdit(punch.id, editValue);
+                  setAction(null);
+                }}
+                disabled={!editValue}
+                className="px-3 py-1 bg-accent text-white text-xs font-medium rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
+              >
+                {t('confirm')}
+              </button>
+              <button onClick={() => setAction(null)} className="text-xs text-foreground/40 hover:text-foreground/70 transition-colors">
+                {t('editCancel')}
+              </button>
+            </div>
+          );
+        }
 
         return (
           <div key={punch.id} role="listitem" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-foreground/4 group">
@@ -67,26 +116,40 @@ function PunchTimeline({ punches, onDelete }: { punches: Punch[]; onDelete: (id:
               {punch.time}
             </span>
             <span className="text-sm text-foreground/60 flex-1">
-              {isIn ? 'Clock in' : 'Clock out'}
-              {punch.isManual && <span className="text-xs text-foreground/30 ml-1">(manual)</span>}
+              {isIn ? t('punchIn') : t('punchOut')}
+              {punch.isManual && <span className="text-xs text-foreground/30 ml-1">{t('punchManual')}</span>}
               {duration && (
                 <span className={`ml-1.5 text-xs font-medium ${isIn ? 'text-blue-500 dark:text-blue-400' : 'text-foreground/50'}`}>
-                  · {isIn ? `break ${duration}` : `worked ${duration}`}
+                  {isIn ? t('punchBreak', { duration }) : t('punchWorked', { duration })}
                 </span>
               )}
             </span>
-            {confirmId === punch.id ? (
+            {isConfirmingDelete ? (
               <span className="flex items-center gap-1.5 text-xs">
-                <button onClick={() => { onDelete(punch.id); setConfirmId(null); }} className="text-red-500 font-medium hover:underline">Delete</button>
-                <button onClick={() => setConfirmId(null)} className="text-foreground/40 hover:text-foreground/60">Cancel</button>
+                <button onClick={() => { onDelete(punch.id); setAction(null); }} className="text-red-500 font-medium hover:underline">{t('delete')}</button>
+                <button onClick={() => setAction(null)} className="text-foreground/40 hover:text-foreground/60">{t('deleteCancel')}</button>
               </span>
             ) : (
-              <button onClick={() => setConfirmId(punch.id)} aria-label={`Delete punch at ${punch.time}`}
-                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-foreground/8 text-foreground/30 hover:text-red-500">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                  <polyline points="2 4 4 4 14 4"/><path d="M5 4V2h6v2"/><path d="M6 7v5M10 7v5"/><rect x="3" y="4" width="10" height="10" rx="1"/>
-                </svg>
-              </button>
+              <span className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={() => setAction({ kind: 'edit', id: punch.id, value: punch.time })}
+                  aria-label={t('editPunchLabel', { time: punch.time })}
+                  className="p-1 rounded hover:bg-foreground/8 text-foreground/30 hover:text-accent transition-colors"
+                >
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M11 2a1.414 1.414 0 0 1 2 2L5 12l-3 1 1-3Z"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setAction({ kind: 'confirmDelete', id: punch.id })}
+                  aria-label={t('deletePunchLabel', { time: punch.time })}
+                  className="p-1 rounded hover:bg-foreground/8 text-foreground/30 hover:text-red-500 transition-colors"
+                >
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                    <polyline points="2 4 4 4 14 4"/><path d="M5 4V2h6v2"/><path d="M6 7v5M10 7v5"/><rect x="3" y="4" width="10" height="10" rx="1"/>
+                  </svg>
+                </button>
+              </span>
             )}
           </div>
         );
@@ -106,6 +169,7 @@ function ManualInput({
   onConfirm: (time: string) => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations('ClockTab');
   const [value, setValue] = useState('');
   return (
     <div className="flex items-center gap-2 py-1">
@@ -118,9 +182,9 @@ function ManualInput({
         disabled={!value}
         className="px-3 py-1 bg-accent text-white text-sm rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
       >
-        Confirm
+        {t('confirm')}
       </button>
-      <button onClick={onCancel} className="text-sm text-foreground/40 hover:text-foreground/70 transition-colors">Cancel</button>
+      <button onClick={onCancel} className="text-sm text-foreground/40 hover:text-foreground/70 transition-colors">{t('cancel')}</button>
     </div>
   );
 }
@@ -128,10 +192,17 @@ function ManualInput({
 // ── Mini date picker ─────────────────────────────────────────────────────────
 
 function DatePickerPopup({ current, onSelect, onClose }: { current: string; onSelect: (d: string) => void; onClose: () => void }) {
+  const locale = useLocale();
   const [viewYear, setViewYear] = useState(() => parseInt(current.slice(0, 4)));
   const [viewMonth, setViewMonth] = useState(() => parseInt(current.slice(5, 7)));
   const today = localDateStr(new Date());
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const MONTHS = Array.from({ length: 12 }, (_, i) =>
+    new Intl.DateTimeFormat(locale, { month: 'short' }).format(new Date(2024, i, 1))
+  );
+  const DAY_HEADERS = Array.from({ length: 7 }, (_, i) =>
+    new Intl.DateTimeFormat(locale, { weekday: 'narrow' }).format(new Date(2024, 0, 1 + i))
+  );
 
   const firstDow = new Date(`${viewYear}-${String(viewMonth).padStart(2,'0')}-01T00:00:00`).getDay();
   const pad = firstDow === 0 ? 6 : firstDow - 1;
@@ -141,18 +212,18 @@ function DatePickerPopup({ current, onSelect, onClose }: { current: string; onSe
   function nextM() { if (viewMonth === 12) { setViewYear(y => y+1); setViewMonth(1); } else setViewMonth(m => m+1); }
 
   return (
-    <div className="absolute top-full left-0 z-50 mt-2 bg-background border border-foreground/15 rounded-xl shadow-xl p-3 w-64" role="dialog" aria-label="Select date">
+    <div className="absolute top-full left-0 z-50 mt-2 bg-background border border-foreground/15 rounded-xl shadow-xl p-3 w-64" role="dialog">
       <div className="flex items-center justify-between mb-2">
-        <button onClick={prevM} className="p-1 rounded hover:bg-foreground/8" aria-label="Previous month">
+        <button onClick={prevM} className="p-1 rounded hover:bg-foreground/8" aria-label="←">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><polyline points="10 4 6 8 10 12"/></svg>
         </button>
         <span className="text-sm font-semibold">{MONTHS[viewMonth-1]} {viewYear}</span>
-        <button onClick={nextM} className="p-1 rounded hover:bg-foreground/8" aria-label="Next month">
+        <button onClick={nextM} className="p-1 rounded hover:bg-foreground/8" aria-label="→">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><polyline points="6 4 10 8 6 12"/></svg>
         </button>
       </div>
       <div className="grid grid-cols-7 mb-1">
-        {['M','T','W','T','F','S','S'].map((d,i) => (
+        {DAY_HEADERS.map((d, i) => (
           <div key={i} className="text-center text-[10px] text-foreground/40 font-medium py-0.5">{d}</div>
         ))}
       </div>
@@ -179,7 +250,9 @@ function DatePickerPopup({ current, onSelect, onClose }: { current: string; onSe
 // ── Main component ──────────────────────────────────────────────────────────
 
 export default function ClockTab({ date, onDateChange }: ClockTabProps) {
-  const { punches, note, isLoading, error, clockIn, clockOut, deletePunch, saveNote } = useClockDay(date);
+  const t = useTranslations('ClockTab');
+  const locale = useLocale();
+  const { punches, note, isLoading, error, clockIn, clockOut, deletePunch, editPunch, saveNote } = useClockDay(date);
   const { settings } = useSettings();
   const { showToast } = useToast();
   const [now, setNow] = useState(new Date());
@@ -191,11 +264,12 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
   const today = localDateStr(new Date());
   const isToday = date === today;
 
-  // Ticker
+  // Ticker — only runs for today; for past dates `now` stays frozen at page-load time
   useEffect(() => {
+    if (!isToday) return;
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [isToday]);
 
   // Sync note from hook
   useEffect(() => { setNoteValue(note); }, [note]);
@@ -213,19 +287,38 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
   const dayCalc = settings ? calculateFromPunches(punches, settings, now, date) : null;
   const lastType = dayCalc?.lastPunchType ?? null;
 
-  // Elapsed time since last punch (in seconds)
-  const elapsedSeconds = (() => {
-    if (!punches.length) return 0;
+  // Work elapsed: seconds since last clock-in (only meaningful for today)
+  const workElapsedSeconds = (() => {
+    if (!isToday || !punches.length || lastType !== 'in') return 0;
+    const lastIn = [...punches].reverse().find(p => p.type === 'in');
+    if (!lastIn) return 0;
+    const nowSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+    return Math.max(0, nowSecs - timeToSeconds(lastIn.time));
+  })();
+
+  // Break elapsed: seconds since last clock-out (only meaningful for today while on break)
+  const breakElapsedSeconds = (() => {
+    if (!isToday || !punches.length || lastType !== 'out') return 0;
     const last = punches[punches.length - 1];
     const nowSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
     return Math.max(0, nowSecs - timeToSeconds(last.time));
+  })();
+
+  // Break elapsed since last out when currently working (for sub-timer display)
+  const lastBreakElapsedSeconds = (() => {
+    if (!isToday || !punches.length || lastType !== 'in') return 0;
+    const lastOut = [...punches].reverse().find(p => p.type === 'out');
+    if (!lastOut) return 0;
+    const lastIn = [...punches].reverse().find(p => p.type === 'in');
+    if (!lastIn || lastIn.time <= lastOut.time) return 0;
+    return Math.max(0, timeToSeconds(lastIn.time) - timeToSeconds(lastOut.time));
   })();
 
   async function handleClockIn(manualTime?: string) {
     try {
       await clockIn(manualTime);
       setManualMode(false);
-      showToast('Clocked in', 'success');
+      showToast(t('toastClockIn'), 'success');
     } catch (e) { showToast(String(e).replace('Error: ', ''), 'error'); }
   }
 
@@ -233,7 +326,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
     try {
       await clockOut(manualTime);
       setManualMode(false);
-      showToast('Clocked out', 'info');
+      showToast(t('toastClockOut'), 'info');
     } catch (e) { showToast(String(e).replace('Error: ', ''), 'error'); }
   }
 
@@ -243,7 +336,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
     noteTimer.current = setTimeout(() => saveNote(v), 1000);
   }
 
-  const dateLabel = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  const dateLabel = new Date(date + 'T00:00:00').toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' });
 
   return (
     <div className="flex flex-col gap-5">
@@ -254,12 +347,12 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
             onClick={() => setShowPicker(s => !s)}
             className="flex items-center gap-2 hover:bg-foreground/5 rounded-xl px-2 py-1 transition-colors"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
             <div>
-              {isToday && <p className="text-xs font-semibold text-accent leading-none mb-0.5">Today</p>}
-              <p className="font-bold text-base leading-none">{dateLabel}</p>
+              {isToday && <p className="text-xs font-semibold text-accent leading-none mb-0.5 capitalize text-left">{t('today')}</p>}
+              <p className="font-bold text-base leading-none capitalize">{dateLabel}</p>
             </div>
           </button>
           {showPicker && (
@@ -269,14 +362,14 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
         {!isToday && (
           <button onClick={() => onDateChange(today)}
             className="text-xs font-medium text-accent border border-accent/30 rounded-lg px-2.5 py-1 hover:bg-accent/8 transition-colors">
-            Back to today
+            {t('backToToday')}
           </button>
         )}
         <div className="flex gap-1">
-          <button onClick={() => onDateChange(shiftDate(date, -1))} aria-label="Previous day" className="p-2 rounded-lg hover:bg-foreground/8 transition-colors">
+          <button onClick={() => onDateChange(shiftDate(date, -1))} aria-label="←" className="p-2 rounded-lg hover:bg-foreground/8 transition-colors">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><polyline points="10 4 6 8 10 12"/></svg>
           </button>
-          <button onClick={() => onDateChange(shiftDate(date, 1))} aria-label="Next day" className="p-2 rounded-lg hover:bg-foreground/8 transition-colors">
+          <button onClick={() => onDateChange(shiftDate(date, 1))} aria-label="→" className="p-2 rounded-lg hover:bg-foreground/8 transition-colors">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><polyline points="6 4 10 8 6 12"/></svg>
           </button>
         </div>
@@ -296,24 +389,28 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
         <div className="rounded-xl border border-foreground/10 p-6 flex flex-col items-center gap-4 text-center">
           {punches.length === 0 && (
             <>
-              <p className="text-5xl font-mono font-bold tabular-nums tracking-tight" aria-live="polite" aria-label="Current time">
+              <p className="text-5xl font-mono font-bold tabular-nums tracking-tight" aria-live="polite">
                 {formatClock(now)}
               </p>
-              <p className="text-sm text-foreground/40">No entries yet{isToday ? ' — clock in to start' : ''}</p>
-              {isToday && !manualMode && (
+              <p className="text-sm text-foreground/40">
+                {t('noEntries')}{isToday ? ` — ${t('noEntriesHint')}` : ''}
+              </p>
+              {!manualMode && (
                 <>
-                  <button onClick={() => handleClockIn()}
-                    className="flex items-center gap-2 bg-accent text-white px-8 py-3 rounded-xl font-semibold text-base hover:opacity-90 transition-opacity">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                    Clock In
-                  </button>
+                  {isToday ? (
+                    <button onClick={() => handleClockIn()}
+                      className="flex items-center gap-2 bg-accent text-white px-8 py-3 rounded-xl font-semibold text-base hover:opacity-90 transition-opacity">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                      {t('clockIn')}
+                    </button>
+                  ) : null}
                   <button onClick={() => setManualMode(true)} className="text-sm text-foreground/40 hover:text-foreground/70 transition-colors">
-                    Enter time manually
+                    {t('enterManually')}
                   </button>
                 </>
               )}
-              {isToday && manualMode && (
-                <ManualInput label="Clock in at" onConfirm={handleClockIn} onCancel={() => setManualMode(false)} />
+              {manualMode && (
+                <ManualInput label={t('clockInAt')} onConfirm={handleClockIn} onCancel={() => setManualMode(false)} />
               )}
             </>
           )}
@@ -321,35 +418,48 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
           {punches.length > 0 && lastType === 'in' && (
             <>
               <div>
-                <p className="text-xs font-semibold text-green-500 uppercase tracking-wide mb-1">Currently working</p>
-                <p className="text-4xl font-mono font-bold tabular-nums" aria-live="polite" aria-atomic="true">
-                  {formatElapsed(elapsedSeconds)}
-                </p>
+                <p className="text-xs font-semibold text-green-500 uppercase tracking-wide mb-1">{t('currentlyWorking')}</p>
+                {isToday ? (
+                  <p className="text-4xl font-mono font-bold tabular-nums" aria-live="polite" aria-atomic="true">
+                    {formatElapsed(workElapsedSeconds)}
+                  </p>
+                ) : (
+                  <p className="text-4xl font-mono font-bold tabular-nums">
+                    {formatMinutes(dayCalc?.workedMinutes ?? 0)}
+                  </p>
+                )}
+                {lastBreakElapsedSeconds > 0 && (
+                  <p className="text-xs text-amber-500 mt-1 font-mono">
+                    {t('lastBreak')} {formatElapsed(lastBreakElapsedSeconds)}
+                  </p>
+                )}
               </div>
-              {dayCalc?.projectedEndTime && (
+              {dayCalc?.projectedEndTime && isToday && (
                 <p className="text-sm text-foreground/50">
-                  Expected end: <span className="font-semibold text-foreground">{dayCalc.projectedEndTime}</span>
+                  {t('expectedEnd')} <span className="font-semibold text-foreground">{dayCalc.projectedEndTime}</span>
                 </p>
               )}
               {dayCalc && (
                 <span className="text-sm text-foreground/50 flex items-center gap-1">
-                  Balance: <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} />
+                  {t('balance')} <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} />
                 </span>
               )}
               {!manualMode && (
                 <>
-                  <button onClick={() => handleClockOut()}
-                    className="flex items-center gap-2 bg-red-500 text-white px-8 py-3 rounded-xl font-semibold text-base hover:bg-red-600 transition-colors">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-                    Clock Out
-                  </button>
+                  {isToday ? (
+                    <button onClick={() => handleClockOut()}
+                      className="flex items-center gap-2 bg-red-500 text-white px-8 py-3 rounded-xl font-semibold text-base hover:bg-red-600 transition-colors">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                      {t('clockOut')}
+                    </button>
+                  ) : null}
                   <button onClick={() => setManualMode(true)} className="text-sm text-foreground/40 hover:text-foreground/70 transition-colors">
-                    Enter time manually
+                    {t('enterManually')}
                   </button>
                 </>
               )}
               {manualMode && (
-                <ManualInput label="Clock out at" onConfirm={handleClockOut} onCancel={() => setManualMode(false)} />
+                <ManualInput label={t('clockOutAt')} onConfirm={handleClockOut} onCancel={() => setManualMode(false)} />
               )}
             </>
           )}
@@ -359,38 +469,58 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
               {dayCalc.status !== 'complete' ? (
                 <>
                   <div>
-                    <p className="text-xs font-semibold text-amber-500 uppercase tracking-wide mb-1">On break</p>
-                    <p className="text-4xl font-mono font-bold tabular-nums" aria-live="polite" aria-atomic="true">
-                      {formatElapsed(elapsedSeconds)}
-                    </p>
+                    <p className="text-xs font-semibold text-amber-500 uppercase tracking-wide mb-1">{t('onBreak')}</p>
+                    {isToday ? (
+                      <p className="text-4xl font-mono font-bold tabular-nums" aria-live="polite" aria-atomic="true">
+                        {formatElapsed(breakElapsedSeconds)}
+                      </p>
+                    ) : (
+                      <p className="text-4xl font-mono font-bold tabular-nums">
+                        {formatMinutes(dayCalc.workedMinutes)}
+                      </p>
+                    )}
                   </div>
                   {!manualMode && (
                     <>
-                      <button onClick={() => handleClockIn()}
-                        className="flex items-center gap-2 bg-accent text-white px-8 py-3 rounded-xl font-semibold text-base hover:opacity-90 transition-opacity">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                        Clock In
-                      </button>
+                      {isToday ? (
+                        <button onClick={() => handleClockIn()}
+                          className="flex items-center gap-2 bg-accent text-white px-8 py-3 rounded-xl font-semibold text-base hover:opacity-90 transition-opacity">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                          {t('clockIn')}
+                        </button>
+                      ) : null}
                       <button onClick={() => setManualMode(true)} className="text-sm text-foreground/40 hover:text-foreground/70 transition-colors">
-                        Enter time manually
+                        {t('enterManually')}
                       </button>
                     </>
                   )}
                   {manualMode && (
-                    <ManualInput label="Clock in at" onConfirm={handleClockIn} onCancel={() => setManualMode(false)} />
+                    <ManualInput label={t('clockInAt')} onConfirm={handleClockIn} onCancel={() => setManualMode(false)} />
                   )}
                 </>
               ) : (
                 <>
                   <div>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">Day complete ✓</p>
-                    <p className="text-sm text-foreground/50 mt-1">{formatMinutes(dayCalc.workedMinutes)} worked</p>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{t('dayComplete')}</p>
+                    <p className="text-sm text-foreground/50 mt-1">{formatMinutes(dayCalc.workedMinutes)} {t('workedSuffix')}</p>
                   </div>
                   <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} size="lg" />
-                  <button onClick={() => handleClockIn()}
-                    className="text-sm font-medium text-foreground/50 border border-foreground/15 rounded-lg px-4 py-2 hover:bg-foreground/5 transition-colors">
-                    Clock in again
-                  </button>
+                  {!manualMode ? (
+                    <>
+                      {isToday ? (
+                        <button onClick={() => handleClockIn()}
+                          className="flex items-center gap-2 bg-accent text-white px-8 py-3 rounded-xl font-semibold text-base hover:opacity-90 transition-opacity">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                          {t('clockInAgain')}
+                        </button>
+                      ) : null}
+                      <button onClick={() => setManualMode(true)} className="text-sm text-foreground/40 hover:text-foreground/70 transition-colors">
+                        {t('enterManually')}
+                      </button>
+                    </>
+                  ) : (
+                    <ManualInput label={t('clockInAt')} onConfirm={handleClockIn} onCancel={() => setManualMode(false)} />
+                  )}
                 </>
               )}
             </>
@@ -401,19 +531,30 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
       {/* Punch timeline + summary */}
       {punches.length > 0 && (
         <div className="flex flex-col gap-3">
-          <PunchTimeline punches={punches} onDelete={deletePunch} />
+          <PunchTimeline
+            punches={punches}
+            onDelete={deletePunch}
+            onEdit={async (id, newTime) => {
+              try {
+                await editPunch(id, newTime);
+                showToast(t('toastEdited'), 'success');
+              } catch (e) {
+                showToast(String(e).replace('Error: ', ''), 'error');
+              }
+            }}
+          />
 
           {dayCalc && (
             <div className="rounded-xl border border-foreground/10 divide-y divide-foreground/8 text-sm">
               {[
-                { label: 'Worked', value: formatMinutes(dayCalc.workedMinutes) },
-                { label: 'Break', value: `${formatDuration(dayCalc.breakMinutes)} ${dayCalc.breakMinutes > 0 ? (dayCalc.isBreakSufficient ? '✓' : '⚠') : ''}` },
-                { label: 'Balance', value: <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} />, isReact: true },
-                { label: 'Expected', value: formatMinutes((settings?.expectedHoursPerDay ?? 8) * 60) },
+                { label: t('summaryWorked'), value: formatMinutes(dayCalc.workedMinutes) },
+                { label: t('summaryBreak'), value: `${formatDuration(dayCalc.breakMinutes)} ${dayCalc.breakMinutes > 0 ? (dayCalc.isBreakSufficient ? '✓' : '⚠') : ''}` },
+                { label: t('summaryBalance'), value: <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} />, isReact: true },
+                { label: t('summaryExpected'), value: formatMinutes((settings?.expectedHoursPerDay ?? 8) * 60) },
               ].map(row => (
                 <div key={row.label} className="flex items-center justify-between px-4 py-2.5">
                   <span className="text-foreground/50">{row.label}</span>
-                  <span className="font-semibold">{row.isReact ? row.value : row.value}</span>
+                  <span className="font-semibold">{row.value}</span>
                 </div>
               ))}
             </div>
@@ -423,12 +564,12 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
 
       {/* Note */}
       <div className="flex flex-col gap-1">
-        <label htmlFor="day-note" className="text-xs font-medium text-foreground/50">Note</label>
+        <label htmlFor="day-note" className="text-xs font-medium text-foreground/50">{t('noteLabel')}</label>
         <textarea
           id="day-note"
           value={noteValue}
           onChange={e => handleNoteChange(e.target.value)}
-          placeholder="Add a note for this day..."
+          placeholder={t('notePlaceholder')}
           rows={2}
           className="w-full rounded-xl border border-foreground/10 bg-background px-3 py-2 text-sm placeholder:text-foreground/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 resize-none"
         />

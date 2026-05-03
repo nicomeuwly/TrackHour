@@ -1,36 +1,27 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useSettings } from '@/lib/hooks/useSettings';
-import { useRouter, usePathname } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
-import { routing } from '@/i18n/routing';
-
-type AppPathname = keyof typeof routing.pathnames;
-
-const DAYS = [
-  { value: 1, label: 'Mon' },
-  { value: 2, label: 'Tue' },
-  { value: 3, label: 'Wed' },
-  { value: 4, label: 'Thu' },
-  { value: 5, label: 'Fri' },
-  { value: 6, label: 'Sat' },
-  { value: 7, label: 'Sun' },
-];
+import { useSettings } from '@/lib/hooks/useSettings';
 
 interface SettingsPanelProps {
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 export default function SettingsPanel({ onClose }: SettingsPanelProps) {
-  const { settings, updateSettings } = useSettings();
-  const router = useRouter();
-  const pathname = usePathname();
+  const t = useTranslations('Settings');
   const locale = useLocale();
+  const { settings, updateSettings } = useSettings();
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
   const [local, setLocal] = useState(settings);
   useEffect(() => { if (settings) setLocal(settings); }, [settings]);
+
+  const DAYS = Array.from({ length: 7 }, (_, i) => ({
+    value: i + 1,
+    label: new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(new Date(2024, 0, 1 + i)),
+  }));
 
   const debouncedSave = useCallback(
     (patch: Parameters<typeof updateSettings>[0]) => {
@@ -59,16 +50,16 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
     handleChange('workDays', next);
   }
 
-  if (!local) return <div className="h-40 flex items-center justify-center text-foreground/40 text-sm">Loading…</div>;
+  if (!local) return <div className="h-40 flex items-center justify-center text-foreground/40 text-sm">{t('loading')}</div>;
 
   return (
     <div className="flex flex-col gap-8">
       {/* Work schedule */}
       <section>
-        <h3 className="text-xs font-semibold text-foreground/50 uppercase tracking-wide mb-4">Work Schedule</h3>
+        <h3 className="text-xs font-semibold text-foreground/50 uppercase tracking-wide mb-4">{t('workSchedule')}</h3>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-foreground/80">Expected hours per day</label>
+            <label className="text-sm font-medium text-foreground/80">{t('expectedHours')}</label>
             <input
               type="number"
               value={local.expectedHoursPerDay}
@@ -79,7 +70,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-foreground/80">Minimum break (minutes)</label>
+            <label className="text-sm font-medium text-foreground/80">{t('minimumBreak')}</label>
             <input
               type="number"
               value={local.minimumBreakMinutes}
@@ -90,7 +81,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
           </div>
 
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-foreground/80">Working days</p>
+            <p className="text-sm font-medium text-foreground/80">{t('workingDays')}</p>
             <div className="flex gap-2 flex-wrap">
               {DAYS.map(d => (
                 <button
@@ -104,43 +95,6 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
                 </button>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Preferences */}
-      <section>
-        <h3 className="text-xs font-semibold text-foreground/50 uppercase tracking-wide mb-4">Preferences</h3>
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-foreground/80">Language</p>
-            <div className="flex gap-1">
-              {['en', 'fr'].map(l => (
-                <button
-                  key={l}
-                  onClick={() => {
-                    handleChange('locale', l);
-                    router.replace(pathname as AppPathname, { locale: l });
-                  }}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${locale === l ? 'bg-accent text-white' : 'bg-foreground/8 text-foreground/60 hover:bg-foreground/12'}`}
-                >
-                  {l.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-foreground/80">Theme</p>
-            <button
-              onClick={() => handleChange('theme', local.theme === 'dark' ? 'light' : 'dark')}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${local.theme === 'dark' ? 'bg-accent' : 'bg-foreground/20'}`}
-              role="switch"
-              aria-checked={local.theme === 'dark'}
-              aria-label="Toggle dark mode"
-            >
-              <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${local.theme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`} />
-            </button>
           </div>
         </div>
       </section>

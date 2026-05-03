@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useId } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface ModalProps {
 }
 
 export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
+  const t = useTranslations('Common');
   const titleId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -69,7 +71,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
           </h2>
           <button
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('close')}
             className="p-1.5 rounded-lg hover:bg-foreground/8 transition-colors text-foreground/50"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>

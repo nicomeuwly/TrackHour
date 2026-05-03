@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useSettings } from '@/lib/hooks/useSettings';
 import { localDateStr } from '@/lib/business/calculations';
 import { ToastProvider } from '@/components/ui/Toast';
@@ -9,8 +11,10 @@ import ClockTab from './ClockTab';
 import SettingsPanel from '@/components/settings/SettingsPanel';
 
 function DashboardInner() {
+  const t = useTranslations('Dashboard');
+  const searchParams = useSearchParams();
   const today = localDateStr(new Date());
-  const [selectedDate, setSelectedDate] = useState(today);
+  const [selectedDate, setSelectedDate] = useState(() => searchParams.get('date') ?? today);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const { settings, isLoading } = useSettings();
@@ -33,12 +37,12 @@ function DashboardInner() {
       {showWelcome && (
         <div className="mb-4 rounded-xl bg-accent/10 border border-accent/20 px-4 py-3 flex items-start gap-3">
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-accent">Welcome to TrackHour!</p>
-            <p className="text-xs text-foreground/60 mt-0.5">Start by configuring your work schedule.</p>
+            <p className="text-sm font-semibold text-accent">{t('welcomeTitle')}</p>
+            <p className="text-xs text-foreground/60 mt-0.5">{t('welcomeSubtitle')}</p>
           </div>
           <div className="flex items-center gap-2 flex-none">
             <button onClick={() => dismissWelcome(true)} className="text-xs font-medium text-accent hover:underline">
-              Set up
+              {t('welcomeSetup')}
             </button>
             <button onClick={() => dismissWelcome(false)} aria-label="Dismiss"
               className="text-foreground/30 hover:text-foreground/60 transition-colors">
@@ -54,7 +58,7 @@ function DashboardInner() {
       <div className="flex items-center justify-end mb-4">
         <button
           onClick={() => setSettingsOpen(true)}
-          aria-label="Settings"
+          aria-label={t('settingsTitle')}
           className="p-2.5 rounded-xl hover:bg-foreground/8 transition-colors text-foreground/60 hover:text-foreground"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -74,7 +78,7 @@ function DashboardInner() {
       )}
 
       {/* Settings modal */}
-      <Modal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} title="Settings">
+      <Modal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} title={t('settingsTitle')}>
         <SettingsPanel onClose={() => setSettingsOpen(false)} />
       </Modal>
     </div>
