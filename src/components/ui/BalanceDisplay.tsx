@@ -17,20 +17,21 @@ export default function BalanceDisplay({ balanceMinutes, size = 'sm' }: BalanceD
     : 'text-foreground/50';
 
   const sizeClass = size === 'lg' ? 'text-3xl font-bold' : 'text-sm font-semibold';
+  const iconSize = size === 'lg' ? 'w-6 h-6' : 'w-3.5 h-3.5';
 
   return (
     <span className={`inline-flex items-center gap-1 ${colorClass} ${sizeClass}`}>
       {isPositive && (
-        <svg className={size === 'lg' ? 'w-6 h-6' : 'w-3.5 h-3.5'} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+        <svg className={iconSize} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
           <path d="M8 3l5 6H3z" />
         </svg>
       )}
       {isNegative && (
-        <svg className={size === 'lg' ? 'w-6 h-6' : 'w-3.5 h-3.5'} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+        <svg className={iconSize} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
           <path d="M8 13l5-6H3z" />
         </svg>
       )}
-      {balanceMinutes === 0 ? '0h 00m' : `${isPositive ? '+' : '-'}${formatMinutes(abs)}`}
+      {formatMinutes(abs)}
     </span>
   );
 }
