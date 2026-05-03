@@ -9,7 +9,7 @@ const DataTab = dynamic(() => import('./DataTab'), { ssr: false });
 function DataTabWithNav() {
   const router = useRouter();
   return (
-    <DataTab onNavigateToDay={() => router.push('/time-tracker')} />
+    <DataTab onNavigateToDay={(date) => router.push({ pathname: '/time-tracker', query: { date } })} />
   );
 }
 

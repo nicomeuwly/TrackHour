@@ -79,6 +79,26 @@ export async function addPunch(
   return punch;
 }
 
+export async function updatePunch(id: string, newTime: string): Promise<void> {
+  const punch = await db.punches.get(id);
+  if (!punch) return;
+
+  const allPunches = await getPunchesByDate(punch.date);
+  const idx = allPunches.findIndex(p => p.id === id);
+  const prev = allPunches[idx - 1];
+  const next = allPunches[idx + 1];
+
+  if (prev && newTime <= prev.time) {
+    throw new Error(`Time must be after ${prev.time}.`);
+  }
+  if (next && newTime >= next.time) {
+    throw new Error(`Time must be before ${next.time}.`);
+  }
+
+  await db.punches.update(id, { time: newTime, isManual: true });
+  await updateDayEntry(punch.date);
+}
+
 export async function deletePunch(id: string): Promise<void> {
   const punch = await db.punches.get(id);
   if (!punch) return;

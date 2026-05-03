@@ -41,10 +41,10 @@ describe('parseTime', () => {
 });
 
 describe('formatMinutes', () => {
-  it('formats zero', () => expect(formatMinutes(0)).toBe('0h 00m'));
-  it('formats 90 minutes', () => expect(formatMinutes(90)).toBe('1h 30m'));
-  it('formats full hours', () => expect(formatMinutes(480)).toBe('8h 00m'));
-  it('formats 570 minutes', () => expect(formatMinutes(570)).toBe('9h 30m'));
+  it('formats zero', () => expect(formatMinutes(0)).toBe('00:00'));
+  it('formats 90 minutes', () => expect(formatMinutes(90)).toBe('01:30'));
+  it('formats full hours', () => expect(formatMinutes(480)).toBe('08:00'));
+  it('formats 570 minutes', () => expect(formatMinutes(570)).toBe('09:30'));
 });
 
 describe('formatDuration', () => {

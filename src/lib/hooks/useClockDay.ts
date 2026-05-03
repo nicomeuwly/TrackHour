@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getPunchesByDate } from '@/lib/services/punches.service';
-import { addPunch, deletePunch as deletePunchService, updateEntryNote } from '@/lib/services/punches.service';
+import { addPunch, deletePunch as deletePunchService, updatePunch as updatePunchService, updateEntryNote } from '@/lib/services/punches.service';
 import { getEntryByDate } from '@/lib/services/entries.service';
 import type { Punch } from '@/lib/types';
 
@@ -59,6 +59,17 @@ export function useClockDay(date: string) {
     }
   }, [load]);
 
+  const editPunch = useCallback(async (id: string, newTime: string) => {
+    try {
+      await updatePunchService(id, newTime);
+      await load();
+    } catch (e) {
+      const msg = String(e).replace('Error: ', '');
+      setError(msg);
+      throw new Error(msg);
+    }
+  }, [load]);
+
   const saveNote = useCallback(async (text: string) => {
     setNote(text);
     try {
@@ -68,5 +79,5 @@ export function useClockDay(date: string) {
     }
   }, [date]);
 
-  return { punches, note, isLoading, error, clockIn, clockOut, deletePunch, saveNote };
+  return { punches, note, isLoading, error, clockIn, clockOut, deletePunch, editPunch, saveNote };
 }

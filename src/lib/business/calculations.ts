@@ -6,11 +6,11 @@ export function parseTime(time: string): number {
   return hours * 60 + minutes;
 }
 
-/** Converts minutes to "Xh Ym". E.g. 570 → "9h 30m" */
+/** Converts minutes to "hh:mm". E.g. 570 → "09:30" */
 export function formatMinutes(minutes: number): string {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  return `${h}h ${String(m).padStart(2, '0')}m`;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
 /** Converts minutes to compact form — omits zero parts. E.g. 480 → "8h", 45 → "45m", 90 → "1h 30m" */
