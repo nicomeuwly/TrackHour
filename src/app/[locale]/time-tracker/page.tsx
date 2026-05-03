@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: Props) {
             description: "Pointeuse en ligne gratuite sans inscription. Enregistrez vos heures de travail quotidiennes. Vos données restent privées dans votre navigateur.",
             path,
             locale,
+            href: '/time-tracker',
         });
     }
     return buildMetadata({
@@ -26,6 +27,7 @@ export async function generateMetadata({ params }: Props) {
         description: 'Log your daily work hours with our free online time tracker. No sign-up required. Your data stays private in your browser.',
         path,
         locale,
+        href: '/time-tracker',
     });
 }
 

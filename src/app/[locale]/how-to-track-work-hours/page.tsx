@@ -14,6 +14,7 @@ export async function generateMetadata({ params }: Props) {
             description: "Apprenez à suivre vos heures de travail facilement. Méthodes, conseils et outil gratuit pour enregistrer vos heures quotidiennes.",
             path,
             locale,
+            href: '/how-to-track-work-hours',
         });
     }
     return buildMetadata({
@@ -21,6 +22,7 @@ export async function generateMetadata({ params }: Props) {
         description: 'Learn how to track your work hours easily and accurately. Tips, methods, and a free tool to log your daily hours online.',
         path,
         locale,
+        href: '/how-to-track-work-hours',
     });
 }
 

@@ -13,6 +13,7 @@ export async function generateMetadata({ params }: Props) {
             description: 'Politique de confidentialité de TrackHour. Aucune donnée collectée côté serveur. Vos heures restent dans votre navigateur.',
             path,
             locale,
+            href: '/privacy-policy',
         });
     }
     return buildMetadata({
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: Props) {
         description: 'TrackHour privacy policy. No data collected on our servers. Your work hours stay in your browser.',
         path,
         locale,
+        href: '/privacy-policy',
     });
 }
 

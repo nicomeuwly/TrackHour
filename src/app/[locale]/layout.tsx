@@ -17,6 +17,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://trackhour.app'),
   title: {
     default: 'TrackHour',
     template: '%s | TrackHour',

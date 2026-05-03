@@ -13,6 +13,7 @@ export async function generateMetadata({ params }: Props) {
             description: "Mentions légales de TrackHour. Service gratuit, données sous responsabilité de l'utilisateur.",
             path,
             locale,
+            href: '/terms-of-use',
         });
     }
     return buildMetadata({
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: Props) {
         description: 'TrackHour terms of use. Free service, no warranties, data stored locally in your browser.',
         path,
         locale,
+        href: '/terms-of-use',
     });
 }
 

@@ -18,6 +18,7 @@ export async function generateMetadata({ params }: Props) {
             description: "Suivez vos heures de travail quotidiennes gratuitement. Sans compte, vos données restent dans votre navigateur. Simple, privé, toujours disponible.",
             path,
             locale,
+            href: '/',
         });
     }
     return buildMetadata({
@@ -25,6 +26,7 @@ export async function generateMetadata({ params }: Props) {
         description: 'Track your daily work hours for free. No account needed, your data stays in your browser. Simple, private, and always available.',
         path,
         locale,
+        href: '/',
     });
 }
 

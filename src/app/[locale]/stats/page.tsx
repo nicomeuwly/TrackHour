@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: Props) {
             description: "Consultez vos heures de travail par semaine ou par mois, suivez votre solde d'heures supplémentaires et gérez vos données. Gratuit et privé.",
             path,
             locale,
+            href: '/stats',
         });
     }
     return buildMetadata({
@@ -26,6 +27,7 @@ export async function generateMetadata({ params }: Props) {
         description: 'View your work hours by week or month, track your overtime balance, and manage your data. Free and private — no account needed.',
         path,
         locale,
+        href: '/stats',
     });
 }
 
