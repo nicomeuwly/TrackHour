@@ -276,23 +276,23 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl border border-foreground/10 px-4 py-3">
+          <div className="rounded-xl border border-foreground/10 bg-background px-4 py-3">
             <p className="text-xs text-foreground/50 mb-1">{t('totalWorked')}</p>
             <p className="font-bold text-base">{balance ? formatMinutes(balance.totalWorkedMinutes) : '—'}</p>
           </div>
-          <div className="rounded-xl border border-foreground/10 px-4 py-3">
+          <div className="rounded-xl border border-foreground/10 bg-background px-4 py-3">
             <p className="text-xs text-foreground/50 mb-1">{t('balance')}</p>
             <p className="font-bold text-base">
               {balance ? <BalanceDisplay balanceMinutes={balance.balanceMinutes} /> : '—'}
             </p>
           </div>
-          <div className="rounded-xl border border-foreground/10 px-4 py-3">
+          <div className="rounded-xl border border-foreground/10 bg-background px-4 py-3">
             <p className="text-xs text-foreground/50 mb-1">{t('daysLogged')}</p>
             <p className="font-bold text-base">
               {balance ? `${balance.daysLogged} / ${balance.daysExpected}` : '—'}
             </p>
           </div>
-          <div className="rounded-xl border border-foreground/10 px-4 py-3">
+          <div className="rounded-xl border border-foreground/10 bg-background px-4 py-3">
             <p className="text-xs text-foreground/50 mb-1">{t('avgPerDay')}</p>
             <p className="font-bold text-base">{avgMinutes > 0 ? formatMinutes(avgMinutes) : '—'}</p>
           </div>
@@ -306,7 +306,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
             {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-12 rounded-xl bg-foreground/5 animate-pulse" />)}
           </div>
         ) : (
-          <div className="rounded-xl border border-foreground/10 overflow-hidden divide-y divide-foreground/6">
+          <div className="rounded-xl border border-foreground/10 bg-background overflow-hidden divide-y divide-foreground/6">
             {weekDatesArr.map((date, i) => {
               const entry = entriesByDate[date];
               const status = settings ? getCellStatus(date, entry, settings, today) : 'future';

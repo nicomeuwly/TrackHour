@@ -91,7 +91,7 @@ export default async function HomePage({ params }: Props) {
                         { title: t('feature3Title'), desc: t('feature3Desc') },
                         { title: t('feature4Title'), desc: t('feature4Desc') },
                     ].map(({ title, desc }) => (
-                        <div key={title} className="border border-foreground/10 rounded-xl p-6">
+                        <div key={title} className="border border-foreground/10 rounded-xl p-6 bg-background">
                             <h3 className="font-semibold text-lg mb-2">{title}</h3>
                             <p className="text-foreground/60 text-sm">{desc}</p>
                         </div>
