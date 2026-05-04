@@ -48,7 +48,7 @@ function PunchTimeline({
   if (punches.length === 0) return null;
 
   return (
-    <div className="flex flex-col bg-background" role="list" aria-label={t('punchTimeline')}>
+    <div className="flex flex-col bg-background rounded-xl" role="list" aria-label={t('punchTimeline')}>
       {punches.map((punch, idx) => {
         const prev = punches[idx - 1];
         const isIn = punch.type === 'in';
