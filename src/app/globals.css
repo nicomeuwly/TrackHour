@@ -7,6 +7,10 @@
   --background: #ffffff;
   --foreground: #171717;
   --accent: #0D9488;
+/*   --dot-base: rgba(0, 0, 0, 0.07);
+  --dot-glow: rgba(0, 0, 0, 0.25);
+  --cursor-x: -999px;
+  --cursor-y: -999px; */
 }
 
 /* Applied by useSettings on user preference */
@@ -14,6 +18,8 @@
   --background: #0a0a0a;
   --foreground: #ededed;
   --accent: #14b8a6;
+/*   --dot-base: rgba(255, 255, 255, 0.055);
+  --dot-glow: rgba(255, 255, 255, 0.32); */
 }
 
 /* CSS-variable fallback before JS hydration */
@@ -22,6 +28,8 @@
     --background: #0a0a0a;
     --foreground: #ededed;
     --accent: #14b8a6;
+/*     --dot-base: rgba(255, 255, 255, 0.055);
+    --dot-glow: rgba(255, 255, 255, 0.32); */
   }
 }
 
@@ -32,8 +40,45 @@
   --font-sans: var(--font-inter), Arial, Helvetica, sans-serif;
 }
 
-body {
+/* Solid base color on html, dots and glow handled by body pseudo-elements */
+html {
   background: var(--background);
+}
+
+body {
+  background: transparent;
+  position: relative; /* stacking context so z-index:-1 children stay behind content */
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* Base dot grid — fixed so it doesn't scroll */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle, var(--dot-base) 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+
+/* Cursor glow — bright dots revealed only near the pointer */
+@media (pointer: fine) {
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: radial-gradient(circle, var(--dot-glow) 1.5px, transparent 1.5px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(circle 300px at var(--cursor-x) var(--cursor-y), black 0%, transparent 100%);
+    -webkit-mask-image: radial-gradient(circle 300px at var(--cursor-x) var(--cursor-y), black 0%, transparent 100%);
+  }
+}
+
+@keyframes segment-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.7; }
 }

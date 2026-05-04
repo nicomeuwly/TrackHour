@@ -6,6 +6,7 @@ import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
+import DotCursor from '@/components/DotCursor';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AdSidebar from '@/components/ads/AdSidebar';
@@ -46,6 +47,7 @@ export default async function RootLayout({ children, params }: Props) {
           crossOrigin="anonymous"></script>
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
+        <DotCursor />
         <NextIntlClientProvider>
           <Header />
           <main className="flex-1">
