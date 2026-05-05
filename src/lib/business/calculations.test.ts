@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   parseTime,
   formatMinutes,
-  formatDuration,
   formatMinutesAsDecimal,
   calculateWorkedMinutes,
   calculateBalance,
@@ -47,12 +46,6 @@ describe('formatMinutes', () => {
   it('formats 570 minutes', () => expect(formatMinutes(570)).toBe('09:30'));
 });
 
-describe('formatDuration', () => {
-  it('shows only hours when no minutes', () => expect(formatDuration(480)).toBe('8h'));
-  it('shows only minutes when under 1h', () => expect(formatDuration(45)).toBe('45m'));
-  it('shows both when mixed', () => expect(formatDuration(90)).toBe('1h 30m'));
-  it('formats zero as 0m', () => expect(formatDuration(0)).toBe('0m'));
-});
 
 describe('formatMinutesAsDecimal', () => {
   it('formats 570', () => expect(formatMinutesAsDecimal(570)).toBe('9.50'));

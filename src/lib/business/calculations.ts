@@ -13,15 +13,6 @@ export function formatMinutes(minutes: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-/** Converts minutes to compact form — omits zero parts. E.g. 480 → "8h", 45 → "45m", 90 → "1h 30m" */
-export function formatDuration(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h === 0) return `${m}m`;
-  if (m === 0) return `${h}h`;
-  return `${h}h ${m}m`;
-}
-
 /** Converts minutes to decimal hours string. E.g. 570 → "9.50" */
 export function formatMinutesAsDecimal(minutes: number): string {
   return (minutes / 60).toFixed(2);
@@ -151,11 +142,13 @@ export function calculateFromPunches(
   const expectedMinutes = settings.expectedHoursPerDay * 60;
 
   let projectedEndTime: string | null = null;
-  if (lastPunchType === 'in' && isToday) {
-    const remaining = Math.max(0, expectedMinutes - workedMinutes);
-    const projectedMins = nowMins + remaining;
-    const h = Math.floor(projectedMins / 60) % 24;
-    const m = Math.round(projectedMins % 60);
+  if (lastPunch !== null && isToday && (lastPunchType === 'in' || workedMinutes < expectedMinutes)) {
+    // When clocked in: anchor to now (nowMins and workedMinutes grow together → result is stable)
+    // When on break: anchor to last clock-out time (workedMinutes is frozen → result stays fixed)
+    const baseMins = lastPunchType === 'in' ? nowMins : parseTime(lastPunch.time);
+    const projectedMins = baseMins + (expectedMinutes - workedMinutes);
+    const h = Math.floor(((projectedMins % 1440) + 1440) % 1440 / 60);
+    const m = Math.round(((projectedMins % 1440) + 1440) % 1440 % 60);
     projectedEndTime = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   }
 
@@ -172,9 +165,14 @@ export function calculateFromPunches(
     status = 'incomplete';
   }
 
+  const ongoingBreak = lastPunchType === 'out' && isToday
+    ? Math.max(0, nowMins - parseTime(lastPunch!.time))
+    : 0;
+
   return {
     workedMinutes: Math.round(workedMinutes),
     breakMinutes: Math.round(breakMinutes),
+    liveBreakMinutes: Math.round(breakMinutes + ongoingBreak),
     isBreakSufficient: breakMinutes >= settings.minimumBreakMinutes,
     projectedEndTime,
     balanceMinutes: Math.round(workedMinutes - expectedMinutes),
@@ -183,11 +181,3 @@ export function calculateFromPunches(
   };
 }
 
-/** Returns projected end time HH:mm if clocked in, null otherwise. */
-export function getProjectedEndTime(
-  punches: Punch[],
-  settings: Settings,
-  now: Date,
-): string | null {
-  return calculateFromPunches(punches, settings, now).projectedEndTime;
-}

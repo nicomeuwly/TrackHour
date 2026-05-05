@@ -20,6 +20,7 @@ export interface DayEntry {
 export interface DayCalculation {
   workedMinutes: number;
   breakMinutes: number;
+  liveBreakMinutes: number;
   isBreakSufficient: boolean;
   projectedEndTime: string | null;
   balanceMinutes: number;
