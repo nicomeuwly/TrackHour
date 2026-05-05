@@ -7,7 +7,6 @@ import { useClockDay } from '@/lib/hooks/useClockDay';
 import { useSettings } from '@/lib/hooks/useSettings';
 import {
   calculateFromPunches,
-  formatDuration,
   formatMinutes,
   localDateStr,
 } from '@/lib/business/calculations';
@@ -48,7 +47,7 @@ function PunchTimeline({
   if (punches.length === 0) return null;
 
   return (
-    <div className="flex flex-col bg-background rounded-xl" role="list" aria-label={t('punchTimeline')}>
+    <div className="flex flex-col gap-1 bg-background rounded-xl" role="list" aria-label={t('punchTimeline')}>
       {punches.map((punch, idx) => {
         const prev = punches[idx - 1];
         const isIn = punch.type === 'in';
@@ -63,15 +62,29 @@ function PunchTimeline({
               const mins =
                 (parseInt(punch.time.split(':')[0]) * 60 + parseInt(punch.time.split(':')[1])) -
                 (parseInt(prev.time.split(':')[0]) * 60 + parseInt(prev.time.split(':')[1]));
-              const duration = formatDuration(mins);
+              const duration = formatMinutes(mins);
               const isWorkPeriod = prev.type === 'in';
               return (
                 <div className="flex items-center gap-3 px-3 py-0.5" aria-hidden>
                   <div className="flex-none w-2 flex justify-center">
                     <div className="w-px h-4 bg-foreground/15" />
                   </div>
-                  <span className={`text-xs font-medium ${isWorkPeriod ? 'text-accent/70' : 'text-foreground/35'}`}>
-                    {isWorkPeriod ? t('punchWorked', { duration }) : t('punchBreak', { duration })}
+                  <span className={`flex items-center gap-1 text-xs font-medium ${isWorkPeriod ? 'text-accent/70' : 'text-foreground/35'}`}>
+                    {isWorkPeriod ? (
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                      </svg>
+                    ) : (
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d="M17 8h1a4 4 0 0 1 0 8h-1" />
+                        <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+                        <line x1="6" y1="2" x2="6" y2="4" />
+                        <line x1="10" y1="2" x2="10" y2="4" />
+                        <line x1="14" y1="2" x2="14" y2="4" />
+                      </svg>
+                    )}
+                    {duration}
                   </span>
                 </div>
               );
@@ -79,9 +92,9 @@ function PunchTimeline({
 
             {/* Punch row */}
             {isEditing ? (
-              <div role="listitem" className="flex items-center gap-2 px-3 py-2 rounded-xl bg-foreground/4">
+              <div role="listitem" className="flex items-center gap-2 px-4 py-3 sm:px-3 sm:py-2 min-h-14 sm:min-h-12 rounded-xl bg-foreground/4">
                 <span className={`flex-none w-2 h-2 rounded-full ${isIn ? 'bg-green-500' : 'bg-red-400'}`} aria-hidden />
-                <span className="text-xs text-foreground/50 whitespace-nowrap">{isIn ? t('punchIn') : t('punchOut')}</span>
+                <span className="text-sm text-foreground/50 whitespace-nowrap">{isIn ? t('punchIn') : t('punchOut')}</span>
                 <input
                   type="time"
                   value={editValue}
@@ -105,7 +118,7 @@ function PunchTimeline({
                 </button>
               </div>
             ) : (
-              <div role="listitem" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-foreground/4 group">
+              <div role="listitem" className="flex items-center gap-3 px-4 py-3 sm:px-3 sm:py-2 min-h-14 sm:min-h-12 rounded-xl hover:bg-foreground/4 group">
                 <span className={`flex-none w-2 h-2 rounded-full ${isIn ? 'bg-green-500' : 'bg-red-400'}`} aria-hidden />
                 <span className={`text-sm font-mono font-semibold ${isIn ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
                   {punch.time}
@@ -120,22 +133,22 @@ function PunchTimeline({
                     <button onClick={() => setAction(null)} className="text-foreground/40 hover:text-foreground/60">{t('deleteCancel')}</button>
                   </span>
                 ) : (
-                  <span className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="flex items-center gap-0.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => setAction({ kind: 'edit', id: punch.id, value: punch.time })}
                       aria-label={t('editPunchLabel', { time: punch.time })}
-                      className="p-1 rounded hover:bg-foreground/8 text-foreground/30 hover:text-accent transition-colors"
+                      className="p-2 sm:p-1 rounded hover:bg-foreground/8 text-foreground/30 hover:text-accent transition-colors"
                     >
-                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <svg width="16" height="16" className="sm:w-3 sm:h-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <path d="M11 2a1.414 1.414 0 0 1 2 2L5 12l-3 1 1-3Z" />
                       </svg>
                     </button>
                     <button
                       onClick={() => setAction({ kind: 'confirmDelete', id: punch.id })}
                       aria-label={t('deletePunchLabel', { time: punch.time })}
-                      className="p-1 rounded hover:bg-foreground/8 text-foreground/30 hover:text-red-500 transition-colors"
+                      className="p-2 sm:p-1 rounded hover:bg-foreground/8 text-foreground/30 hover:text-red-500 transition-colors"
                     >
-                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                      <svg width="16" height="16" className="sm:w-3 sm:h-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
                         <polyline points="2 4 4 4 14 4" /><path d="M5 4V2h6v2" /><path d="M6 7v5M10 7v5" /><rect x="3" y="4" width="10" height="10" rx="1" />
                       </svg>
                     </button>
@@ -413,7 +426,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
                 <>
                   {isToday ? (
                     <button onClick={() => handleClockIn()}
-                      className="flex items-center gap-2 bg-accent text-white px-8 py-3 rounded-xl font-semibold text-base hover:opacity-90 transition-opacity">
+                      className="flex items-center gap-2 border border-accent bg-accent/10 text-accent px-8 py-3 rounded-xl font-semibold text-base hover:bg-accent/20 transition-colors">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><polygon points="5 3 19 12 5 21 5 3" /></svg>
                       {t('clockIn')}
                     </button>
@@ -432,20 +445,27 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
           {/* Currently working */}
           {punches.length > 0 && lastType === 'in' && (
             <>
-              <p className="text-xs font-semibold text-green-500 uppercase tracking-wide">{t('currentlyWorking')}</p>
+              <p className="text-lg font-semibold text-accent flex items-center justify-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                </svg>
+                {dayCalc ? formatMinutes(dayCalc.workedMinutes) : '–'}
+              </p>
               <div className="w-full flex flex-col gap-1.5">
                 <SegmentedProgressBar progressPct={progressPct} isPaused={false} />
-                {dayCalc?.projectedEndTime && isToday && (
-                  <div className="flex justify-end">
+                <div className="flex justify-between">
+                  <span className="text-xs font-semibold text-foreground/50 tabular-nums">{punches[0].time}</span>
+                  {dayCalc?.projectedEndTime && isToday && (
                     <span className="text-xs font-semibold text-foreground/50 tabular-nums">{dayCalc.projectedEndTime}</span>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
               {!manualMode && (
                 <>
                   {isToday ? (
                     <button onClick={() => handleClockOut()}
-                      className="flex items-center gap-2 bg-red-500 text-white px-8 py-3 rounded-xl font-semibold text-base hover:bg-red-600 transition-colors">
+                      className="flex items-center gap-2 border border-red-500 bg-red-500/10 text-red-500 px-8 py-3 rounded-xl font-semibold text-base hover:bg-red-500/20 transition-colors">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><rect x="4" y="4" width="16" height="16" rx="2" /></svg>
                       {t('clockOut')}
                     </button>
@@ -466,19 +486,32 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
             <>
               {dayCalc.status !== 'complete' ? (
                 <>
-                  <p className="text-xs font-semibold text-amber-500 uppercase tracking-wide">{t('onBreak')}</p>
-                  <div className="w-full flex items-center gap-3">
-                    <SegmentedProgressBar progressPct={progressPct} isPaused={true} />
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-amber-500/50 shrink-0" aria-hidden>
-                      <rect x="6" y="4" width="4" height="16" rx="1" />
-                      <rect x="14" y="4" width="4" height="16" rx="1" />
+                  <p className="text-lg font-semibold text-foreground/35 flex items-center justify-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M17 8h1a4 4 0 0 1 0 8h-1" />
+                      <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+                      <line x1="6" y1="2" x2="6" y2="4" />
+                      <line x1="10" y1="2" x2="10" y2="4" />
+                      <line x1="14" y1="2" x2="14" y2="4" />
                     </svg>
+                    {formatMinutes(dayCalc.liveBreakMinutes)}
+                  </p>
+                  <div className="w-full flex flex-col gap-1.5">
+                    <div className="flex items-center gap-3">
+                      <SegmentedProgressBar progressPct={progressPct} isPaused={true} />
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-xs font-semibold text-foreground/50 tabular-nums">{punches[0].time}</span>
+                      {dayCalc?.projectedEndTime && isToday && (
+                        <span className="text-xs font-semibold text-foreground/50 tabular-nums">{dayCalc.projectedEndTime}</span>
+                      )}
+                    </div>
                   </div>
                   {!manualMode && (
                     <>
                       {isToday ? (
                         <button onClick={() => handleClockIn()}
-                          className="flex items-center gap-2 bg-accent text-white px-8 py-3 rounded-xl font-semibold text-base hover:opacity-90 transition-opacity">
+                          className="flex items-center gap-2 border border-accent bg-accent/10 text-accent px-8 py-3 rounded-xl font-semibold text-base hover:bg-accent/20 transition-colors">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><polygon points="5 3 19 12 5 21 5 3" /></svg>
                           {t('clockIn')}
                         </button>
@@ -495,7 +528,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
               ) : (
                 <>
                   <div>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{t('dayComplete')}</p>
+                    <p className="text-2xl font-bold text-accent">{t('dayComplete')}</p>
                     <p className="text-sm text-foreground/50 mt-1">{formatMinutes(dayCalc.workedMinutes)} {t('workedSuffix')}</p>
                   </div>
                   <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} size="lg" />
@@ -503,7 +536,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
                     <>
                       {isToday ? (
                         <button onClick={() => handleClockIn()}
-                          className="flex items-center gap-2 bg-accent text-white px-8 py-3 rounded-xl font-semibold text-base hover:opacity-90 transition-opacity">
+                          className="flex items-center gap-2 border border-accent bg-accent/10 text-accent px-8 py-3 rounded-xl font-semibold text-base hover:bg-accent/20 transition-colors">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><polygon points="5 3 19 12 5 21 5 3" /></svg>
                           {t('clockInAgain')}
                         </button>
@@ -529,7 +562,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
             <div className="flex-1 min-w-44 rounded-xl border border-foreground/10 bg-background divide-y divide-foreground/8 text-sm">
               {[
                 { label: t('summaryWorked'), value: formatMinutes(dayCalc.workedMinutes) },
-                { label: t('summaryBreak'), value: `${formatDuration(dayCalc.breakMinutes)} ${dayCalc.breakMinutes > 0 ? (dayCalc.isBreakSufficient ? '✓' : '⚠') : ''}` },
+                { label: t('summaryBreak'), value: `${formatMinutes(dayCalc.breakMinutes)} ${dayCalc.breakMinutes > 0 ? (dayCalc.isBreakSufficient ? '✓' : '⚠') : ''}` },
                 { label: t('summaryBalance'), value: <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} />, isReact: true },
                 { label: t('summaryExpected'), value: formatMinutes((settings?.expectedHoursPerDay ?? 8) * 60) },
               ].map(row => (
@@ -540,7 +573,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
               ))}
             </div>
           )}
-          <div className="flex-1 min-w-44 rounded-xl border border-foreground/10 divide-y divide-foreground/8">
+          <div className="flex-1 min-w-full sm:min-w-44 rounded-xl border border-foreground/10 divide-y divide-foreground/8">
             <PunchTimeline
               punches={punches}
               onDelete={deletePunch}
