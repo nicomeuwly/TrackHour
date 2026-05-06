@@ -305,7 +305,7 @@ function SegmentedProgressBar({ progressPct, isPaused }: { progressPct: number; 
 export default function ClockTab({ date, onDateChange }: ClockTabProps) {
   const t = useTranslations('ClockTab');
   const locale = useLocale();
-  const { punches, note, isLoading, error, clockIn, clockOut, deletePunch, editPunch, saveNote } = useClockDay(date);
+  const { punches, note, vacationMinutes, isLoading, error, clockIn, clockOut, deletePunch, editPunch, saveNote, setVacation } = useClockDay(date);
   const { settings } = useSettings();
   const { showToast } = useToast();
   const [now, setNow] = useState(new Date());
@@ -337,7 +337,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
     return () => document.removeEventListener('mousedown', handle);
   }, [showPicker]);
 
-  const dayCalc = settings ? calculateFromPunches(punches, settings, now, date) : null;
+  const dayCalc = settings ? calculateFromPunches(punches, settings, now, date, vacationMinutes) : null;
   const lastType = dayCalc?.lastPunchType ?? null;
   const expectedMinutes = (settings?.expectedHoursPerDay ?? 8) * 60;
   const progressPct = dayCalc ? Math.min(100, (dayCalc.workedMinutes / expectedMinutes) * 100) : 0;
@@ -393,6 +393,21 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
             {t('backToToday')}
           </button>
         )}
+        {dayCalc && dayCalc.workedMinutes < expectedMinutes && (
+          <button
+            role="switch"
+            aria-checked={vacationMinutes > 0}
+            onClick={() => setVacation(vacationMinutes > 0 ? 0 : (settings?.expectedHoursPerDay ?? 8) * 60)}
+            className={`flex items-center gap-1.5 rounded-lg px-2 py-1 transition-colors ${vacationMinutes > 0 ? 'bg-amber-500/10' : 'hover:bg-foreground/5'}`}
+          >
+            <span className={`text-xs font-medium whitespace-nowrap ${vacationMinutes > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-foreground/35'}`}>
+              {t('vacation')}
+            </span>
+            <div className={`relative w-8 h-4.5 rounded-full transition-colors ${vacationMinutes > 0 ? 'bg-amber-500' : 'bg-foreground/15'}`}>
+              <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-transform ${vacationMinutes > 0 ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+            </div>
+          </button>
+        )}
         <div className="flex gap-1">
           <button onClick={() => onDateChange(shiftDate(date, -1))} aria-label="←" className="p-2 rounded-lg hover:bg-foreground/8 transition-colors">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><polyline points="10 4 6 8 10 12" /></svg>
@@ -416,8 +431,26 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
       ) : (
         <div className="rounded-xl border border-foreground/10 bg-background p-6 flex flex-col items-center gap-4 text-center">
 
+          {/* Vacation day — no punches */}
+          {punches.length === 0 && dayCalc?.status === 'vacation' && (
+            <>
+              <div>
+                <p className="text-2xl font-bold text-amber-500">{t('vacation')}</p>
+                <p className="text-sm text-foreground/50 mt-1">{t('vacationDesc')}</p>
+              </div>
+              <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} size="lg" />
+              {!manualMode ? (
+                <button onClick={() => setManualMode(true)} className="text-sm text-foreground/40 hover:text-foreground/70 transition-colors">
+                  {t('enterManually')}
+                </button>
+              ) : (
+                <ManualInput label={t('clockInAt')} onConfirm={handleClockIn} onCancel={() => setManualMode(false)} />
+              )}
+            </>
+          )}
+
           {/* No punches yet */}
-          {punches.length === 0 && (
+          {punches.length === 0 && dayCalc?.status !== 'vacation' && (
             <>
               <p className="text-sm text-foreground/40">
                 {t('noEntries')}{isToday ? ` — ${t('noEntriesHint')}` : ''}
