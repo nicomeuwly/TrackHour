@@ -2,7 +2,7 @@ import { formatMinutes } from '@/lib/business/calculations';
 
 interface BalanceDisplayProps {
   balanceMinutes: number;
-  size?: 'sm' | 'lg';
+  size?: 'sm' | 'lg' | 'base';
 }
 
 export default function BalanceDisplay({ balanceMinutes, size = 'sm' }: BalanceDisplayProps) {
@@ -16,7 +16,7 @@ export default function BalanceDisplay({ balanceMinutes, size = 'sm' }: BalanceD
     ? 'text-red-500 dark:text-red-400'
     : 'text-foreground/50';
 
-  const sizeClass = size === 'lg' ? 'text-3xl font-bold' : 'text-sm font-semibold';
+  const sizeClass = size === 'lg' ? 'text-3xl font-bold' : size === 'base' ? 'text-base font-semibold' : 'text-sm font-semibold';
   const iconSize = size === 'lg' ? 'w-6 h-6' : 'w-3.5 h-3.5';
 
   return (

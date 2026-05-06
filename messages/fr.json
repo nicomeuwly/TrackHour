@@ -138,7 +138,12 @@
         "editCancel": "Annuler",
         "editPunchLabel": "Modifier le pointage à {time}",
         "toastEdited": "Entrée modifiée",
-        "punchTimeline": "Historique des pointages"
+        "punchTimeline": "Historique des pointages",
+        "vacation": "Congé",
+        "vacationDesc": "Cette journée est marquée comme congé",
+        "vacationToggle": "Marquer comme congé",
+        "vacationToggleOff": "Retirer le congé",
+        "totalDaysOff": "Jours de congé"
     },
     "DataTab": {
         "viewWeek": "Semaine",
@@ -176,6 +181,9 @@
         "statusPartial": "partiel",
         "statusMissing": "manquant",
         "statusWeekend": "week-end",
+        "statusVacation": "congé",
+        "totalDaysOff": "Jours de congé",
+        "completeDays": "Jours complets",
         "prevWeek": "Semaine précédente",
         "nextWeek": "Semaine suivante",
         "prevMonth": "Mois précédent",

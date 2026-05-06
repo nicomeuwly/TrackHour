@@ -138,7 +138,12 @@
         "editCancel": "Cancel",
         "editPunchLabel": "Edit punch at {time}",
         "toastEdited": "Entry updated",
-        "punchTimeline": "Punch timeline"
+        "punchTimeline": "Punch timeline",
+        "vacation": "Day Off",
+        "vacationDesc": "This day is marked as a day off",
+        "vacationToggle": "Mark as day off",
+        "vacationToggleOff": "Remove day off",
+        "totalDaysOff": "Days off"
     },
     "DataTab": {
         "viewWeek": "Week",
@@ -176,6 +181,9 @@
         "statusPartial": "partial",
         "statusMissing": "missing",
         "statusWeekend": "weekend",
+        "statusVacation": "day off",
+        "totalDaysOff": "Days Off",
+        "completeDays": "Complete Days",
         "prevWeek": "Previous week",
         "nextWeek": "Next week",
         "prevMonth": "Previous month",
