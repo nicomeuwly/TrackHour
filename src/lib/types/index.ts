@@ -13,6 +13,7 @@ export interface DayEntry {
   punches: Punch[];
   totalWorkedMinutes: number;
   totalBreakMinutes: number;
+  vacationMinutes: number;
   note: string;
   updatedAt: string;
 }
@@ -24,6 +25,7 @@ export interface DayCalculation {
   isBreakSufficient: boolean;
   projectedEndTime: string | null;
   balanceMinutes: number;
+  vacationMinutes: number;
   status: DayStatus;
   lastPunchType: 'in' | 'out' | null;
 }
@@ -51,4 +53,4 @@ export interface MonthBalance extends WeekBalance {
   averageHoursPerDay: number;
 }
 
-export type DayStatus = 'complete' | 'incomplete' | 'missing' | 'weekend';
+export type DayStatus = 'complete' | 'incomplete' | 'missing' | 'weekend' | 'vacation';

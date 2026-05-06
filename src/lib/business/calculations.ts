@@ -79,12 +79,17 @@ export function calculateWeekBalance(entries: DayEntry[], settings: Settings): W
   }
   const dates = entries.map(e => e.date).sort();
   const daysExpected = countExpectedDays(dates[0], dates[dates.length - 1], settings.workDays);
-  const totalExpectedMinutes = daysExpected * settings.expectedHoursPerDay * 60;
+  const expectedPerDay = settings.expectedHoursPerDay * 60;
+  const totalExpectedMinutes = daysExpected * expectedPerDay;
   const totalWorkedMinutes = entries.reduce((sum, e) => sum + e.totalWorkedMinutes, 0);
+  const totalEffectiveVacation = entries.reduce((sum, e) => {
+    if (!e.vacationMinutes) return sum;
+    return sum + Math.max(0, expectedPerDay - e.totalWorkedMinutes);
+  }, 0);
   return {
     totalWorkedMinutes,
     totalExpectedMinutes,
-    balanceMinutes: totalWorkedMinutes - totalExpectedMinutes,
+    balanceMinutes: totalWorkedMinutes + totalEffectiveVacation - totalExpectedMinutes,
     daysLogged: entries.length,
     daysExpected,
   };
@@ -112,6 +117,7 @@ export function calculateFromPunches(
   settings: Settings,
   now: Date = new Date(),
   date?: string,
+  vacationMinutes = 0,
 ): DayCalculation {
   const sorted = [...punches].sort((a, b) => a.time.localeCompare(b.time));
   const entryDate = date ?? sorted[0]?.date ?? localDateStr(now);
@@ -141,12 +147,17 @@ export function calculateFromPunches(
   const lastPunchType = lastPunch?.type ?? null;
   const expectedMinutes = settings.expectedHoursPerDay * 60;
 
+  const effectiveVacation = vacationMinutes > 0
+    ? Math.max(0, expectedMinutes - workedMinutes)
+    : 0;
+
   let projectedEndTime: string | null = null;
-  if (lastPunch !== null && isToday && (lastPunchType === 'in' || workedMinutes < expectedMinutes)) {
+  if (vacationMinutes === 0 && lastPunch !== null && isToday && (lastPunchType === 'in' || workedMinutes < expectedMinutes)) {
     // When clocked in: anchor to now (nowMins and workedMinutes grow together → result is stable)
     // When on break: anchor to last clock-out time (workedMinutes is frozen → result stays fixed)
     const baseMins = lastPunchType === 'in' ? nowMins : parseTime(lastPunch.time);
-    const projectedMins = baseMins + (expectedMinutes - workedMinutes);
+    const breakDeficit = Math.max(0, settings.minimumBreakMinutes - breakMinutes);
+    const projectedMins = baseMins + (expectedMinutes - workedMinutes) + breakDeficit;
     const h = Math.floor(((projectedMins % 1440) + 1440) % 1440 / 60);
     const m = Math.round(((projectedMins % 1440) + 1440) % 1440 % 60);
     projectedEndTime = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
@@ -157,6 +168,8 @@ export function calculateFromPunches(
   let status: DayStatus;
   if (!settings.workDays.includes(isoDay)) {
     status = 'weekend';
+  } else if (vacationMinutes > 0) {
+    status = 'vacation';
   } else if (sorted.length === 0) {
     status = entryDate < todayStr ? 'missing' : 'weekend';
   } else if (workedMinutes >= expectedMinutes) {
@@ -175,7 +188,8 @@ export function calculateFromPunches(
     liveBreakMinutes: Math.round(breakMinutes + ongoingBreak),
     isBreakSufficient: breakMinutes >= settings.minimumBreakMinutes,
     projectedEndTime,
-    balanceMinutes: Math.round(workedMinutes - expectedMinutes),
+    balanceMinutes: Math.round(workedMinutes + effectiveVacation - expectedMinutes),
+    vacationMinutes,
     status,
     lastPunchType,
   };

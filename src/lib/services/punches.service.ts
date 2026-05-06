@@ -14,9 +14,15 @@ export async function getPunchesByRange(startDate: string, endDate: string): Pro
 
 async function updateDayEntry(date: string): Promise<void> {
   const punches = await getPunchesByDate(date);
+  const existing = await db.entries.where('date').equals(date).first();
 
   if (punches.length === 0) {
-    await db.entries.where('date').equals(date).delete();
+    if (existing?.vacationMinutes) {
+      // Preserve vacation-only entries
+      await db.entries.update(existing.id, { punches: [], totalWorkedMinutes: 0, totalBreakMinutes: 0, updatedAt: new Date().toISOString() });
+    } else {
+      await db.entries.where('date').equals(date).delete();
+    }
     return;
   }
 
@@ -33,12 +39,22 @@ async function updateDayEntry(date: string): Promise<void> {
   }
 
   const now = new Date().toISOString();
-  const existing = await db.entries.where('date').equals(date).first();
 
   if (existing) {
     await db.entries.update(existing.id, { punches, totalWorkedMinutes: workedMinutes, totalBreakMinutes: breakMinutes, updatedAt: now });
   } else {
-    const entry: DayEntry = { id: crypto.randomUUID(), date, punches, totalWorkedMinutes: workedMinutes, totalBreakMinutes: breakMinutes, note: '', updatedAt: now };
+    const entry: DayEntry = { id: crypto.randomUUID(), date, punches, totalWorkedMinutes: workedMinutes, totalBreakMinutes: breakMinutes, vacationMinutes: 0, note: '', updatedAt: now };
+    await db.entries.add(entry);
+  }
+}
+
+export async function setVacation(date: string, vacationMinutes: number): Promise<void> {
+  const existing = await db.entries.where('date').equals(date).first();
+  const now = new Date().toISOString();
+  if (existing) {
+    await db.entries.update(existing.id, { vacationMinutes, updatedAt: now });
+  } else if (vacationMinutes > 0) {
+    const entry: DayEntry = { id: crypto.randomUUID(), date, punches: [], totalWorkedMinutes: 0, totalBreakMinutes: 0, vacationMinutes, note: '', updatedAt: now };
     await db.entries.add(entry);
   }
 }

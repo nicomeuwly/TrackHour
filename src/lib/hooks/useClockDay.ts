@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getPunchesByDate } from '@/lib/services/punches.service';
-import { addPunch, deletePunch as deletePunchService, updatePunch as updatePunchService, updateEntryNote } from '@/lib/services/punches.service';
+import { addPunch, deletePunch as deletePunchService, updatePunch as updatePunchService, updateEntryNote, setVacation as setVacationService } from '@/lib/services/punches.service';
 import { getEntryByDate } from '@/lib/services/entries.service';
 import type { Punch } from '@/lib/types';
 
 export function useClockDay(date: string) {
   const [punches, setPunches] = useState<Punch[]>([]);
   const [note, setNote] = useState('');
+  const [vacationMinutes, setVacationMinutesState] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,6 +20,7 @@ export function useClockDay(date: string) {
       const [p, entry] = await Promise.all([getPunchesByDate(date), getEntryByDate(date)]);
       setPunches(p);
       setNote(entry?.note ?? '');
+      setVacationMinutesState(entry?.vacationMinutes ?? 0);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -79,5 +81,14 @@ export function useClockDay(date: string) {
     }
   }, [date]);
 
-  return { punches, note, isLoading, error, clockIn, clockOut, deletePunch, editPunch, saveNote };
+  const setVacation = useCallback(async (minutes: number) => {
+    try {
+      await setVacationService(date, minutes);
+      setVacationMinutesState(minutes);
+    } catch (e) {
+      setError(String(e));
+    }
+  }, [date]);
+
+  return { punches, note, vacationMinutes, isLoading, error, clockIn, clockOut, deletePunch, editPunch, saveNote, setVacation };
 }
