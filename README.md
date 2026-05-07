@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TrackHour
 
-## Getting Started
+A local-first PWA for tracking daily work hours. No account, no backend, no data sent to any server — everything lives in the browser via IndexedDB.
 
-First, run the development server:
+Live at [trackhour.app](https://trackhour.app)
+
+## Stack
+
+- **Next.js 16** (App Router, static export)
+- **React 19**
+- **Tailwind CSS v4**
+- **next-intl** — EN / FR, locale-prefixed routes
+- **Dexie** — IndexedDB wrapper, all data stored client-side
+- **Vitest** — unit tests for pure business logic
+- **Vercel** — hosting, analytics, speed insights
+
+## Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev       # Dev server at localhost:3000
+npm run build     # Production build
+npm run lint      # ESLint
+npm run test      # Vitest (unit tests only)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Architecture
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+UI components → custom hooks → services → Dexie (IndexedDB)
+                                       ↘ calculations.ts (pure functions)
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **`src/lib/services/`** — only layer that touches Dexie directly
+- **`src/lib/hooks/`** — orchestrate state, call services
+- **`src/lib/business/calculations.ts`** — pure business logic, no side effects
+- **`src/lib/types/`** — shared TypeScript types
 
-## Learn More
+### Key types
 
-To learn more about Next.js, take a look at the following resources:
+| Type | Description |
+|---|---|
+| `Punch` | Single clock-in or clock-out event (`type: 'in' \| 'out'`) |
+| `DayEntry` | Aggregated daily record (punches, worked minutes, break minutes) |
+| `Settings` | User preferences (expected hours, work days, theme, locale) |
+| `DayStatus` | `'complete' \| 'incomplete' \| 'missing' \| 'weekend' \| 'vacation'` |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Pages
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Route (EN) | Route (FR) | Description |
+|---|---|---|
+| `/` | `/` | Homepage |
+| `/time-tracker` | `/pointeuse-en-ligne` | Daily clock-in/out tool |
+| `/stats` | `/statistiques` | Weekly & monthly overview |
+| `/how-to-track-work-hours` | `/comment-suivre-ses-heures-de-travail` | Work hours guide |
+| `/overtime-guide` | `/guide-heures-supplementaires` | Overtime calculation guide |
+| `/privacy-policy` | `/politique-de-confidentialite` | Privacy policy |
+| `/terms-of-use` | `/mentions-legales` | Terms of use |
 
-## Deploy on Vercel
+## Internationalisation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Routes are locale-prefixed via next-intl. English is the default locale (no prefix), French uses `/fr/…`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Locale config: `src/i18n/routing.ts`
+- Translations: `messages/en.json`, `messages/fr.json`
+- All pages call `generateStaticParams()` to pre-render both locales
+
+## Testing
+
+Only `src/lib/business/calculations.ts` has unit tests. Tests run in Node (no DOM). When adding business logic to `calculations.ts`, add corresponding Vitest tests.
+
+```bash
+npx vitest run src/lib/business/calculations.test.ts
+```
+
+## Data privacy
+
+All user data is stored exclusively in the browser's IndexedDB. The app has no backend, no authentication, and no network requests for user data. Clearing browser storage deletes all data permanently.
