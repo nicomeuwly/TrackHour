@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 type AdSenseUnitProps = {
     slot: string;
@@ -21,7 +21,10 @@ const minHeights: Record<string, string> = {
 };
 
 export default function AdSenseUnit({ slot, format = 'auto', className }: AdSenseUnitProps) {
+    const [mounted, setMounted] = useState(false);
+
     useEffect(() => {
+        setMounted(true);
         try {
             (window.adsbygoogle = window.adsbygoogle || []).push({});
         } catch {
@@ -29,8 +32,12 @@ export default function AdSenseUnit({ slot, format = 'auto', className }: AdSens
         }
     }, []);
 
+    const heightClass = `${minHeights[format]} ${className ?? ''}`;
+
+    if (!mounted) return <div className={heightClass} />;
+
     return (
-        <div className={`${minHeights[format]} ${className ?? ''}`}>
+        <div className={heightClass}>
             <ins
                 className="adsbygoogle"
                 style={{ display: 'block', width: '100%', height: '100%' }}
@@ -38,7 +45,6 @@ export default function AdSenseUnit({ slot, format = 'auto', className }: AdSens
                 data-ad-slot={slot}
                 data-ad-format={format}
                 data-full-width-responsive="true"
-                suppressHydrationWarning
             />
         </div>
     );
