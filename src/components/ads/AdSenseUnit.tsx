@@ -38,6 +38,7 @@ export default function AdSenseUnit({ slot, format = 'auto', className }: AdSens
                 data-ad-slot={slot}
                 data-ad-format={format}
                 data-full-width-responsive="true"
+                suppressHydrationWarning
             />
         </div>
     );
