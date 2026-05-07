@@ -18,7 +18,16 @@
         "feature3Desc": "Vos données ne quittent jamais votre appareil. Aucun serveur, aucun cloud.",
         "feature4Title": "Ultra simple",
         "feature4Desc": "Conçu pour être utilisé en moins de 10 secondes par jour.",
-        "ctaButton": "Commencer gratuitement"
+        "ctaButton": "Commencer gratuitement",
+        "faqTitle": "Questions fréquentes",
+        "faq1Q": "TrackHour est-il vraiment gratuit ?",
+        "faq1A": "Oui, entièrement gratuit — sans abonnement, sans frais cachés et sans version premium. TrackHour sera toujours gratuit.",
+        "faq2Q": "Faut-il créer un compte ?",
+        "faq2A": "Aucun compte, aucun e-mail, aucun mot de passe. Ouvrez l'application et commencez immédiatement. Il n'y a rien à créer.",
+        "faq3Q": "Où sont stockées mes données ?",
+        "faq3A": "Toutes vos données sont stockées localement dans votre navigateur via IndexedDB. Elles ne quittent jamais votre appareil et ne sont jamais envoyées à un serveur. Nous n'avons aucun accès à vos heures de travail.",
+        "faq4Q": "TrackHour fonctionne-t-il sur mobile ?",
+        "faq4A": "Oui. TrackHour est une Progressive Web App (PWA) et fonctionne sur tout smartphone, tablette ou ordinateur avec un navigateur moderne. Vous pouvez également l'ajouter à votre écran d'accueil pour un accès rapide."
     },
     "TimeTracker": {
         "title": "Pointeuse en ligne gratuite — Sans inscription",

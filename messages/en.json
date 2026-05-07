@@ -18,7 +18,16 @@
         "feature3Desc": "Your data never leaves your device. No server, no cloud.",
         "feature4Title": "Dead Simple",
         "feature4Desc": "Designed to be used in under 10 seconds per day.",
-        "ctaButton": "Start Tracking — It's Free"
+        "ctaButton": "Start Tracking — It's Free",
+        "faqTitle": "Frequently Asked Questions",
+        "faq1Q": "Is TrackHour really free?",
+        "faq1A": "Yes, completely free — no subscription, no hidden fees, and no premium tier. TrackHour will always be free to use.",
+        "faq2Q": "Do I need to create an account?",
+        "faq2A": "No account, no email, no password. Open the app and start tracking immediately. There is nothing to sign up for.",
+        "faq3Q": "Where is my data stored?",
+        "faq3A": "All your data is stored locally in your browser using IndexedDB. It never leaves your device and is never sent to any server. We have no access to your work hours.",
+        "faq4Q": "Does TrackHour work on mobile?",
+        "faq4A": "Yes. TrackHour is a Progressive Web App (PWA) and works on any smartphone, tablet, or computer with a modern browser. You can also add it to your home screen for quick access."
     },
     "TimeTracker": {
         "title": "Free Time Tracker — Log Your Work Hours Daily",

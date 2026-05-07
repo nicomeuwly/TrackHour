@@ -80,7 +80,7 @@ export default async function HomePage({ params }: Props) {
             </div>
 
             {/* Why TrackHour */}
-            <section>
+            <section className="mb-20">
                 <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">
                     {t('whyTitle')}
                 </h2>
@@ -94,6 +94,21 @@ export default async function HomePage({ params }: Props) {
                         <div key={title} className="border border-foreground/10 rounded-xl p-6 bg-background">
                             <h3 className="font-semibold text-lg mb-2">{title}</h3>
                             <p className="text-foreground/60 text-sm">{desc}</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* FAQ */}
+            <section>
+                <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">
+                    {t('faqTitle')}
+                </h2>
+                <div className="max-w-3xl mx-auto space-y-6">
+                    {(['1', '2', '3', '4'] as const).map((n) => (
+                        <div key={n} className="border border-foreground/10 rounded-xl p-6">
+                            <h3 className="font-semibold text-base mb-2">{t(`faq${n}Q`)}</h3>
+                            <p className="text-foreground/60 text-sm leading-relaxed">{t(`faq${n}A`)}</p>
                         </div>
                     ))}
                 </div>
