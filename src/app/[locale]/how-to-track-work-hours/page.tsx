@@ -73,6 +73,28 @@ export default async function GuidePage({ params }: Props) {
                     <h2 className="text-2xl font-bold mb-4">{t('usingTrackHourTitle')}</h2>
                     <p className="text-foreground/70 leading-relaxed">{t('usingTrackHourText')}</p>
                 </section>
+
+                <section>
+                    <h2 className="text-2xl font-bold mb-4">{t('remoteTitle')}</h2>
+                    <p className="text-foreground/70 leading-relaxed">{t('remoteText')}</p>
+                </section>
+
+                <section>
+                    <h2 className="text-2xl font-bold mb-4">{t('mistakesTitle')}</h2>
+                    <p className="text-foreground/70 leading-relaxed">{t('mistakesText')}</p>
+                </section>
+
+                <section>
+                    <h2 className="text-2xl font-bold mb-4">{t('faqTitle')}</h2>
+                    <div className="space-y-6">
+                        {(['1', '2', '3', '4'] as const).map((n) => (
+                            <div key={n}>
+                                <h3 className="font-semibold text-base mb-2">{t(`faq${n}Q` as const)}</h3>
+                                <p className="text-foreground/70 leading-relaxed">{t(`faq${n}A` as const)}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
             </article>
 
             <div className="mt-12 pt-8 border-t border-foreground/10">
