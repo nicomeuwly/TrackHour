@@ -84,10 +84,6 @@ export default async function GuidePage({ params }: Props) {
                     <p className="text-foreground/70 leading-relaxed">{t('mistakesText')}</p>
                 </section>
 
-                <div className="flex justify-center">
-                    <AdSenseUnit slot="mid-guide" format="horizontal" className="w-full max-w-2xl" />
-                </div>
-
                 <section>
                     <h2 className="text-2xl font-bold mb-4">{t('faqTitle')}</h2>
                     <div className="space-y-6">
