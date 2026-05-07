@@ -84,6 +84,10 @@ export default async function GuidePage({ params }: Props) {
                     <p className="text-foreground/70 leading-relaxed">{t('mistakesText')}</p>
                 </section>
 
+                <div className="flex justify-center">
+                    <AdSenseUnit slot="mid-guide" format="horizontal" className="w-full max-w-2xl" />
+                </div>
+
                 <section>
                     <h2 className="text-2xl font-bold mb-4">{t('faqTitle')}</h2>
                     <div className="space-y-6">
@@ -97,12 +101,18 @@ export default async function GuidePage({ params }: Props) {
                 </section>
             </article>
 
-            <div className="mt-12 pt-8 border-t border-foreground/10">
+            <div className="mt-12 pt-8 border-t border-foreground/10 flex flex-col sm:flex-row gap-4">
                 <Link
                     href="/time-tracker"
                     className="inline-block bg-foreground text-background px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
                 >
                     {t('ctaText')} →
+                </Link>
+                <Link
+                    href="/overtime-guide"
+                    className="inline-block px-8 py-3 rounded-lg font-semibold border border-foreground/20 hover:border-foreground/40 transition-colors"
+                >
+                    {t('overtimeGuideLink')}
                 </Link>
             </div>
         </div>

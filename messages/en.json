@@ -19,6 +19,13 @@
         "feature4Title": "Dead Simple",
         "feature4Desc": "Designed to be used in under 10 seconds per day.",
         "ctaButton": "Start Tracking — It's Free",
+        "usersTitle": "Who Uses TrackHour?",
+        "user1Title": "Employees",
+        "user1Desc": "Verify that your worked hours match your payslip and build an irrefutable record of any overtime owed — month after month.",
+        "user2Title": "Freelancers",
+        "user2Desc": "Log time per project, back your invoices with accurate records, and stop guessing at billable hours at the end of the month.",
+        "user3Title": "Remote Workers",
+        "user3Desc": "Keep a clear boundary between work and personal time, prevent invisible overwork, and prove your hours whenever needed.",
         "faqTitle": "Frequently Asked Questions",
         "faq1Q": "Is TrackHour really free?",
         "faq1A": "Yes, completely free — no subscription, no hidden fees, and no premium tier. TrackHour will always be free to use.",
@@ -36,6 +43,29 @@
     "Stats": {
         "title": "Work Hours Statistics — Weekly & Monthly Overview",
         "intro": "View your work hours by week or month, track your overtime balance, and manage your data. Everything is stored privately in your browser — no account needed."
+    },
+    "OvertimeGuide": {
+        "title": "How to Calculate Overtime Hours: A Complete Guide",
+        "intro": "Overtime hours represent time worked beyond your contracted threshold. Knowing how to calculate them accurately is essential for ensuring fair pay — whether you are an employee checking your payslip or a freelancer billing a client.",
+        "whatIsTitle": "What Counts as Overtime?",
+        "whatIsText": "Overtime refers to any hours worked beyond the threshold set by your employment contract or national labor law. In most countries, this threshold is either a daily limit (commonly 8 hours) or a weekly limit (commonly 35 to 40 hours), or both. Hours beyond that threshold are overtime hours, regardless of whether your employer explicitly asked for them or you chose to stay late.",
+        "dailyVsWeeklyTitle": "Daily Overtime vs. Weekly Overtime",
+        "dailyVsWeeklyText": "Some contracts use a daily threshold — you accumulate overtime for every hour beyond 8 hours in a single day. Others use a weekly threshold — overtime only applies if the total across all working days exceeds 40 hours. Many contracts combine both: daily overtime applies first, and any remainder is counted weekly. Knowing which system your contract uses is essential before calculating what you are owed.",
+        "payTitle": "How Overtime Pay Is Calculated",
+        "payText": "In most jurisdictions, overtime hours are compensated at a premium rate — typically 125% to 150% of your regular hourly rate, depending on the number of overtime hours and local law. Some contracts offer time off in lieu (TOIL) instead of extra pay: for every overtime hour worked, you receive equivalent paid leave. Check your contract or consult your HR department to confirm which method applies to you.",
+        "recordsTitle": "Why Accurate Records Matter",
+        "recordsText": "Overtime disputes are among the most common wage claims in labor courts. To successfully claim unpaid overtime, you need to demonstrate — day by day — that you worked more than your contracted hours. A daily time log, timestamped and consistent, is the strongest form of evidence. Without it, it is your word against your employer's records.",
+        "usingTrackHourTitle": "Using TrackHour to Track Overtime Automatically",
+        "usingTrackHourText": "TrackHour calculates your overtime balance automatically. Set your contracted daily hours once, then log your arrivals and departures each day. The app shows a live running balance — hours in credit or deficit — updated after every entry. At the end of the week or month, you have a complete record of every day worked, making overtime claims straightforward.",
+        "faqTitle": "Frequently Asked Questions",
+        "faq1Q": "Can my employer refuse to pay overtime I worked without prior approval?",
+        "faq1A": "In many jurisdictions, if your employer knew or should have known you were working overtime, they may be legally required to compensate you even without explicit prior approval. Rules vary by country and contract. Always document every instance of overtime worked to protect your claim.",
+        "faq2Q": "Does overtime reset weekly or carry over?",
+        "faq2A": "This depends on your contract. Most systems calculate overtime on a weekly basis and reset at the start of each new week. However, some companies use annualized hours where surplus and deficit accumulate over a full year. TrackHour tracks your cumulative balance across any time period.",
+        "faq3Q": "Do breaks count toward overtime hours?",
+        "faq3A": "Unpaid breaks — such as a lunch break where you are free to leave your workstation — do not count as working time and should not be included in your overtime calculation. Only paid breaks, where you remain at the employer's disposal, are generally included.",
+        "ctaText": "Track your overtime automatically — for free",
+        "backToGuide": "Back to the work hours guide"
     },
     "Guide": {
         "title": "How to Track Work Hours Effectively",
@@ -65,7 +95,8 @@
         "faq3A": "Most labor law experts recommend keeping timesheets for at least three years, as this is a common statute of limitations for wage disputes. As a practical rule, keep records for the current year plus the previous two.",
         "faq4Q": "Is a spreadsheet enough to track work hours?",
         "faq4A": "A spreadsheet works, but requires manual data entry and formula maintenance. Dedicated tools like TrackHour eliminate the arithmetic, automatically calculate overtime, and store everything privately in your browser without requiring an account or cloud sync.",
-        "ctaText": "Start tracking your hours for free"
+        "ctaText": "Start tracking your hours for free",
+        "overtimeGuideLink": "Read our overtime calculation guide →"
     },
     "PrivacyPolicy": {
         "title": "Privacy Policy",

@@ -18,6 +18,10 @@ export const routing = defineRouting({
             en: '/how-to-track-work-hours',
             fr: '/comment-suivre-ses-heures-de-travail'
         },
+        '/overtime-guide': {
+            en: '/overtime-guide',
+            fr: '/guide-heures-supplementaires'
+        },
         '/privacy-policy': {
             en: '/privacy-policy',
             fr: '/politique-de-confidentialite'

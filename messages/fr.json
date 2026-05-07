@@ -19,6 +19,13 @@
         "feature4Title": "Ultra simple",
         "feature4Desc": "Conçu pour être utilisé en moins de 10 secondes par jour.",
         "ctaButton": "Commencer gratuitement",
+        "usersTitle": "Qui utilise TrackHour ?",
+        "user1Title": "Salariés",
+        "user1Desc": "Vérifiez que vos heures correspondent à votre bulletin de paie et constituez une preuve irréfutable de vos heures supplémentaires, mois après mois.",
+        "user2Title": "Freelances",
+        "user2Desc": "Suivez le temps passé par projet, justifiez vos factures avec des relevés précis, et ne devinez plus vos heures facturables en fin de mois.",
+        "user3Title": "Télétravailleurs",
+        "user3Desc": "Maintenez une frontière claire entre vie pro et perso, évitez le surmenage invisible et prouvez vos heures quand vous en avez besoin.",
         "faqTitle": "Questions fréquentes",
         "faq1Q": "TrackHour est-il vraiment gratuit ?",
         "faq1A": "Oui, entièrement gratuit — sans abonnement, sans frais cachés et sans version premium. TrackHour sera toujours gratuit.",
@@ -36,6 +43,29 @@
     "Stats": {
         "title": "Statistiques des heures de travail — Vue hebdomadaire et mensuelle",
         "intro": "Consultez vos heures de travail par semaine ou par mois, suivez votre solde d'heures supplémentaires et gérez vos données. Tout est stocké en toute confidentialité dans votre navigateur — sans inscription."
+    },
+    "OvertimeGuide": {
+        "title": "Comment calculer ses heures supplémentaires : guide complet",
+        "intro": "Les heures supplémentaires désignent le temps travaillé au-delà de votre seuil contractuel. Savoir les calculer précisément est essentiel pour garantir une rémunération juste — que vous soyez salarié qui vérifie son bulletin ou freelance qui facture un client.",
+        "whatIsTitle": "Que sont les heures supplémentaires ?",
+        "whatIsText": "Les heures supplémentaires désignent toutes les heures travaillées au-delà du seuil fixé par votre contrat de travail ou la législation nationale. Dans la plupart des pays, ce seuil est une durée journalière (souvent 8 heures) ou hebdomadaire (souvent 35 à 40 heures), ou les deux. Les heures dépassant ce seuil sont des heures supplémentaires, que votre employeur vous les ait demandées ou que vous ayez choisi de rester plus longtemps.",
+        "dailyVsWeeklyTitle": "Heures supplémentaires journalières et hebdomadaires",
+        "dailyVsWeeklyText": "Certains contrats utilisent un seuil journalier — vous accumulez des heures supplémentaires dès que vous dépassez 8 heures dans une même journée. D'autres utilisent un seuil hebdomadaire — les heures supplémentaires ne sont comptées que si le total de la semaine dépasse le seuil. Beaucoup de contrats combinent les deux. Connaître le système applicable à votre contrat est indispensable avant tout calcul.",
+        "payTitle": "Comment sont rémunérées les heures supplémentaires ?",
+        "payText": "Dans la plupart des pays, les heures supplémentaires sont rémunérées à un taux majoré — généralement de 125 % à 150 % du taux horaire normal, selon le nombre d'heures et la législation locale. Certains contrats proposent un repos compensateur à la place : pour chaque heure supplémentaire travaillée, vous obtenez un congé équivalent. Vérifiez votre contrat ou interrogez votre service RH pour confirmer le dispositif applicable à votre situation.",
+        "recordsTitle": "Pourquoi des relevés précis sont indispensables",
+        "recordsText": "Les litiges liés aux heures supplémentaires figurent parmi les contentieux salariaux les plus fréquents. Pour réclamer des heures supplémentaires impayées, vous devez prouver — jour par jour — que vous avez travaillé au-delà de vos heures contractuelles. Un journal de travail quotidien, horodaté et régulier, est la preuve la plus solide. Sans cela, votre parole s'oppose aux relevés de votre employeur.",
+        "usingTrackHourTitle": "Utiliser TrackHour pour suivre vos heures supplémentaires automatiquement",
+        "usingTrackHourText": "TrackHour calcule automatiquement votre solde d'heures supplémentaires. Configurez vos heures contractuelles une fois, puis notez vos heures d'arrivée et de départ chaque jour. L'application affiche un solde en temps réel — crédit ou déficit d'heures — mis à jour après chaque saisie. En fin de semaine ou de mois, vous disposez d'un relevé complet de chaque journée travaillée.",
+        "faqTitle": "Questions fréquentes",
+        "faq1Q": "Mon employeur peut-il refuser de payer des heures supplémentaires effectuées sans autorisation préalable ?",
+        "faq1A": "Dans de nombreux pays, si votre employeur savait ou aurait dû savoir que vous effectuiez des heures supplémentaires, il peut être légalement tenu de les compenser même sans accord préalable. Les règles varient selon les pays et les contrats. Documentez toujours chaque heure supplémentaire effectuée pour protéger vos droits.",
+        "faq2Q": "Les heures supplémentaires se remettent-elles à zéro chaque semaine ?",
+        "faq2A": "Cela dépend de votre contrat. La plupart des systèmes calculent les heures supplémentaires sur une base hebdomadaire et remettent le compteur à zéro chaque début de semaine. Cependant, certaines entreprises utilisent un système d'heures annualisées où le crédit et le déficit s'accumulent sur l'année. TrackHour suit votre solde cumulé sur n'importe quelle période.",
+        "faq3Q": "Les pauses sont-elles comptées dans les heures supplémentaires ?",
+        "faq3A": "Les pauses non rémunérées — comme la pause déjeuner où vous êtes libre de quitter votre poste — ne comptent pas comme du temps de travail et ne doivent pas être incluses dans votre calcul d'heures supplémentaires. Seules les pauses rémunérées, pendant lesquelles vous restez à la disposition de l'employeur, sont généralement comptabilisées.",
+        "ctaText": "Suivez vos heures supplémentaires automatiquement — gratuit",
+        "backToGuide": "Retour au guide sur le suivi des heures"
     },
     "Guide": {
         "title": "Comment suivre ses heures de travail efficacement",
@@ -65,7 +95,8 @@
         "faq3A": "La plupart des spécialistes du droit du travail recommandent de conserver les relevés d'heures au moins trois ans, délai de prescription courant pour les litiges salariaux. En pratique, conservez les données de l'année en cours et des deux années précédentes.",
         "faq4Q": "Un tableau Excel suffit-il pour suivre ses heures ?",
         "faq4A": "Un tableur fonctionne, mais nécessite une saisie manuelle et la maintenance de formules. Un outil dédié comme TrackHour élimine les calculs, calcule automatiquement les heures supplémentaires et stocke tout en privé dans votre navigateur, sans compte ni synchronisation cloud.",
-        "ctaText": "Commencer à suivre vos heures gratuitement"
+        "ctaText": "Commencer à suivre vos heures gratuitement",
+        "overtimeGuideLink": "Lire notre guide sur les heures supplémentaires →"
     },
     "PrivacyPolicy": {
         "title": "Politique de confidentialité",

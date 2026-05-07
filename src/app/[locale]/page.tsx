@@ -79,6 +79,25 @@ export default async function HomePage({ params }: Props) {
                 <AdSenseUnit slot="mid-home" format="horizontal" className="w-full max-w-2xl" />
             </div>
 
+            {/* Who uses TrackHour */}
+            <section className="mb-20">
+                <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">
+                    {t('usersTitle')}
+                </h2>
+                <div className="grid sm:grid-cols-3 gap-6">
+                    {[
+                        { title: t('user1Title'), desc: t('user1Desc') },
+                        { title: t('user2Title'), desc: t('user2Desc') },
+                        { title: t('user3Title'), desc: t('user3Desc') },
+                    ].map(({ title, desc }) => (
+                        <div key={title} className="border border-foreground/10 rounded-xl p-6 bg-background">
+                            <h3 className="font-semibold text-lg mb-2">{title}</h3>
+                            <p className="text-foreground/60 text-sm leading-relaxed">{desc}</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
             {/* Why TrackHour */}
             <section className="mb-20">
                 <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">
