@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props) {
     const path = getPathname({ locale, href: '/stats' });
     if (locale === 'fr') {
         return buildMetadata({
-            title: 'Statistiques des heures de travail | TrackHour',
+            title: 'Statistiques des heures de travail',
             description: "Consultez vos heures de travail par semaine ou par mois, suivez votre solde d'heures supplémentaires et gérez vos données. Gratuit et privé.",
             path,
             locale,
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props) {
         });
     }
     return buildMetadata({
-        title: 'Work Hours Statistics — Weekly & Monthly Overview | TrackHour',
+        title: 'Work Hours Statistics — Weekly & Monthly Overview',
         description: 'View your work hours by week or month, track your overtime balance, and manage your data. Free and private — no account needed.',
         path,
         locale,

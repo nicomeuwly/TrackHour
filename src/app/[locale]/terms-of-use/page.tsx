@@ -9,7 +9,7 @@ export async function generateMetadata({ params }: Props) {
     const path = getPathname({ locale, href: '/terms-of-use' });
     if (locale === 'fr') {
         return buildMetadata({
-            title: 'Mentions légales | TrackHour',
+            title: 'Mentions légales',
             description: "Mentions légales de TrackHour. Service gratuit, données sous responsabilité de l'utilisateur.",
             path,
             locale,
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props) {
         });
     }
     return buildMetadata({
-        title: 'Terms of Use | TrackHour',
+        title: 'Terms of Use',
         description: 'TrackHour terms of use. Free service, no warranties, data stored locally in your browser.',
         path,
         locale,
@@ -38,7 +38,6 @@ export default async function TermsOfUsePage({ params }: Props) {
         { title: t('liabilityTitle'), text: t('liabilityText') },
         { title: t('personalUseTitle'), text: t('personalUseText') },
         { title: t('changesTitle'), text: t('changesText') },
-        { title: t('contactTitle'), text: t('contactText') },
     ] as const;
 
     return (
@@ -55,6 +54,18 @@ export default async function TermsOfUsePage({ params }: Props) {
                         <p className="text-foreground/70 leading-relaxed">{text}</p>
                     </section>
                 ))}
+                <section>
+                    <h2 className="text-xl font-bold mb-3">{t('contactTitle')}</h2>
+                    <p className="text-foreground/70 leading-relaxed">
+                        {t.rich('contactText', {
+                            email: (chunks) => (
+                                <a href="mailto:contact@trackhour.app" className="underline hover:text-foreground transition-colors">
+                                    {chunks}
+                                </a>
+                            ),
+                        })}
+                    </p>
+                </section>
             </div>
         </div>
     );

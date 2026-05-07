@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props) {
     const path = getPathname({ locale, href: '/time-tracker' });
     if (locale === 'fr') {
         return buildMetadata({
-            title: 'Pointeuse en ligne gratuite | TrackHour',
+            title: 'Pointeuse en ligne gratuite',
             description: "Pointeuse en ligne gratuite sans inscription. Enregistrez vos heures de travail quotidiennes. Vos données restent privées dans votre navigateur.",
             path,
             locale,
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props) {
         });
     }
     return buildMetadata({
-        title: 'Free Time Tracker — No Account Required | TrackHour',
+        title: 'Free Time Tracker — No Account Required',
         description: 'Log your daily work hours with our free online time tracker. No sign-up required. Your data stays private in your browser.',
         path,
         locale,

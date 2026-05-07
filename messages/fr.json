@@ -62,7 +62,7 @@
         "changesTitle": "Modifications de cette politique",
         "changesText": "Nous pouvons mettre à jour cette politique de temps à autre. Les modifications seront publiées sur cette page avec une date de mise à jour.",
         "contactTitle": "Contact",
-        "contactText": "Pour toute question concernant cette politique, contactez-nous à : contact@trackhour.app"
+        "contactText": "Pour toute question concernant cette politique, contactez-nous à : <email>contact@trackhour.app</email>"
     },
     "TermsOfUse": {
         "title": "Mentions légales",
@@ -82,7 +82,7 @@
         "changesTitle": "Modifications des conditions",
         "changesText": "Nous nous réservons le droit de modifier ces conditions à tout moment. La poursuite de l'utilisation du service vaut acceptation des nouvelles conditions.",
         "contactTitle": "Contact",
-        "contactText": "Pour toute question, contactez-nous à : contact@trackhour.app"
+        "contactText": "Pour toute question, contactez-nous à : <email>contact@trackhour.app</email>"
     },
     "Header": {
         "home": "Accueil",

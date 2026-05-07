@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: Props) {
     const path = getPathname({ locale, href: '/how-to-track-work-hours' });
     if (locale === 'fr') {
         return buildMetadata({
-            title: 'Comment suivre ses heures de travail | Guide TrackHour',
+            title: 'Comment suivre ses heures de travail | Guide',
             description: "Apprenez à suivre vos heures de travail facilement. Méthodes, conseils et outil gratuit pour enregistrer vos heures quotidiennes.",
             path,
             locale,
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props) {
         });
     }
     return buildMetadata({
-        title: 'How to Track Work Hours Effectively | TrackHour Guide',
+        title: 'How to Track Work Hours Effectively | Guide',
         description: 'Learn how to track your work hours easily and accurately. Tips, methods, and a free tool to log your daily hours online.',
         path,
         locale,

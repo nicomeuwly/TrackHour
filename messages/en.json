@@ -62,7 +62,7 @@
         "changesTitle": "Changes to This Policy",
         "changesText": "We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated date.",
         "contactTitle": "Contact",
-        "contactText": "For questions about this Privacy Policy, contact us at: contact@trackhour.app"
+        "contactText": "For questions about this Privacy Policy, contact us at: <email>contact@trackhour.app</email>"
     },
     "TermsOfUse": {
         "title": "Terms of Use",
@@ -82,7 +82,7 @@
         "changesTitle": "Changes to Terms",
         "changesText": "We reserve the right to modify these Terms at any time. Continued use of the service after changes constitutes acceptance of the updated terms.",
         "contactTitle": "Contact",
-        "contactText": "For questions about these Terms, contact us at: contact@trackhour.app"
+        "contactText": "For questions about these Terms, contact us at: <email>contact@trackhour.app</email>"
     },
     "Header": {
         "home": "Home",

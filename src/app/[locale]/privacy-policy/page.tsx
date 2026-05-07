@@ -9,7 +9,7 @@ export async function generateMetadata({ params }: Props) {
     const path = getPathname({ locale, href: '/privacy-policy' });
     if (locale === 'fr') {
         return buildMetadata({
-            title: 'Politique de confidentialité | TrackHour',
+            title: 'Politique de confidentialité',
             description: 'Politique de confidentialité de TrackHour. Aucune donnée collectée côté serveur. Vos heures restent dans votre navigateur.',
             path,
             locale,
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props) {
         });
     }
     return buildMetadata({
-        title: 'Privacy Policy | TrackHour',
+        title: 'Privacy Policy',
         description: 'TrackHour privacy policy. No data collected on our servers. Your work hours stay in your browser.',
         path,
         locale,
@@ -37,7 +37,6 @@ export default async function PrivacyPolicyPage({ params }: Props) {
         { title: t('cookiesTitle'), text: t('cookiesText') },
         { title: t('rightsTitle'), text: t('rightsText') },
         { title: t('changesTitle'), text: t('changesText') },
-        { title: t('contactTitle'), text: t('contactText') },
     ] as const;
 
     return (
@@ -56,6 +55,18 @@ export default async function PrivacyPolicyPage({ params }: Props) {
                         <p className="text-foreground/70 leading-relaxed">{text}</p>
                     </section>
                 ))}
+                <section>
+                    <h2 className="text-xl font-bold mb-3">{t('contactTitle')}</h2>
+                    <p className="text-foreground/70 leading-relaxed">
+                        {t.rich('contactText', {
+                            email: (chunks) => (
+                                <a href="mailto:contact@trackhour.app" className="underline hover:text-foreground transition-colors">
+                                    {chunks}
+                                </a>
+                            ),
+                        })}
+                    </p>
+                </section>
             </div>
         </div>
     );
