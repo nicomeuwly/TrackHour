@@ -10,6 +10,7 @@ import DotCursor from '@/components/DotCursor';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AdSidebar from '@/components/ads/AdSidebar';
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 import '../globals.css';
 
 const inter = Inter({
@@ -56,6 +57,7 @@ export default async function RootLayout({ children, params }: Props) {
           <Footer />
           <AdSidebar />
         </NextIntlClientProvider>
+        <ServiceWorkerRegister />
         <Analytics />
         <SpeedInsights />
       </body>
