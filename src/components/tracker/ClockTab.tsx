@@ -28,9 +28,50 @@ function shiftDate(d: string, delta: number): string {
 // ── Punch timeline ──────────────────────────────────────────────────────────
 
 type PunchAction =
-  | { kind: 'confirmDelete'; id: string }
+  | { kind: 'confirmDeletePair'; inId: string; outId: string | null }
   | { kind: 'edit'; id: string; value: string }
   | null;
+
+type PunchPair = { inPunch: Punch; outPunch: Punch | null };
+
+function toMins(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function buildPairs(punches: Punch[]): PunchPair[] {
+  const pairs: PunchPair[] = [];
+  let i = 0;
+  while (i < punches.length) {
+    const p = punches[i];
+    if (p.type === 'in') {
+      const next = punches[i + 1];
+      if (next?.type === 'out') {
+        pairs.push({ inPunch: p, outPunch: next });
+        i += 2;
+      } else {
+        pairs.push({ inPunch: p, outPunch: null });
+        i += 1;
+      }
+    } else {
+      i += 1;
+    }
+  }
+  return pairs;
+}
+
+
+const TrashIcon = () => (
+  <svg width="16" height="16" className="sm:w-3 sm:h-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+    <polyline points="2 4 4 4 14 4" /><path d="M5 4V2h6v2" /><path d="M6 7v5M10 7v5" /><rect x="3" y="4" width="10" height="10" rx="1" />
+  </svg>
+);
+
+const ArrowIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden className="flex-none text-foreground/25">
+    <line x1="2" y1="8" x2="14" y2="8" /><polyline points="10 4 14 8 10 12" />
+  </svg>
+);
 
 function PunchTimeline({
   punches,
@@ -46,70 +87,77 @@ function PunchTimeline({
 
   if (punches.length === 0) return null;
 
+  const pairs = buildPairs(punches);
+  const inputClass = "rounded-lg border border-foreground/15 bg-background px-2 py-1 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 dark:[&::-webkit-calendar-picker-indicator]:invert";
+
   return (
     <div className="flex flex-col gap-1 bg-background rounded-xl" role="list" aria-label={t('punchTimeline')}>
-      {punches.map((punch, idx) => {
-        const prev = punches[idx - 1];
-        const isIn = punch.type === 'in';
-        const isEditing = action?.kind === 'edit' && action.id === punch.id;
-        const isConfirmingDelete = action?.kind === 'confirmDelete' && action.id === punch.id;
-        const editValue = isEditing ? (action as { kind: 'edit'; id: string; value: string }).value : '';
+      {pairs.map((pair, pairIdx) => {
+        const { inPunch, outPunch } = pair;
+        const prevPair = pairIdx > 0 ? pairs[pairIdx - 1] : null;
+
+        const breakMins = prevPair?.outPunch
+          ? toMins(inPunch.time) - toMins(prevPair.outPunch.time)
+          : null;
+
+        const durationMins = outPunch
+          ? toMins(outPunch.time) - toMins(inPunch.time)
+          : null;
+
+        const isEditingIn = action?.kind === 'edit' && action.id === inPunch.id;
+        const isEditingOut = !!(outPunch && action?.kind === 'edit' && action.id === outPunch.id);
+        const isDeletingPair = action?.kind === 'confirmDeletePair' && action.inId === inPunch.id;
+        const editValue = action?.kind === 'edit' ? action.value : '';
 
         return (
-          <Fragment key={punch.id}>
-            {/* Duration separator between punches */}
-            {prev && (() => {
-              const mins =
-                (parseInt(punch.time.split(':')[0]) * 60 + parseInt(punch.time.split(':')[1])) -
-                (parseInt(prev.time.split(':')[0]) * 60 + parseInt(prev.time.split(':')[1]));
-              const duration = formatMinutes(mins);
-              const isWorkPeriod = prev.type === 'in';
-              return (
-                <div className="flex items-center gap-3 px-3 py-0.5" aria-hidden>
-                  <div className="flex-none w-2 flex justify-center">
-                    <div className="w-px h-4 bg-foreground/15" />
-                  </div>
-                  <span className={`flex items-center gap-1 text-xs font-medium ${isWorkPeriod ? 'text-accent/70' : 'text-foreground/35'}`}>
-                    {isWorkPeriod ? (
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                      </svg>
-                    ) : (
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                        <path d="M17 8h1a4 4 0 0 1 0 8h-1" />
-                        <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
-                        <line x1="6" y1="2" x2="6" y2="4" />
-                        <line x1="10" y1="2" x2="10" y2="4" />
-                        <line x1="14" y1="2" x2="14" y2="4" />
-                      </svg>
-                    )}
-                    {duration}
-                  </span>
+          <Fragment key={inPunch.id}>
+            {/* Break separator before this pair */}
+            {breakMins !== null && (
+              <div className="flex items-center gap-3 px-3 py-0.5" aria-hidden>
+                <div className="flex-none w-2 flex justify-center">
+                  <div className="w-px h-4 bg-foreground/15" />
                 </div>
-              );
-            })()}
+                <span className="flex items-center gap-1 text-xs font-medium text-foreground/35">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M17 8h1a4 4 0 0 1 0 8h-1" />
+                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+                    <line x1="6" y1="2" x2="6" y2="4" />
+                    <line x1="10" y1="2" x2="10" y2="4" />
+                    <line x1="14" y1="2" x2="14" y2="4" />
+                  </svg>
+                  {formatMinutes(breakMins)}
+                </span>
+              </div>
+            )}
 
-            {/* Punch row */}
-            {isEditing ? (
+            {/* Pair row — edit mode */}
+            {(isEditingIn || isEditingOut) ? (
               <div role="listitem" className="flex items-center gap-2 px-4 py-3 sm:px-3 sm:py-2 min-h-14 sm:min-h-12 rounded-xl bg-foreground/4">
-                <span className={`flex-none w-2 h-2 rounded-full ${isIn ? 'bg-green-500' : 'bg-red-400'}`} aria-hidden />
-                <span className="text-sm text-foreground/50 whitespace-nowrap">{isIn ? t('punchIn') : t('punchOut')}</span>
-                <input
-                  type="time"
-                  value={editValue}
-                  onChange={e => setAction({ kind: 'edit', id: punch.id, value: e.target.value })}
-                  className="rounded-lg border border-foreground/15 bg-background px-2 py-1 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 dark:[&::-webkit-calendar-picker-indicator]:invert"
-                  autoFocus
-                />
+                {isEditingIn ? (
+                  <input type="time" value={editValue}
+                    onChange={e => setAction({ kind: 'edit', id: inPunch.id, value: e.target.value })}
+                    className={inputClass} autoFocus />
+                ) : (
+                  <span className="text-sm font-mono font-semibold text-green-600 dark:text-green-400">{inPunch.time}</span>
+                )}
+                <ArrowIcon />
+                {isEditingOut && outPunch ? (
+                  <input type="time" value={editValue}
+                    onChange={e => setAction({ kind: 'edit', id: outPunch.id, value: e.target.value })}
+                    className={inputClass} autoFocus />
+                ) : outPunch ? (
+                  <span className="text-sm font-mono font-semibold text-red-500 dark:text-red-400">{outPunch.time}</span>
+                ) : (
+                  <span className="text-sm text-foreground/30">…</span>
+                )}
                 <button
                   onClick={async () => {
                     if (!editValue) return;
-                    await onEdit(punch.id, editValue);
+                    await onEdit(isEditingIn ? inPunch.id : outPunch!.id, editValue);
                     setAction(null);
                   }}
                   disabled={!editValue}
-                  className="px-3 py-1 bg-accent text-white text-xs font-medium rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
+                  className="px-3 py-1 bg-accent text-white text-xs font-medium rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity ml-1"
                 >
                   {t('confirm')}
                 </button>
@@ -118,41 +166,59 @@ function PunchTimeline({
                 </button>
               </div>
             ) : (
-              <div role="listitem" className="flex items-center gap-3 px-4 py-3 sm:px-3 sm:py-2 min-h-14 sm:min-h-12 rounded-xl hover:bg-foreground/4 group">
-                <span className={`flex-none w-2 h-2 rounded-full ${isIn ? 'bg-green-500' : 'bg-red-400'}`} aria-hidden />
-                <span className={`text-sm font-mono font-semibold ${isIn ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
-                  {punch.time}
-                </span>
-                <span className="text-sm text-foreground/60 flex-1">
-                  {isIn ? t('punchIn') : t('punchOut')}
-                  {punch.isManual && <span className="text-xs text-foreground/30 ml-1">{t('punchManual')}</span>}
-                </span>
-                {isConfirmingDelete ? (
+              /* Pair row — normal (delete confirm inline) */
+              <div role="listitem" className="flex items-center gap-2 px-4 py-3 sm:px-3 sm:py-2 min-h-14 sm:min-h-12 rounded-xl hover:bg-foreground/4 group">
+                <span className="flex-none w-2 h-2 rounded-full bg-green-500" aria-hidden />
+                <button
+                  onClick={() => setAction({ kind: 'edit', id: inPunch.id, value: inPunch.time })}
+                  aria-label={t('editPunchLabel', { time: inPunch.time })}
+                  className="text-sm font-mono font-semibold text-green-600 dark:text-green-400 hover:underline underline-offset-2 decoration-green-600/40"
+                >
+                  {inPunch.time}
+                </button>
+                <ArrowIcon />
+                {outPunch ? (
+                  <button
+                    onClick={() => setAction({ kind: 'edit', id: outPunch.id, value: outPunch.time })}
+                    aria-label={t('editPunchLabel', { time: outPunch.time })}
+                    className="text-sm font-mono font-semibold text-red-500 dark:text-red-400 hover:underline underline-offset-2 decoration-red-500/40"
+                  >
+                    {outPunch.time}
+                  </button>
+                ) : (
+                  <span className="text-sm text-foreground/30">…</span>
+                )}
+                {durationMins !== null && (
+                  <>
+                    <span className="text-sm text-foreground/20 select-none" aria-hidden>:</span>
+                    <span className="text-sm font-semibold tabular-nums font-mono">{formatMinutes(durationMins)}</span>
+                  </>
+                )}
+                <span className="flex-1" />
+                {isDeletingPair ? (
                   <span className="flex items-center gap-1.5 text-xs">
-                    <button onClick={() => { onDelete(punch.id); setAction(null); }} className="text-red-500 font-medium hover:underline">{t('delete')}</button>
-                    <button onClick={() => setAction(null)} className="text-foreground/40 hover:text-foreground/60">{t('deleteCancel')}</button>
+                    <button
+                      onClick={() => {
+                        onDelete(inPunch.id);
+                        if (outPunch) onDelete(outPunch.id);
+                        setAction(null);
+                      }}
+                      className="text-red-500 font-medium hover:underline"
+                    >
+                      {t('delete')}
+                    </button>
+                    <button onClick={() => setAction(null)} className="text-foreground/40 hover:text-foreground/60">
+                      {t('deleteCancel')}
+                    </button>
                   </span>
                 ) : (
-                  <span className="flex items-center gap-0.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => setAction({ kind: 'edit', id: punch.id, value: punch.time })}
-                      aria-label={t('editPunchLabel', { time: punch.time })}
-                      className="p-2 sm:p-1 rounded hover:bg-foreground/8 text-foreground/30 hover:text-accent transition-colors"
-                    >
-                      <svg width="16" height="16" className="sm:w-3 sm:h-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                        <path d="M11 2a1.414 1.414 0 0 1 2 2L5 12l-3 1 1-3Z" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => setAction({ kind: 'confirmDelete', id: punch.id })}
-                      aria-label={t('deletePunchLabel', { time: punch.time })}
-                      className="p-2 sm:p-1 rounded hover:bg-foreground/8 text-foreground/30 hover:text-red-500 transition-colors"
-                    >
-                      <svg width="16" height="16" className="sm:w-3 sm:h-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                        <polyline points="2 4 4 4 14 4" /><path d="M5 4V2h6v2" /><path d="M6 7v5M10 7v5" /><rect x="3" y="4" width="10" height="10" rx="1" />
-                      </svg>
-                    </button>
-                  </span>
+                  <button
+                    onClick={() => setAction({ kind: 'confirmDeletePair', inId: inPunch.id, outId: outPunch?.id ?? null })}
+                    aria-label={t('deletePunchLabel', { time: inPunch.time })}
+                    className="p-2 sm:p-1 rounded hover:bg-foreground/8 text-foreground/30 hover:text-red-500 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
+                  >
+                    <TrashIcon />
+                  </button>
                 )}
               </div>
             )}
