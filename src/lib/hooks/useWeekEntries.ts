@@ -23,7 +23,7 @@ export function useWeekEntries(date: string) {
       ]);
       setWeekDates(dates);
       setEntries(data);
-      setWeekBalance(calculateWeekBalance(data, settings));
+      setWeekBalance(calculateWeekBalance(data, settings, dates.start, dates.end));
     } catch (e) {
       setError(String(e));
     } finally {

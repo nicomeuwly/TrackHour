@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getEntriesByMonth } from '@/lib/services/entries.service';
 import { getSettings } from '@/lib/services/settings.service';
-import { calculateMonthBalance } from '@/lib/business/calculations';
+import { calculateMonthBalance, getMonthDates } from '@/lib/business/calculations';
 import type { DayEntry, MonthBalance } from '@/lib/types';
 
 export function useMonthEntries(year: number, month: number) {
@@ -15,12 +15,13 @@ export function useMonthEntries(year: number, month: number) {
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
+      const { start, end } = getMonthDates(year, month);
       const [data, settings] = await Promise.all([
         getEntriesByMonth(year, month),
         getSettings(),
       ]);
       setEntries(data);
-      setMonthBalance(calculateMonthBalance(data, settings));
+      setMonthBalance(calculateMonthBalance(data, settings, start, end));
     } catch (e) {
       setError(String(e));
     } finally {

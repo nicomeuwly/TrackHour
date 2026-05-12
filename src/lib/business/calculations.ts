@@ -72,14 +72,19 @@ function countExpectedDays(startDate: string, endDate: string, workDays: number[
   return count;
 }
 
-/** Aggregates DayEntries into a WeekBalance using cached totalWorkedMinutes. */
-export function calculateWeekBalance(entries: DayEntry[], settings: Settings): WeekBalance {
-  if (entries.length === 0) {
-    return { totalWorkedMinutes: 0, totalExpectedMinutes: 0, balanceMinutes: 0, daysLogged: 0, daysExpected: 0 };
-  }
-  const dates = entries.map(e => e.date).sort();
-  const daysExpected = countExpectedDays(dates[0], dates[dates.length - 1], settings.workDays);
+/** Aggregates DayEntries into a WeekBalance using cached totalWorkedMinutes.
+ *  Pass periodStart/periodEnd to count expected days over the full period. */
+export function calculateWeekBalance(entries: DayEntry[], settings: Settings, periodStart?: string, periodEnd?: string): WeekBalance {
   const expectedPerDay = settings.expectedHoursPerDay * 60;
+  let daysExpected: number;
+  if (periodStart && periodEnd) {
+    daysExpected = countExpectedDays(periodStart, periodEnd, settings.workDays);
+  } else if (entries.length === 0) {
+    return { totalWorkedMinutes: 0, totalExpectedMinutes: 0, balanceMinutes: 0, daysLogged: 0, daysExpected: 0 };
+  } else {
+    const dates = entries.map(e => e.date).sort();
+    daysExpected = countExpectedDays(dates[0], dates[dates.length - 1], settings.workDays);
+  }
   const totalExpectedMinutes = daysExpected * expectedPerDay;
   const totalWorkedMinutes = entries.reduce((sum, e) => sum + e.totalWorkedMinutes, 0);
   const totalEffectiveVacation = entries.reduce((sum, e) => {
@@ -96,8 +101,8 @@ export function calculateWeekBalance(entries: DayEntry[], settings: Settings): W
 }
 
 /** Aggregates DayEntries into a MonthBalance. */
-export function calculateMonthBalance(entries: DayEntry[], settings: Settings): MonthBalance {
-  const week = calculateWeekBalance(entries, settings);
+export function calculateMonthBalance(entries: DayEntry[], settings: Settings, periodStart?: string, periodEnd?: string): MonthBalance {
+  const week = calculateWeekBalance(entries, settings, periodStart, periodEnd);
   const averageHoursPerDay =
     week.daysLogged > 0 ? week.totalWorkedMinutes / week.daysLogged / 60 : 0;
   return { ...week, averageHoursPerDay };
