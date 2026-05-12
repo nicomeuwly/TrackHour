@@ -40,7 +40,7 @@ export default async function TimeTrackerPage({ params }: Props) {
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
                 {t('title')}
             </h1>
-            <p className="text-foreground/60 text-base mb-8 max-w-2xl">
+            <p className="text-text/60 text-base mb-8 max-w-2xl">
                 {t('intro')}
             </p>
             <DashboardLoader />

@@ -65,14 +65,14 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
         ref={containerRef}
         className="relative z-10 w-full sm:max-w-lg bg-background rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90dvh] overflow-y-auto"
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-foreground/10">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-text/10">
           <h2 id={titleId} className="font-semibold text-base">
             {title}
           </h2>
           <button
             onClick={onClose}
             aria-label={t('close')}
-            className="p-1.5 rounded-lg hover:bg-foreground/8 transition-colors text-foreground/50"
+            className="p-1.5 rounded-lg hover:bg-text/8 transition-colors text-text/50"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
               <line x1="3" y1="3" x2="13" y2="13" />

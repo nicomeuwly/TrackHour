@@ -243,7 +243,6 @@
         "nextMonth": "Mois suivant"
     },
     "Settings": {
-        "workSchedule": "Planning de travail",
         "expectedHours": "Heures attendues par jour",
         "minimumBreak": "Pause minimum (minutes)",
         "workingDays": "Jours de travail",

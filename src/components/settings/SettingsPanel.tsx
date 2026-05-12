@@ -50,38 +50,37 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
     handleChange('workDays', next);
   }
 
-  if (!local) return <div className="h-40 flex items-center justify-center text-foreground/40 text-sm">{t('loading')}</div>;
+  if (!local) return <div className="h-40 flex items-center justify-center text-text/40 text-sm">{t('loading')}</div>;
 
   return (
     <div className="flex flex-col gap-8">
       {/* Work schedule */}
       <section>
-        <h3 className="text-xs font-semibold text-foreground/50 uppercase tracking-wide mb-4">{t('workSchedule')}</h3>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-foreground/80">{t('expectedHours')}</label>
+            <label className="text-sm font-medium text-text/80">{t('expectedHours')}</label>
             <input
               type="number"
               value={local.expectedHoursPerDay}
               onChange={e => handleChange('expectedHoursPerDay', parseFloat(e.target.value) || 8)}
               min={1} max={24} step={0.5}
-              className="w-32 rounded-lg border border-foreground/15 bg-background px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+              className="w-32 rounded-lg border border-text/15 bg-background px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-foreground/80">{t('minimumBreak')}</label>
+            <label className="text-sm font-medium text-text/80">{t('minimumBreak')}</label>
             <input
               type="number"
               value={local.minimumBreakMinutes}
               onChange={e => handleChange('minimumBreakMinutes', parseInt(e.target.value) || 0)}
               min={0} max={120} step={5}
-              className="w-32 rounded-lg border border-foreground/15 bg-background px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+              className="w-32 rounded-lg border border-text/15 bg-background px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-foreground/80">{t('workingDays')}</p>
+            <p className="text-sm font-medium text-text/80">{t('workingDays')}</p>
             <div className="flex gap-2 flex-wrap">
               {DAYS.map(d => (
                 <button
@@ -89,7 +88,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
                   type="button"
                   onClick={() => toggleWorkDay(d.value)}
                   aria-pressed={local.workDays.includes(d.value)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${local.workDays.includes(d.value) ? 'bg-accent text-white' : 'bg-foreground/8 text-foreground/60 hover:bg-foreground/12'}`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize ${local.workDays.includes(d.value) ? 'bg-primary text-white' : 'bg-text/8 text-text/60 hover:bg-text/12'}`}
                 >
                   {d.label}
                 </button>

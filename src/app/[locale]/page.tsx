@@ -42,12 +42,12 @@ export default async function HomePage({ params }: Props) {
                 <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-6 leading-tight">
                     {t('title')}
                 </h1>
-                <p className="text-lg sm:text-xl text-foreground/60 max-w-2xl mx-auto mb-10">
+                <p className="text-lg sm:text-xl text-text/60 max-w-2xl mx-auto mb-10">
                     {t('subtitle')}
                 </p>
                 <Link
                     href="/time-tracker"
-                    className="inline-block bg-foreground text-background px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
+                    className="inline-block bg-text text-background px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
                 >
                     {t('ctaButton')}
                 </Link>
@@ -65,11 +65,11 @@ export default async function HomePage({ params }: Props) {
                         { num: '3', title: t('step3Title'), desc: t('step3Desc') },
                     ].map(({ num, title, desc }) => (
                         <div key={num} className="text-center">
-                            <div className="w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center text-lg font-bold mx-auto mb-4">
+                            <div className="w-12 h-12 rounded-full bg-text text-background flex items-center justify-center text-lg font-bold mx-auto mb-4">
                                 {num}
                             </div>
                             <h3 className="font-semibold text-lg mb-2">{title}</h3>
-                            <p className="text-foreground/60">{desc}</p>
+                            <p className="text-text/60">{desc}</p>
                         </div>
                     ))}
                 </div>
@@ -90,9 +90,9 @@ export default async function HomePage({ params }: Props) {
                         { title: t('user2Title'), desc: t('user2Desc') },
                         { title: t('user3Title'), desc: t('user3Desc') },
                     ].map(({ title, desc }) => (
-                        <div key={title} className="border border-foreground/10 rounded-xl p-6 bg-background">
+                        <div key={title} className="border border-text/10 rounded-xl p-6 bg-background">
                             <h3 className="font-semibold text-lg mb-2">{title}</h3>
-                            <p className="text-foreground/60 text-sm leading-relaxed">{desc}</p>
+                            <p className="text-text/60 text-sm leading-relaxed">{desc}</p>
                         </div>
                     ))}
                 </div>
@@ -110,9 +110,9 @@ export default async function HomePage({ params }: Props) {
                         { title: t('feature3Title'), desc: t('feature3Desc') },
                         { title: t('feature4Title'), desc: t('feature4Desc') },
                     ].map(({ title, desc }) => (
-                        <div key={title} className="border border-foreground/10 rounded-xl p-6 bg-background">
+                        <div key={title} className="border border-text/10 rounded-xl p-6 bg-background">
                             <h3 className="font-semibold text-lg mb-2">{title}</h3>
-                            <p className="text-foreground/60 text-sm">{desc}</p>
+                            <p className="text-text/60 text-sm">{desc}</p>
                         </div>
                     ))}
                 </div>
@@ -125,9 +125,9 @@ export default async function HomePage({ params }: Props) {
                 </h2>
                 <div className="max-w-3xl mx-auto space-y-6">
                     {(['1', '2', '3', '4'] as const).map((n) => (
-                        <div key={n} className="border border-foreground/10 rounded-xl p-6">
+                        <div key={n} className="border border-text/10 rounded-xl p-6 bg-background">
                             <h3 className="font-semibold text-base mb-2">{t(`faq${n}Q`)}</h3>
-                            <p className="text-foreground/60 text-sm leading-relaxed">{t(`faq${n}A`)}</p>
+                            <p className="text-text/60 text-sm leading-relaxed">{t(`faq${n}A`)}</p>
                         </div>
                     ))}
                 </div>

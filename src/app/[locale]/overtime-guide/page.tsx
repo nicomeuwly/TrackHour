@@ -40,19 +40,19 @@ export default async function OvertimeGuidePage({ params }: Props) {
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
                 {t('title')}
             </h1>
-            <p className="text-foreground/60 mb-10 leading-relaxed sm:max-w-3/4">
+            <p className="text-text/60 mb-10 leading-relaxed sm:max-w-3/4">
                 {t('intro')}
             </p>
 
             <article className="prose prose-neutral sm:max-w-3/4 space-y-10">
                 <section>
                     <h2 className="text-2xl font-bold mb-4">{t('whatIsTitle')}</h2>
-                    <p className="text-foreground/70 leading-relaxed">{t('whatIsText')}</p>
+                    <p className="text-text/70 leading-relaxed">{t('whatIsText')}</p>
                 </section>
 
                 <section>
                     <h2 className="text-2xl font-bold mb-4">{t('dailyVsWeeklyTitle')}</h2>
-                    <p className="text-foreground/70 leading-relaxed">{t('dailyVsWeeklyText')}</p>
+                    <p className="text-text/70 leading-relaxed">{t('dailyVsWeeklyText')}</p>
                 </section>
 
                 <div className="flex justify-center">
@@ -61,17 +61,17 @@ export default async function OvertimeGuidePage({ params }: Props) {
 
                 <section>
                     <h2 className="text-2xl font-bold mb-4">{t('payTitle')}</h2>
-                    <p className="text-foreground/70 leading-relaxed">{t('payText')}</p>
+                    <p className="text-text/70 leading-relaxed">{t('payText')}</p>
                 </section>
 
                 <section>
                     <h2 className="text-2xl font-bold mb-4">{t('recordsTitle')}</h2>
-                    <p className="text-foreground/70 leading-relaxed">{t('recordsText')}</p>
+                    <p className="text-text/70 leading-relaxed">{t('recordsText')}</p>
                 </section>
 
                 <section>
                     <h2 className="text-2xl font-bold mb-4">{t('usingTrackHourTitle')}</h2>
-                    <p className="text-foreground/70 leading-relaxed">{t('usingTrackHourText')}</p>
+                    <p className="text-text/70 leading-relaxed">{t('usingTrackHourText')}</p>
                 </section>
 
                 <section>
@@ -80,23 +80,23 @@ export default async function OvertimeGuidePage({ params }: Props) {
                         {(['1', '2', '3'] as const).map((n) => (
                             <div key={n}>
                                 <h3 className="font-semibold text-base mb-2">{t(`faq${n}Q` as const)}</h3>
-                                <p className="text-foreground/70 leading-relaxed">{t(`faq${n}A` as const)}</p>
+                                <p className="text-text/70 leading-relaxed">{t(`faq${n}A` as const)}</p>
                             </div>
                         ))}
                     </div>
                 </section>
             </article>
 
-            <div className="mt-12 pt-8 border-t border-foreground/10 flex flex-col sm:flex-row gap-4">
+            <div className="mt-12 pt-8 border-t border-text/10 flex flex-col sm:flex-row gap-4">
                 <Link
                     href="/time-tracker"
-                    className="inline-block bg-foreground text-background px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
+                    className="inline-block bg-text text-background px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
                 >
                     {t('ctaText')} →
                 </Link>
                 <Link
                     href="/how-to-track-work-hours"
-                    className="inline-block px-8 py-3 rounded-lg font-semibold border border-foreground/20 hover:border-foreground/40 transition-colors"
+                    className="inline-block px-8 py-3 rounded-lg font-semibold border border-text/20 hover:border-text/40 transition-colors"
                 >
                     ← {t('backToGuide')}
                 </Link>

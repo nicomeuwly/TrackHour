@@ -17,9 +17,9 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 const typeStyles: Record<ToastType, string> = {
-  success: 'bg-green-600 text-white',
-  error: 'bg-red-500 text-white',
-  info: 'bg-gray-800 dark:bg-gray-700 text-white',
+  success: 'bg-primary text-white',
+  error: 'bg-secondary text-white',
+  info: 'bg-text text-background',
 };
 
 const typeIcons: Record<ToastType, string> = {
@@ -41,7 +41,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ showToast }}>
       {children}
       <div
-        className="fixed bottom-20 sm:bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 z-[200] flex flex-col gap-2 pointer-events-none"
+        className="fixed bottom-20 sm:bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 z-200 flex flex-col gap-2 pointer-events-none"
         aria-live="polite"
         aria-atomic="false"
       >

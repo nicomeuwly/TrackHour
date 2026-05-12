@@ -43,20 +43,20 @@ function getCellStatus(date: string, entry: DayEntry | undefined, settings: Sett
 
 
 const CELL_BG: Record<CellStatus, string> = {
-  complete: "bg-teal-50 dark:bg-teal-900/20",
-  incomplete: "bg-orange-50 dark:bg-orange-900/20",
-  missing: "bg-red-50 dark:bg-red-900/20",
-  weekend: "bg-foreground/4",
-  vacation: "bg-amber-50 dark:bg-amber-900/20",
+  complete: "bg-primary/10",
+  incomplete: "bg-tertiary/10",
+  missing: "bg-secondary/10",
+  weekend: "bg-background-light",
+  vacation: "bg-tertiary/15",
   future: "bg-background",
 };
 
 const STATUS_BADGE: Record<Exclude<CellStatus, "future">, string> = {
-  complete: "bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300",
-  incomplete: "bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300",
-  missing: "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300",
-  weekend: "bg-foreground/8 text-foreground/40",
-  vacation: "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300",
+  complete: "bg-primary/15 text-primary",
+  incomplete: "bg-tertiary/15 text-tertiary",
+  missing: "bg-secondary/15 text-secondary",
+  weekend: "bg-text/8 text-text/40",
+  vacation: "bg-tertiary/20 text-tertiary",
 };
 
 type DeleteTarget =
@@ -233,13 +233,13 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
       {/* Period header */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex bg-foreground/6 rounded-xl p-0.5">
+          <div className="flex bg-text/6 rounded-xl p-0.5">
             {(["week", "month"] as const).map(v => (
               <button
                 key={v}
                 onClick={() => setView(v)}
                 aria-pressed={view === v}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${view === v ? "bg-background shadow-sm text-foreground" : "text-foreground/50 hover:text-foreground"}`}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${view === v ? "bg-background shadow-sm text-text" : "text-text/50 hover:text-text"}`}
               >
                 {v === "week" ? t("viewWeek") : t("viewMonth")}
               </button>
@@ -248,7 +248,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
           {!isCurrentPeriod && (
             <button
               onClick={() => setRefDate(today)}
-              className="text-xs font-medium text-accent border border-accent/30 rounded-lg px-2.5 py-1 hover:bg-accent/8 transition-colors"
+              className="text-xs font-medium text-primary border border-primary/30 rounded-lg px-2.5 py-1 hover:bg-primary/8 transition-colors"
             >
               {view === "week" ? t("thisWeek") : t("thisMonth")}
             </button>
@@ -256,14 +256,14 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => shiftPeriod(-1)} aria-label={view === "week" ? t("prevWeek") : t("prevMonth")}
-            className="p-2 rounded-lg hover:bg-foreground/8 transition-colors">
+            className="p-2 rounded-lg hover:bg-text/8 transition-colors">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
               <polyline points="10 4 6 8 10 12" />
             </svg>
           </button>
           <span className="flex-1 text-center text-sm font-semibold">{periodLabel}</span>
           <button onClick={() => shiftPeriod(1)} aria-label={view === "week" ? t("nextWeek") : t("nextMonth")}
-            className="p-2 rounded-lg hover:bg-foreground/8 transition-colors">
+            className="p-2 rounded-lg hover:bg-text/8 transition-colors">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
               <polyline points="6 4 10 8 6 12" />
             </svg>
@@ -278,39 +278,39 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
         <div className="h-full">
           {isLoading ? (
             <div className={"grid grid-cols-2 sm:grid-cols-1 gap-3 " + (view === "week" ? "sm:h-full" : "")}>
-              {[1, 2, 3, 4].map(i => <div key={i} className="h-16 rounded-xl bg-foreground/5 animate-pulse" />)}
+              {[1, 2, 3, 4].map(i => <div key={i} className="h-16 rounded-xl bg-text/5 animate-pulse" />)}
             </div>
           ) : (
             <div className={"grid grid-cols-2 sm:grid-cols-1 gap-3 " + (view === "week" ? "sm:h-full" : "sm:h-full")}>
-              <div className="rounded-xl border border-foreground/10 bg-background px-4 py-3">
-                <p className="text-xs text-foreground/50 mb-1">{t("totalWorked")}</p>
+              <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
+                <p className="text-xs text-text/50 mb-1">{t("totalWorked")}</p>
                 <p className="font-bold text-base">{balance ? formatMinutes(balance.totalWorkedMinutes) : "—"}</p>
               </div>
-              <div className="rounded-xl border border-foreground/10 bg-background px-4 py-3">
-                <p className="text-xs text-foreground/50 mb-1">{t("balance")}</p>
+              <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
+                <p className="text-xs text-text/50 mb-1">{t("balance")}</p>
                 <p className="font-bold text-base">
                   {balance ? <BalanceDisplay balanceMinutes={balance.balanceMinutes} size="base" /> : "—"}
                 </p>
               </div>
-              <div className="rounded-xl border border-foreground/10 bg-background px-4 py-3">
-                <p className="text-xs text-foreground/50 mb-1">{t("daysLogged")}</p>
+              <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
+                <p className="text-xs text-text/50 mb-1">{t("daysLogged")}</p>
                 <p className="font-bold text-base">
                   {balance ? `${balance.daysLogged} / ${balance.daysExpected}` : "—"}
                 </p>
               </div>
-              <div className="rounded-xl border border-foreground/10 bg-background px-4 py-3">
-                <p className="text-xs text-foreground/50 mb-1">{t("avgPerDay")}</p>
+              <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
+                <p className="text-xs text-text/50 mb-1">{t("avgPerDay")}</p>
                 <p className="font-bold text-base">{avgMinutes > 0 ? formatMinutes(avgMinutes) : "—"}</p>
               </div>
               {view === "month" && (
-                <div className="rounded-xl border border-foreground/10 bg-background px-4 py-3">
-                  <p className="text-xs text-foreground/50 mb-1">{t("completeDays")}</p>
+                <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
+                  <p className="text-xs text-text/50 mb-1">{t("completeDays")}</p>
                   <p className="font-bold text-base">{completeDaysCount > 0 ? completeDaysCount + " / " + (balance ? balance.daysExpected : "—") : "—"}</p>
                 </div>
               )}
               {view === "month" && (
-                <div className="rounded-xl border border-foreground/10 bg-background px-4 py-3">
-                  <p className="text-xs text-foreground/50 mb-1">{t("totalDaysOff")}</p>
+                <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
+                  <p className="text-xs text-text/50 mb-1">{t("totalDaysOff")}</p>
                   <p className="font-bold text-base">{vacationDaysCount > 0 ? vacationDaysCount : "—"}</p>
                 </div>
               )}
@@ -325,10 +325,10 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
           {view === "week" && (
             weekLoading ? (
               <div className="flex flex-col gap-2">
-                {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-12 rounded-xl bg-foreground/5 animate-pulse" />)}
+                {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-12 rounded-xl bg-text/5 animate-pulse" />)}
               </div>
             ) : (
-              <div className="rounded-xl border border-foreground/10 bg-background overflow-hidden divide-y divide-foreground/6">
+              <div className="rounded-xl border border-text/10 bg-background overflow-hidden divide-y divide-text/6">
                 {weekDatesArr.map((date, i) => {
                   const entry = entriesByDate[date];
                   const status = settings ? getCellStatus(date, entry, settings, today) : "future";
@@ -349,30 +349,30 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                       key={date}
                       onClick={() => onNavigateToDay?.(date)}
                       aria-label={d.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric" })}
-                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition-colors text-left ${status === "weekend" || status === "future" ? "opacity-55" : ""}`}
+                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-text/5 transition-colors text-left ${status === "weekend" || status === "future" ? "opacity-55" : ""}`}
                     >
                       <div className="w-14 flex-none">
-                        <p className={`text-sm font-semibold ${date === today ? "text-accent" : ""}`}>
-                          {DAY_LABELS[i]} <span className="font-normal text-foreground/50">{dayNum}</span>
+                        <p className={`text-sm capitalize font-semibold ${date === today ? "text-primary" : ""}`}>
+                          {DAY_LABELS[i]} <span className="font-normal text-text/50">{dayNum}</span>
                         </p>
                       </div>
                       <div className="flex-1 min-w-0">
                         {entry ? (
                           <p className="text-sm font-medium">{formatMinutes(entry.totalWorkedMinutes)}</p>
                         ) : (
-                          <p className="text-sm text-foreground/25">—</p>
+                          <p className="text-sm text-text/25">—</p>
                         )}
                       </div>
                       <div className="flex-none min-w-20 text-right">
                         {balanceMinutes !== null ? (
                           <BalanceDisplay balanceMinutes={balanceMinutes} />
                         ) : (
-                          <span className="text-sm text-foreground/20">—</span>
+                          <span className="text-sm text-text/20">—</span>
                         )}
                       </div>
-                      <div className="flex-none">
+                      <div className="flex-none min-w-20">
                         {status !== "future" && (
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_BADGE[status]}`}>
+                          <span className={`text-xs capitalize font-medium px-2 py-1 rounded-full ${STATUS_BADGE[status]}`}>
                             {STATUS_LABEL[status]}
                           </span>
                         )}
@@ -387,15 +387,15 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
           {/* Month calendar */}
           {view === "month" && (
             monthLoading ? (
-              <div className="h-64 rounded-xl bg-foreground/5 animate-pulse" />
+              <div className="h-64 rounded-xl bg-text/5 animate-pulse" />
             ) : (
               <div>
                 <div className="grid grid-cols-7 mb-1">
                   {DAY_HEADERS.map((d, i) => (
-                    <div key={i} className="text-center text-[10px] font-medium text-foreground/40 py-1">{d}</div>
+                    <div key={i} className="text-center text-[10px] font-medium text-text/40 py-1">{d}</div>
                   ))}
                 </div>
-                <div className="grid grid-cols-7 gap-0.5">
+                <div className="grid grid-cols-7 gap-1">
                   {Array.from({ length: padCells }).map((_, i) => <div key={`pad-${i}`} />)}
                   {Array.from({ length: daysInMonth }).map((_, i) => {
                     const day = i + 1;
@@ -409,13 +409,13 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                         key={day}
                         onClick={() => onNavigateToDay?.(dateStr)}
                         aria-label={new Date(refYear, refMonth - 1, day).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}
-                        className={`rounded-lg p-0.5 flex flex-col items-center justify-center aspect-square min-h-9.5 transition-colors dark:hover:brightness-140 hover:brightness-95 active:scale-95 ${CELL_BG[status]} ${isToday ? "ring-1 ring-accent ring-inset" : ""}`}
+                        className={`rounded-lg p-0.5 flex flex-col items-center justify-center aspect-square min-h-9.5 transition-colors dark:hover:brightness-140 hover:brightness-95 active:scale-95 ${CELL_BG[status]} ${isToday ? "ring-1 ring-primary ring-inset" : ""}`}
                       >
-                        <span className={`text-xs font-semibold leading-none ${isToday ? "text-accent" : status === "future" ? "text-foreground/30" : ""}`}>
+                        <span className={`text-xs font-semibold leading-none ${isToday ? "text-primary" : status === "future" ? "text-text/30" : ""}`}>
                           {day}
                         </span>
                         {entry && (
-                          <span className="text-[10px] text-foreground/50 leading-none mt-0.5 tabular-nums">
+                          <span className="text-[10px] text-text/50 leading-none mt-0.5 tabular-nums">
                             {formatMinutes(entry.totalWorkedMinutes)}
                           </span>
                         )}
@@ -441,24 +441,24 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
         <h2 className="text-sm font-semibold">{t("manageData")}</h2>
 
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-medium text-foreground/50 uppercase tracking-wide">{t("exportSection")}</p>
+          <p className="text-xs font-medium text-text/50 uppercase tracking-wide">{t("exportSection")}</p>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => handleExportCSV("week")}
-              className="text-sm border border-foreground/15 rounded-lg px-3 py-2 hover:bg-foreground/5 transition-colors">
+              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5 transition-colors">
               {t("exportWeekCSV")}
             </button>
             <button onClick={() => handleExportCSV("month")}
-              className="text-sm border border-foreground/15 rounded-lg px-3 py-2 hover:bg-foreground/5 transition-colors">
+              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5 transition-colors">
               {t("exportMonthCSV")}
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
             <button onClick={handleExportJSON}
-              className="text-sm border border-foreground/15 rounded-lg px-3 py-2 hover:bg-foreground/5 transition-colors">
+              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5 transition-colors">
               {t("exportJSON")}
             </button>
             <button onClick={() => importRef.current?.click()}
-              className="text-sm border border-foreground/15 rounded-lg px-3 py-2 hover:bg-foreground/5 transition-colors">
+              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5 transition-colors">
               {t("importJSON")}
             </button>
             <input
@@ -473,23 +473,23 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
         </div>
 
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-medium text-red-400 uppercase tracking-wide">{t("deleteSection")}</p>
+          <p className="text-xs font-medium text-secondary uppercase tracking-wide">{t("deleteSection")}</p>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setDeleteModal({ kind: "week", start: weekDates.start, end: weekDates.end, label: getWeekLabel(weekDates.start, weekDates.end) })}
-              className="text-sm border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 rounded-lg px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              className="text-sm border border-secondary/30 text-secondary rounded-lg px-3 py-2 hover:bg-secondary/10 transition-colors"
             >
               {t("deleteWeek")}
             </button>
             <button
               onClick={() => setDeleteModal({ kind: "month", start: monthDates.start, end: monthDates.end, label: getMonthLabel(refYear, refMonth) })}
-              className="text-sm border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 rounded-lg px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              className="text-sm border border-secondary/30 text-secondary rounded-lg px-3 py-2 hover:bg-secondary/10 transition-colors"
             >
               {t("deleteMonth")}
             </button>
             <button
               onClick={() => setDeleteModal({ kind: "all" })}
-              className="text-sm border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 rounded-lg px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              className="text-sm border border-secondary/30 text-secondary rounded-lg px-3 py-2 hover:bg-secondary/10 transition-colors"
             >
               {t("deleteAll")}
             </button>
@@ -505,7 +505,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
           title={t("deleteModalTitle")}
         >
           <div className="flex flex-col gap-5">
-            <p className="text-sm text-foreground/70">
+            <p className="text-sm text-text/70">
               {deleteModal.kind === "all"
                 ? t("deleteAllConfirm")
                 : deleteModal.kind === "week"
@@ -516,14 +516,14 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
               <button
                 onClick={() => setDeleteModal(null)}
                 disabled={isProcessing}
-                className="px-4 py-2 text-sm font-medium border border-foreground/15 rounded-lg hover:bg-foreground/5 transition-colors disabled:opacity-40"
+                className="px-4 py-2 text-sm font-medium border border-text/15 rounded-lg hover:bg-text/5 transition-colors disabled:opacity-40"
               >
                 {t("cancel")}
               </button>
               <button
                 onClick={handleDeleteConfirm}
                 disabled={isProcessing}
-                className="px-4 py-2 text-sm font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-40"
+                className="px-4 py-2 text-sm font-medium bg-secondary text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-40"
               >
                 {isProcessing ? t("deleting") : t("delete")}
               </button>

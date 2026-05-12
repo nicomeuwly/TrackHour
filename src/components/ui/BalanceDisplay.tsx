@@ -11,16 +11,16 @@ export default function BalanceDisplay({ balanceMinutes, size = 'sm' }: BalanceD
   const isNegative = balanceMinutes < 0;
 
   const colorClass = isPositive
-    ? 'text-green-600 dark:text-green-400'
+    ? 'text-primary'
     : isNegative
-    ? 'text-red-500 dark:text-red-400'
-    : 'text-foreground/50';
+    ? 'text-secondary'
+    : 'text-text-muted';
 
   const sizeClass = size === 'lg' ? 'text-3xl font-bold' : size === 'base' ? 'text-base font-semibold' : 'text-sm font-semibold';
   const iconSize = size === 'lg' ? 'w-6 h-6' : 'w-3.5 h-3.5';
 
   return (
-    <span className={`inline-flex items-center gap-1 ${colorClass} ${sizeClass}`}>
+    <span className={`inline-flex items-center gap-1 ${colorClass} ${sizeClass} tabular-nums`}>
       {isPositive && (
         <svg className={iconSize} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
           <path d="M8 3l5 6H3z" />

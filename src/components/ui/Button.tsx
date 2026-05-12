@@ -9,10 +9,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants = {
-  primary: 'bg-accent text-white hover:opacity-90',
-  secondary: 'bg-foreground/10 text-foreground hover:bg-foreground/20',
-  ghost: 'text-foreground/70 hover:bg-foreground/8',
-  danger: 'bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700',
+  primary: 'bg-bg-light text-text hover:opacity-90',
+  secondary: 'bg-text/10 text-text hover:bg-text/20',
+  ghost: 'text-text/70 hover:bg-text/8',
+  danger: 'bg-secondary text-white hover:opacity-90',
 };
 
 const sizes = {
@@ -36,7 +36,7 @@ export default function Button({
       disabled={disabled || isLoading}
       aria-disabled={disabled || isLoading}
       aria-busy={isLoading}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
     >
       {isLoading ? (
         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>

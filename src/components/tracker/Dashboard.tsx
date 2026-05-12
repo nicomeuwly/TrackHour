@@ -35,17 +35,17 @@ function DashboardInner() {
     <div className="min-h-0 flex flex-col">
       {/* Welcome banner */}
       {showWelcome && (
-        <div className="mb-4 rounded-xl bg-accent/10 border border-accent/20 px-4 py-3 flex items-start gap-3">
+        <div className="mb-4 rounded-xl bg-primary/10 border border-primary/20 px-4 py-3 flex items-start gap-3">
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-accent">{t('welcomeTitle')}</p>
-            <p className="text-xs text-foreground/60 mt-0.5">{t('welcomeSubtitle')}</p>
+            <p className="text-sm font-semibold text-primary">{t('welcomeTitle')}</p>
+            <p className="text-xs text-text/60 mt-0.5">{t('welcomeSubtitle')}</p>
           </div>
           <div className="flex items-center gap-2 flex-none">
-            <button onClick={() => dismissWelcome(true)} className="text-xs font-medium text-accent hover:underline">
+            <button onClick={() => dismissWelcome(true)} className="text-xs font-medium text-primary hover:underline">
               {t('welcomeSetup')}
             </button>
             <button onClick={() => dismissWelcome(false)} aria-label="Dismiss"
-              className="text-foreground/30 hover:text-foreground/60 transition-colors">
+              className="text-text/30 hover:text-text/60 transition-colors">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
                 <line x1="3" y1="3" x2="11" y2="11"/><line x1="11" y1="3" x2="3" y2="11"/>
               </svg>
@@ -59,7 +59,7 @@ function DashboardInner() {
         <button
           onClick={() => setSettingsOpen(true)}
           aria-label={t('settingsTitle')}
-          className="p-2.5 rounded-xl hover:bg-foreground/8 transition-colors text-foreground/60 hover:text-foreground"
+          className="p-2.5 rounded-xl hover:bg-text/8 transition-colors text-text/60 hover:text-text"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <circle cx="12" cy="12" r="3"/>
@@ -71,7 +71,7 @@ function DashboardInner() {
       {/* Content */}
       {isLoading && !settings ? (
         <div className="flex flex-col gap-3">
-          {[1, 2, 3].map(i => <div key={i} className="h-12 rounded-xl bg-foreground/5 animate-pulse" />)}
+          {[1, 2, 3].map(i => <div key={i} className="h-12 rounded-xl bg-text/5 animate-pulse" />)}
         </div>
       ) : (
         <ClockTab date={selectedDate} onDateChange={setSelectedDate} />

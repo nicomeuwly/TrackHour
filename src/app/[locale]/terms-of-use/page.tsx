@@ -45,21 +45,21 @@ export default async function TermsOfUsePage({ params }: Props) {
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
                 {t('title')}
             </h1>
-            <p className="text-foreground/40 text-sm mb-10">{t('lastUpdated')}</p>
+            <p className="text-text/40 text-sm mb-10">{t('lastUpdated')}</p>
 
             <div className="space-y-8 sm:max-w-3/4">
                 {sections.map(({ title, text }) => (
                     <section key={title}>
                         <h2 className="text-xl font-bold mb-3">{title}</h2>
-                        <p className="text-foreground/70 leading-relaxed">{text}</p>
+                        <p className="text-text/70 leading-relaxed">{text}</p>
                     </section>
                 ))}
                 <section>
                     <h2 className="text-xl font-bold mb-3">{t('contactTitle')}</h2>
-                    <p className="text-foreground/70 leading-relaxed">
+                    <p className="text-text/70 leading-relaxed">
                         {t.rich('contactText', {
                             email: (chunks) => (
-                                <a href="mailto:contact@trackhour.app" className="underline hover:text-foreground transition-colors">
+                                <a href="mailto:contact@trackhour.app" className="underline hover:text-text transition-colors">
                                     {chunks}
                                 </a>
                             ),

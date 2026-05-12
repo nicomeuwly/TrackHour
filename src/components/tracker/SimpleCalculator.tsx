@@ -67,24 +67,24 @@ export default function SimpleCalculator() {
         </div>
 
         {worked !== null ? (
-          <div className="rounded-xl bg-foreground/4 px-4 py-4 flex flex-col gap-3">
+          <div className="rounded-xl bg-text/4 px-4 py-4 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-foreground/60">Time worked</span>
+              <span className="text-sm text-text/60">Time worked</span>
               <span className="font-bold text-lg">{formatMinutes(worked)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-foreground/60">Decimal</span>
+              <span className="text-sm text-text/60">Decimal</span>
               <span className="font-semibold">{formatMinutesAsDecimal(worked)}h</span>
             </div>
             {balance !== null && (
-              <div className="flex items-center justify-between border-t border-foreground/10 pt-3">
-                <span className="text-sm text-foreground/60">Balance vs {expectedNum}h</span>
+              <div className="flex items-center justify-between border-t border-text/10 pt-3">
+                <span className="text-sm text-text/60">Balance vs {expectedNum}h</span>
                 <BalanceDisplay balanceMinutes={balance} size="sm" />
               </div>
             )}
           </div>
         ) : (
-          <div className="rounded-xl bg-foreground/4 px-4 py-6 text-center text-sm text-foreground/40">
+          <div className="rounded-xl bg-text/4 px-4 py-6 text-center text-sm text-text/40">
             Enter start and end time to calculate
           </div>
         )}

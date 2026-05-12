@@ -243,7 +243,6 @@
         "nextMonth": "Next month"
     },
     "Settings": {
-        "workSchedule": "Work Schedule",
         "expectedHours": "Expected hours per day",
         "minimumBreak": "Minimum break (minutes)",
         "workingDays": "Working days",

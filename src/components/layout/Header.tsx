@@ -6,7 +6,7 @@ import NavLinks from './NavLinks';
 
 export default function Header() {
     return (
-        <header className="relative bg-background border-b border-foreground/10">
+        <header className="relative bg-background border-b border-text/10">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
                 <Link href="/" className="text-xl font-bold tracking-tight hover:opacity-80 transition-opacity flex items-center gap-2">
                     <img src="/icon-32.png" alt="TrackHour" className="w-6 h-6" />
