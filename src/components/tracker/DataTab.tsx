@@ -43,12 +43,12 @@ function getCellStatus(date: string, entry: DayEntry | undefined, settings: Sett
 
 
 const CELL_BG: Record<CellStatus, string> = {
-  complete: "bg-primary/10",
-  incomplete: "bg-tertiary/10",
-  missing: "bg-secondary/10",
-  weekend: "bg-background-light",
-  vacation: "bg-tertiary/15",
-  future: "bg-background",
+  complete: "bg-primary/20 hover:brightness-85",
+  incomplete: "bg-secondary/20 hover:brightness-75",
+  missing: "bg-secondary/10 hover:brightness-65",
+  weekend: "bg-background-light hover:brightness-95",
+  vacation: "bg-tertiary/15 hover:brightness-75",
+  future: "bg-background hover:brightness-95",
 };
 
 const STATUS_BADGE: Record<Exclude<CellStatus, "future">, string> = {
@@ -409,7 +409,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                         key={day}
                         onClick={() => onNavigateToDay?.(dateStr)}
                         aria-label={new Date(refYear, refMonth - 1, day).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}
-                        className={`rounded-lg p-0.5 flex flex-col items-center justify-center aspect-square min-h-9.5 transition-colors dark:hover:brightness-140 hover:brightness-95 active:scale-95 ${CELL_BG[status]} ${isToday ? "ring-1 ring-primary ring-inset" : ""}`}
+                        className={`rounded-lg p-0.5 flex flex-col items-center justify-center aspect-square min-h-9.5 transition-colors dark:hover:brightness-140 active:scale-95 ${CELL_BG[status]} ${isToday ? "ring-1 ring-primary ring-inset" : ""}`}
                       >
                         <span className={`text-xs font-semibold leading-none ${isToday ? "text-primary" : status === "future" ? "text-text/30" : ""}`}>
                           {day}
