@@ -1,4 +1,35 @@
-import type { Punch, DayEntry, DayCalculation, Settings, WeekBalance, MonthBalance, DayStatus } from '@/lib/types';
+import type { Punch, DayEntry, DayCalculation, Settings, WeekBalance, MonthBalance, DayStatus, LeaveType } from '@/lib/types';
+
+/** True when the leave tops the day up to expected hours (balance-neutral).
+ *  `compensation` and no-leave return false. */
+export function isFilledLeave(leaveType: LeaveType | null): boolean {
+  return leaveType !== null && leaveType !== 'compensation';
+}
+
+/** True when the given date falls on one of the configured working days. */
+export function isWorkday(date: string, workDays: number[]): boolean {
+  const dow = new Date(date + 'T00:00:00').getDay();
+  const isoDay = dow === 0 ? 7 : dow;
+  return workDays.includes(isoDay);
+}
+
+/**
+ * Balance contribution of a single day, used for weekly/monthly aggregation.
+ * On a workday: worked + leave top-up - expected (compensation is not topped up,
+ * so it yields a full-day deficit that draws down overtime). On a non-workday:
+ * only worked minutes count as overtime; absences carry no expectation.
+ */
+export function dayBalanceMinutes(
+  entry: DayEntry | undefined,
+  settings: Settings,
+  workday: boolean,
+): number {
+  const expected = settings.expectedHoursPerDay * 60;
+  const worked = entry?.totalWorkedMinutes ?? 0;
+  if (!workday) return worked;
+  const fill = isFilledLeave(entry?.leaveType ?? null) ? Math.max(0, expected - worked) : 0;
+  return worked + fill - expected;
+}
 
 /** Converts "HH:mm" to minutes since midnight. E.g. "09:30" → 570 */
 export function parseTime(time: string): number {
@@ -60,7 +91,8 @@ export function getMonthDates(year: number, month: number): { start: string; end
   };
 }
 
-function countExpectedDays(startDate: string, endDate: string, workDays: number[]): number {
+/** Counts the working days (per `workDays`) in the inclusive date range. */
+export function countExpectedDays(startDate: string, endDate: string, workDays: number[]): number {
   let count = 0;
   const current = new Date(startDate + 'T00:00:00');
   const end = new Date(endDate + 'T00:00:00');
@@ -87,14 +119,16 @@ export function calculateWeekBalance(entries: DayEntry[], settings: Settings, pe
   }
   const totalExpectedMinutes = daysExpected * expectedPerDay;
   const totalWorkedMinutes = entries.reduce((sum, e) => sum + e.totalWorkedMinutes, 0);
-  const totalEffectiveVacation = entries.reduce((sum, e) => {
-    if (!e.vacationMinutes) return sum;
-    return sum + Math.max(0, expectedPerDay - e.totalWorkedMinutes);
-  }, 0);
+  // Overtime balance counts only days that have been logged: unlogged workdays are
+  // hours still to do, not a deficit against accumulated overtime.
+  const balanceMinutes = entries.reduce(
+    (sum, e) => sum + dayBalanceMinutes(e, settings, isWorkday(e.date, settings.workDays)),
+    0,
+  );
   return {
     totalWorkedMinutes,
     totalExpectedMinutes,
-    balanceMinutes: totalWorkedMinutes + totalEffectiveVacation - totalExpectedMinutes,
+    balanceMinutes,
     daysLogged: entries.length,
     daysExpected,
   };
@@ -122,7 +156,7 @@ export function calculateFromPunches(
   settings: Settings,
   now: Date = new Date(),
   date?: string,
-  vacationMinutes = 0,
+  leaveType: LeaveType | null = null,
 ): DayCalculation {
   const sorted = [...punches].sort((a, b) => a.time.localeCompare(b.time));
   const entryDate = date ?? sorted[0]?.date ?? localDateStr(now);
@@ -152,12 +186,12 @@ export function calculateFromPunches(
   const lastPunchType = lastPunch?.type ?? null;
   const expectedMinutes = settings.expectedHoursPerDay * 60;
 
-  const effectiveVacation = vacationMinutes > 0
+  const effectiveFill = isFilledLeave(leaveType)
     ? Math.max(0, expectedMinutes - workedMinutes)
     : 0;
 
   let projectedEndTime: string | null = null;
-  if (vacationMinutes === 0 && lastPunch !== null && isToday && (lastPunchType === 'in' || workedMinutes < expectedMinutes)) {
+  if (leaveType === null && lastPunch !== null && isToday && (lastPunchType === 'in' || workedMinutes < expectedMinutes)) {
     // When clocked in: anchor to now (nowMins and workedMinutes grow together → result is stable)
     // When on break: anchor to last clock-out time (workedMinutes is frozen → result stays fixed)
     const baseMins = lastPunchType === 'in' ? nowMins : parseTime(lastPunch.time);
@@ -173,8 +207,8 @@ export function calculateFromPunches(
   let status: DayStatus;
   if (!settings.workDays.includes(isoDay)) {
     status = 'weekend';
-  } else if (vacationMinutes > 0) {
-    status = 'vacation';
+  } else if (leaveType !== null) {
+    status = leaveType;
   } else if (sorted.length === 0) {
     status = entryDate < todayStr ? 'missing' : 'weekend';
   } else if (workedMinutes >= expectedMinutes) {
@@ -193,8 +227,8 @@ export function calculateFromPunches(
     liveBreakMinutes: Math.round(breakMinutes + ongoingBreak),
     isBreakSufficient: breakMinutes >= settings.minimumBreakMinutes,
     projectedEndTime,
-    balanceMinutes: Math.round(workedMinutes + effectiveVacation - expectedMinutes),
-    vacationMinutes,
+    balanceMinutes: Math.round(workedMinutes + effectiveFill - expectedMinutes),
+    leaveType,
     status,
     lastPunchType,
   };

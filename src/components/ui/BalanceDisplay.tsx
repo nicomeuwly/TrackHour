@@ -1,3 +1,4 @@
+import { Triangle } from 'lucide-react';
 import { formatMinutes } from '@/lib/business/calculations';
 
 interface BalanceDisplayProps {
@@ -21,16 +22,8 @@ export default function BalanceDisplay({ balanceMinutes, size = 'sm' }: BalanceD
 
   return (
     <span className={`inline-flex items-center gap-1 ${colorClass} ${sizeClass} tabular-nums`}>
-      {isPositive && (
-        <svg className={iconSize} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-          <path d="M8 3l5 6H3z" />
-        </svg>
-      )}
-      {isNegative && (
-        <svg className={iconSize} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-          <path d="M8 13l5-6H3z" />
-        </svg>
-      )}
+      {isPositive && <Triangle className={iconSize} fill="currentColor" strokeWidth={0} aria-hidden />}
+      {isNegative && <Triangle className={`${iconSize} rotate-180`} fill="currentColor" strokeWidth={0} aria-hidden />}
       {formatMinutes(abs)}
     </span>
   );

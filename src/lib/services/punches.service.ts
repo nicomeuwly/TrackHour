@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { parseTime } from '@/lib/business/calculations';
-import type { Punch, DayEntry } from '@/lib/types';
+import type { Punch, DayEntry, LeaveType } from '@/lib/types';
 
 export async function getPunchesByDate(date: string): Promise<Punch[]> {
   const punches = await db.punches.where('date').equals(date).toArray();
@@ -17,8 +17,8 @@ async function updateDayEntry(date: string): Promise<void> {
   const existing = await db.entries.where('date').equals(date).first();
 
   if (punches.length === 0) {
-    if (existing?.vacationMinutes) {
-      // Preserve vacation-only entries
+    if (existing?.leaveType) {
+      // Preserve leave-only entries
       await db.entries.update(existing.id, { punches: [], totalWorkedMinutes: 0, totalBreakMinutes: 0, updatedAt: new Date().toISOString() });
     } else {
       await db.entries.where('date').equals(date).delete();
@@ -43,18 +43,23 @@ async function updateDayEntry(date: string): Promise<void> {
   if (existing) {
     await db.entries.update(existing.id, { punches, totalWorkedMinutes: workedMinutes, totalBreakMinutes: breakMinutes, updatedAt: now });
   } else {
-    const entry: DayEntry = { id: crypto.randomUUID(), date, punches, totalWorkedMinutes: workedMinutes, totalBreakMinutes: breakMinutes, vacationMinutes: 0, note: '', updatedAt: now };
+    const entry: DayEntry = { id: crypto.randomUUID(), date, punches, totalWorkedMinutes: workedMinutes, totalBreakMinutes: breakMinutes, leaveType: null, note: '', updatedAt: now };
     await db.entries.add(entry);
   }
 }
 
-export async function setVacation(date: string, vacationMinutes: number): Promise<void> {
+export async function setLeaveType(date: string, leaveType: LeaveType | null): Promise<void> {
   const existing = await db.entries.where('date').equals(date).first();
   const now = new Date().toISOString();
   if (existing) {
-    await db.entries.update(existing.id, { vacationMinutes, updatedAt: now });
-  } else if (vacationMinutes > 0) {
-    const entry: DayEntry = { id: crypto.randomUUID(), date, punches: [], totalWorkedMinutes: 0, totalBreakMinutes: 0, vacationMinutes, note: '', updatedAt: now };
+    if (leaveType === null && existing.punches.length === 0) {
+      // Nothing left to keep on this day
+      await db.entries.where('date').equals(date).delete();
+    } else {
+      await db.entries.update(existing.id, { leaveType, updatedAt: now });
+    }
+  } else if (leaveType !== null) {
+    const entry: DayEntry = { id: crypto.randomUUID(), date, punches: [], totalWorkedMinutes: 0, totalBreakMinutes: 0, leaveType, note: '', updatedAt: now };
     await db.entries.add(entry);
   }
 }

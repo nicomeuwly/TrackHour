@@ -1,16 +1,16 @@
 import { db } from '@/lib/db';
 import { getEntriesByRange, getAllEntries } from '@/lib/services/entries.service';
 import { getSettings } from '@/lib/services/settings.service';
-import { calculateBalance, formatMinutesAsDecimal } from '@/lib/business/calculations';
+import { formatMinutesAsDecimal, dayBalanceMinutes, isWorkday } from '@/lib/business/calculations';
 
 export async function exportPeriodAsCSV(startDate: string, endDate: string, label: string): Promise<void> {
   const [entries, settings] = await Promise.all([getEntriesByRange(startDate, endDate), getSettings()]);
 
-  const headers = ['Date', 'Day', 'Worked (h)', 'Break (min)', 'Balance (h)', 'Note'];
+  const headers = ['Date', 'Day', 'Worked (h)', 'Break (min)', 'Balance (h)', 'Leave', 'Note'];
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const rows = entries.map(e => {
-    const balance = calculateBalance(e.totalWorkedMinutes, settings.expectedHoursPerDay);
+    const balance = dayBalanceMinutes(e, settings, isWorkday(e.date, settings.workDays));
     const dayName = dayNames[new Date(e.date + 'T00:00:00').getDay()];
     return [
       e.date,
@@ -18,6 +18,7 @@ export async function exportPeriodAsCSV(startDate: string, endDate: string, labe
       formatMinutesAsDecimal(e.totalWorkedMinutes),
       String(e.totalBreakMinutes),
       (balance / 60).toFixed(2),
+      e.leaveType ?? '',
       `"${(e.note ?? '').replace(/"/g, '""')}"`,
     ].join(',');
   });

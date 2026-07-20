@@ -3,6 +3,7 @@
 import { useEffect, useRef, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
+import { X } from 'lucide-react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -74,10 +75,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
             aria-label={t('close')}
             className="p-1.5 rounded-lg hover:bg-text/8 transition-colors text-text/50"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-              <line x1="3" y1="3" x2="13" y2="13" />
-              <line x1="13" y1="3" x2="3" y2="13" />
-            </svg>
+            <X size={16} aria-hidden />
           </button>
         </div>
         <div className="px-5 py-5">{children}</div>

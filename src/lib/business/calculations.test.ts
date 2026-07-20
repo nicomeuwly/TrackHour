@@ -11,22 +11,25 @@ import {
   getWeekDates,
   getMonthDates,
   calculateFromPunches,
+  isFilledLeave,
+  dayBalanceMinutes,
 } from './calculations';
-import type { DayEntry, Punch, Settings } from '@/lib/types';
+import type { DayEntry, Punch, Settings, LeaveType } from '@/lib/types';
 
 const baseSettings: Settings = {
   id: 'user-settings',
   expectedHoursPerDay: 8,
   minimumBreakMinutes: 30,
   workDays: [1, 2, 3, 4, 5],
+  annualVacationDays: 25,
   currency: '',
   locale: 'en',
   theme: 'light',
   updatedAt: '',
 };
 
-function makeDayEntry(date: string, totalWorkedMinutes: number): DayEntry {
-  return { id: date, date, punches: [], totalWorkedMinutes, totalBreakMinutes: 0, note: '', updatedAt: '' };
+function makeDayEntry(date: string, totalWorkedMinutes: number, leaveType: LeaveType | null = null): DayEntry {
+  return { id: date, date, punches: [], totalWorkedMinutes, totalBreakMinutes: 0, leaveType, note: '', updatedAt: '' };
 }
 
 function makePunch(date: string, time: string, type: 'in' | 'out'): Punch {
@@ -122,6 +125,83 @@ describe('calculateWeekBalance', () => {
     expect(r.balanceMinutes).toBe(0);
     expect(r.daysExpected).toBe(5);
   });
+
+  it('balance counts only logged days while expected covers the full period', () => {
+    // Only Monday logged (10h worked) in a Mon–Fri period
+    const r = calculateWeekBalance([makeDayEntry('2024-01-08', 600)], baseSettings, '2024-01-08', '2024-01-12');
+    expect(r.totalWorkedMinutes).toBe(600);
+    expect(r.totalExpectedMinutes).toBe(2400); // full week still to do
+    expect(r.balanceMinutes).toBe(120);        // +2h overtime, not -30h
+  });
+
+  it('an under-worked logged day is a deficit, but unlogged days are not', () => {
+    // One logged 6h day in a Mon–Fri period → -2h, not -34h
+    const r = calculateWeekBalance([makeDayEntry('2024-01-08', 360)], baseSettings, '2024-01-08', '2024-01-12');
+    expect(r.balanceMinutes).toBe(-120);
+  });
+
+  it('a vacation day is balance-neutral over the period', () => {
+    // 4 worked days + 1 vacation day → expected 5 days, balance 0
+    const entries = [
+      ...['2024-01-08','2024-01-09','2024-01-10','2024-01-11'].map(d => makeDayEntry(d, 480)),
+      makeDayEntry('2024-01-12', 0, 'vacation'),
+    ];
+    const r = calculateWeekBalance(entries, baseSettings, '2024-01-08', '2024-01-12');
+    expect(r.balanceMinutes).toBe(0);
+    expect(r.daysExpected).toBe(5);
+  });
+
+  it('sick and other leave are balance-neutral like vacation', () => {
+    const sick = calculateWeekBalance([makeDayEntry('2024-01-08', 0, 'sick')], baseSettings, '2024-01-08', '2024-01-08');
+    const other = calculateWeekBalance([makeDayEntry('2024-01-08', 0, 'other')], baseSettings, '2024-01-08', '2024-01-08');
+    expect(sick.balanceMinutes).toBe(0);
+    expect(other.balanceMinutes).toBe(0);
+  });
+
+  it('a compensation day draws down the overtime balance by a full day', () => {
+    const r = calculateWeekBalance([makeDayEntry('2024-01-08', 0, 'compensation')], baseSettings, '2024-01-08', '2024-01-08');
+    expect(r.balanceMinutes).toBe(-480);
+  });
+
+  it('overtime accumulated over a week is spent by a compensation day', () => {
+    // 4 days at 10h (=+8h overtime), then a compensation day → net 0
+    const entries = [
+      ...['2024-01-08','2024-01-09','2024-01-10','2024-01-11'].map(d => makeDayEntry(d, 600)),
+      makeDayEntry('2024-01-12', 0, 'compensation'),
+    ];
+    const r = calculateWeekBalance(entries, baseSettings, '2024-01-08', '2024-01-12');
+    expect(r.balanceMinutes).toBe(0);
+  });
+});
+
+describe('isFilledLeave', () => {
+  it('is true for vacation, sick and other', () => {
+    expect(isFilledLeave('vacation')).toBe(true);
+    expect(isFilledLeave('sick')).toBe(true);
+    expect(isFilledLeave('other')).toBe(true);
+  });
+  it('is false for compensation and no leave', () => {
+    expect(isFilledLeave('compensation')).toBe(false);
+    expect(isFilledLeave(null)).toBe(false);
+  });
+});
+
+describe('dayBalanceMinutes', () => {
+  it('a missing workday is a full-day deficit', () => {
+    expect(dayBalanceMinutes(undefined, baseSettings, true)).toBe(-480);
+  });
+  it('a filled leave day is neutral', () => {
+    expect(dayBalanceMinutes(makeDayEntry('2024-01-08', 0, 'vacation'), baseSettings, true)).toBe(0);
+  });
+  it('a compensation day is a full-day deficit', () => {
+    expect(dayBalanceMinutes(makeDayEntry('2024-01-08', 0, 'compensation'), baseSettings, true)).toBe(-480);
+  });
+  it('partial work on a compensation day only spends the remaining hours', () => {
+    expect(dayBalanceMinutes(makeDayEntry('2024-01-08', 180, 'compensation'), baseSettings, true)).toBe(-300);
+  });
+  it('non-workdays only count worked overtime', () => {
+    expect(dayBalanceMinutes(makeDayEntry('2024-01-06', 120, null), baseSettings, false)).toBe(120);
+  });
 });
 
 describe('calculateMonthBalance', () => {
@@ -192,5 +272,29 @@ describe('calculateFromPunches', () => {
   it('marks missing for past workday with no punches', () => {
     const r = calculateFromPunches([], baseSettings, fixedNow, '2024-01-05');
     expect(r.status).toBe('missing');
+  });
+
+  it('a vacation day tops up to expected (balance 0, no projected end)', () => {
+    const r = calculateFromPunches([], baseSettings, fixedNow, '2024-01-08', 'vacation');
+    expect(r.status).toBe('vacation');
+    expect(r.balanceMinutes).toBe(0);
+    expect(r.projectedEndTime).toBeNull();
+  });
+
+  it('a compensation day is a full-day deficit', () => {
+    const r = calculateFromPunches([], baseSettings, fixedNow, '2024-01-08', 'compensation');
+    expect(r.status).toBe('compensation');
+    expect(r.balanceMinutes).toBe(-480);
+  });
+
+  it('leave combined with partial work tops up (filled) or not (compensation)', () => {
+    const punches = [
+      makePunch('2024-01-08', '09:00', 'in'),
+      makePunch('2024-01-08', '12:00', 'out'),
+    ];
+    const filled = calculateFromPunches(punches, baseSettings, fixedNow, '2024-01-08', 'sick');
+    const comp = calculateFromPunches(punches, baseSettings, fixedNow, '2024-01-08', 'compensation');
+    expect(filled.balanceMinutes).toBe(0);      // 180 worked + 300 fill - 480
+    expect(comp.balanceMinutes).toBe(-300);     // 180 worked - 480
   });
 });

@@ -19,3 +19,9 @@ export async function getAllEntries(): Promise<DayEntry[]> {
   const entries = await db.entries.toArray();
   return entries.sort((a, b) => b.date.localeCompare(a.date));
 }
+
+/** Number of days marked as paid vacation within the given calendar year. */
+export async function getVacationDaysUsed(year: number): Promise<number> {
+  const entries = await getEntriesByRange(`${year}-01-01`, `${year}-12-31`);
+  return entries.filter(e => e.leaveType === 'vacation').length;
+}

@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { LEAVE_ICON } from "./leaveMeta";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import { useWeekEntries } from "@/lib/hooks/useWeekEntries";
 import { useMonthEntries } from "@/lib/hooks/useMonthEntries";
+import { useYearStats } from "@/lib/hooks/useYearStats";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { useToast } from "@/components/ui/Toast";
 import Modal from "@/components/ui/Modal";
@@ -14,6 +17,7 @@ import {
   getMonthDates,
   localDateStr,
   formatMinutes,
+  dayBalanceMinutes,
 } from "@/lib/business/calculations";
 import {
   exportPeriodAsCSV,
@@ -27,15 +31,15 @@ interface DataTabProps {
   onNavigateToDay?: (date: string) => void;
 }
 
-type CellStatus = "complete" | "incomplete" | "missing" | "weekend" | "future" | "vacation";
+type CellStatus = "complete" | "incomplete" | "missing" | "weekend" | "future" | "vacation" | "sick" | "other" | "compensation";
 
 function getCellStatus(date: string, entry: DayEntry | undefined, settings: Settings, today: string): CellStatus {
   const dow = new Date(date + "T00:00:00").getDay();
   const isoDay = dow === 0 ? 7 : dow;
   if (!settings.workDays.includes(isoDay)) return "weekend";
+  if (entry?.leaveType) return entry.leaveType;
   if (date > today) return "future";
   if (!entry) return "missing";
-  if (entry.vacationMinutes > 0) return "vacation";
   if (entry.totalWorkedMinutes >= settings.expectedHoursPerDay * 60) return "complete";
   return "incomplete";
 }
@@ -47,6 +51,9 @@ const CELL_BG: Record<CellStatus, string> = {
   missing: "bg-secondary/10 hover:brightness-65",
   weekend: "bg-background-light hover:brightness-95",
   vacation: "bg-tertiary/15 hover:brightness-75",
+  sick: "bg-secondary/15 hover:brightness-75",
+  other: "bg-text/10 hover:brightness-95",
+  compensation: "bg-primary/15 hover:brightness-85",
   future: "bg-background hover:brightness-95",
 };
 
@@ -56,6 +63,9 @@ const STATUS_BADGE: Record<Exclude<CellStatus, "future">, string> = {
   missing: "bg-secondary/15 text-secondary",
   weekend: "bg-text/8 text-text/40",
   vacation: "bg-tertiary/20 text-tertiary",
+  sick: "bg-secondary/15 text-secondary",
+  other: "bg-text/10 text-text/50",
+  compensation: "bg-primary/15 text-primary",
 };
 
 type DeleteTarget =
@@ -85,6 +95,8 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
     useWeekEntries(refDate);
   const { entries: monthEntries, monthBalance, isLoading: monthLoading, refresh: monthRefresh } =
     useMonthEntries(refYear, refMonth);
+  const { overtimeMinutes: yearOvertime, absenceDays: yearAbsences, vacationUsed: yearVacationUsed, workedDays: yearWorkedDays, totalWorkdays: yearTotalWorkdays, refresh: yearRefresh } =
+    useYearStats(refYear, settings);
 
   // Locale-aware date helpers
   const DAY_LABELS = Array.from({ length: 7 }, (_, i) =>
@@ -135,6 +147,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
   function refreshAll() {
     weekRefresh();
     monthRefresh();
+    yearRefresh();
   }
 
   async function handleExportCSV(type: "week" | "month") {
@@ -214,7 +227,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
     ? Math.round(balance.totalWorkedMinutes / balance.daysLogged)
     : 0;
 
-  const vacationDaysCount = monthEntries.filter(e => e.vacationMinutes > 0).length;
+  const daysOffCount = monthEntries.filter(e => e.leaveType !== null).length;
   const completeDaysCount = settings
     ? monthEntries.filter(e => e.totalWorkedMinutes >= settings.expectedHoursPerDay * 60).length
     : 0;
@@ -225,6 +238,9 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
     missing: t("statusMissing"),
     weekend: t("statusWeekend"),
     vacation: t("statusVacation"),
+    sick: t("statusSick"),
+    other: t("statusOther"),
+    compensation: t("statusCompensation"),
   };
 
   return (
@@ -256,16 +272,12 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
         <div className="flex items-center gap-2">
           <button onClick={() => shiftPeriod(-1)} aria-label={view === "week" ? t("prevWeek") : t("prevMonth")}
             className="p-2 rounded-lg hover:bg-text/8 transition-colors">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-              <polyline points="10 4 6 8 10 12" />
-            </svg>
+            <ChevronLeft size={14} aria-hidden />
           </button>
-          <span className="flex-1 text-center text-sm font-semibold">{periodLabel}</span>
+          <span className="flex-1 text-center text-sm font-semibold capitalize">{periodLabel}</span>
           <button onClick={() => shiftPeriod(1)} aria-label={view === "week" ? t("nextWeek") : t("nextMonth")}
             className="p-2 rounded-lg hover:bg-text/8 transition-colors">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-              <polyline points="6 4 10 8 6 12" />
-            </svg>
+            <ChevronRight size={14} aria-hidden />
           </button>
         </div>
       </div>
@@ -283,7 +295,9 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
             <div className={"grid grid-cols-2 sm:grid-cols-1 gap-3 " + (view === "week" ? "sm:h-full" : "sm:h-full")}>
               <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
                 <p className="text-xs text-text/50 mb-1">{t("totalWorked")}</p>
-                <p className="font-bold text-base">{balance ? formatMinutes(balance.totalWorkedMinutes) : "—"}</p>
+                <p className="font-bold text-base">
+                  {balance ? `${formatMinutes(balance.totalWorkedMinutes)} / ${formatMinutes(balance.totalExpectedMinutes)}` : "—"}
+                </p>
               </div>
               <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
                 <p className="text-xs text-text/50 mb-1">{t("balance")}</p>
@@ -310,7 +324,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
               {view === "month" && (
                 <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
                   <p className="text-xs text-text/50 mb-1">{t("totalDaysOff")}</p>
-                  <p className="font-bold text-base">{vacationDaysCount > 0 ? vacationDaysCount : "—"}</p>
+                  <p className="font-bold text-base">{daysOffCount > 0 ? daysOffCount : "—"}</p>
                 </div>
               )}
             </div>
@@ -333,15 +347,10 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                   const status = settings ? getCellStatus(date, entry, settings, today) : "future";
                   const d = new Date(date + "T00:00:00");
                   const dayNum = d.getDate();
-                  const balanceMinutes: number | null = (() => {
-                    if (!settings || status === "weekend" || status === "future") return null;
-                    const expectedMinutes = settings.expectedHoursPerDay * 60;
-                    if (entry) {
-                      const effectiveVacation = entry.vacationMinutes > 0 ? Math.max(0, expectedMinutes - entry.totalWorkedMinutes) : 0;
-                      return entry.totalWorkedMinutes + effectiveVacation - expectedMinutes;
-                    }
-                    return -expectedMinutes;
-                  })();
+                  const balanceMinutes: number | null =
+                    !settings || status === "weekend" || status === "future"
+                      ? null
+                      : dayBalanceMinutes(entry, settings, true);
 
                   return (
                     <button
@@ -370,11 +379,15 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                         )}
                       </div>
                       <div className="flex-none min-w-20">
-                        {status !== "future" && (
-                          <span className={`text-xs capitalize font-medium px-2 py-1 rounded-full ${STATUS_BADGE[status]}`}>
-                            {STATUS_LABEL[status]}
-                          </span>
-                        )}
+                        {status !== "future" && (() => {
+                          const LeaveIcon = status in LEAVE_ICON ? LEAVE_ICON[status as keyof typeof LEAVE_ICON] : null;
+                          return (
+                            <span className={`inline-flex items-center gap-1 text-xs capitalize font-medium px-2 py-1 rounded-full ${STATUS_BADGE[status]}`}>
+                              {LeaveIcon && <LeaveIcon size={11} aria-hidden />}
+                              {STATUS_LABEL[status]}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </button>
                   );
@@ -426,6 +439,29 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
             )
           )}
 
+        </div>
+      </div>
+
+      {/* Annual summary — always visible, independent of week/month view */}
+      <div className="flex flex-col gap-3 pt-1">
+        <h2 className="text-sm font-semibold">{t("yearSection", { year: String(refYear) })}</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
+            <p className="text-xs text-text/50 mb-1">{t("yearWorkedDays")}</p>
+            <p className="font-bold text-base">{yearWorkedDays} / {yearTotalWorkdays}</p>
+          </div>
+          <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
+            <p className="text-xs text-text/50 mb-1">{t("yearOvertime")}</p>
+            <BalanceDisplay balanceMinutes={yearOvertime} size="base" />
+          </div>
+          <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
+            <p className="text-xs text-text/50 mb-1">{t("yearAbsences")}</p>
+            <p className="font-bold text-base">{t("yearAbsencesValue", { count: yearAbsences })}</p>
+          </div>
+          <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
+            <p className="text-xs text-text/50 mb-1">{t("yearVacation")}</p>
+            <p className="font-bold text-base">{yearVacationUsed} / {settings?.annualVacationDays ?? 0} {t("daysUnit")}</p>
+          </div>
         </div>
       </div>
 

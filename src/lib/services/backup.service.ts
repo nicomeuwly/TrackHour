@@ -4,12 +4,21 @@ import { getPunchesByRange } from '@/lib/services/punches.service';
 import { getSettings, updateSettings } from '@/lib/services/settings.service';
 import type { Punch, DayEntry, Settings } from '@/lib/types';
 
-interface BackupV2 {
-  version: 2;
+interface Backup {
+  version: 2 | 3;
   exportedAt: string;
   punches: Punch[];
   entries: DayEntry[];
   settings: Settings;
+}
+
+/** Legacy v2 entries carried a `vacationMinutes` flag instead of `leaveType`. */
+function normalizeEntry(e: DayEntry & { vacationMinutes?: number }): DayEntry {
+  if (e.leaveType === undefined && e.vacationMinutes !== undefined) {
+    const { vacationMinutes, ...rest } = e;
+    return { ...rest, leaveType: vacationMinutes > 0 ? 'vacation' : null };
+  }
+  return e;
 }
 
 export interface ImportResult {
@@ -24,7 +33,7 @@ export async function exportData(): Promise<string> {
     ? await getPunchesByRange(entries[entries.length - 1].date, entries[0].date)
     : [];
 
-  const data: BackupV2 = { version: 2, exportedAt: new Date().toISOString(), punches, entries, settings };
+  const data: Backup = { version: 3, exportedAt: new Date().toISOString(), punches, entries, settings };
   const json = JSON.stringify(data, null, 2);
 
   const blob = new Blob([json], { type: 'application/json' });
@@ -49,14 +58,14 @@ export async function importData(file: File): Promise<ImportResult> {
   try { data = JSON.parse(raw); }
   catch { return { success: false, entriesImported: 0, errors: ['Invalid JSON format.'] }; }
 
-  const d = data as BackupV2;
-  if (!d || d.version !== 2 || !Array.isArray(d.punches) || !Array.isArray(d.entries)) {
-    return { success: false, entriesImported: 0, errors: ['Unsupported backup format. Only v2 backups are supported.'] };
+  const d = data as Backup;
+  if (!d || (d.version !== 2 && d.version !== 3) || !Array.isArray(d.punches) || !Array.isArray(d.entries)) {
+    return { success: false, entriesImported: 0, errors: ['Unsupported backup format. Only v2 and v3 backups are supported.'] };
   }
 
   try {
     await db.punches.bulkPut(d.punches);
-    await db.entries.bulkPut(d.entries);
+    await db.entries.bulkPut(d.entries.map(normalizeEntry));
     entriesImported = d.entries.length;
   } catch (e) {
     errors.push(`Import failed: ${String(e)}`);

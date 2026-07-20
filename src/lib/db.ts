@@ -6,6 +6,7 @@ export const DEFAULT_SETTINGS: Omit<Settings, 'updatedAt'> = {
   expectedHoursPerDay: 8,
   minimumBreakMinutes: 30,
   workDays: [1, 2, 3, 4, 5],
+  annualVacationDays: 25,
   currency: '',
   locale: 'en',
   theme: 'light',
@@ -29,6 +30,19 @@ class TrackhourDB extends Dexie {
         settings: 'id',
       })
       .upgrade(tx => tx.table('entries').clear());
+    // v3: replace the boolean-ish `vacationMinutes` flag with a typed `leaveType`.
+    this.version(3)
+      .stores({
+        punches: 'id, date',
+        entries: 'id, date',
+        settings: 'id',
+      })
+      .upgrade(tx =>
+        tx.table('entries').toCollection().modify((e: Record<string, unknown>) => {
+          e.leaveType = (e.vacationMinutes as number) > 0 ? 'vacation' : null;
+          delete e.vacationMinutes;
+        }),
+      );
   }
 }
 

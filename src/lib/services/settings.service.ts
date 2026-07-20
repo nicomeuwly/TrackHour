@@ -3,7 +3,8 @@ import type { Settings } from '@/lib/types';
 
 export async function getSettings(): Promise<Settings> {
   const existing = await db.settings.get('user-settings');
-  if (existing) return existing;
+  // Merge defaults so records saved before a field existed (e.g. annualVacationDays) stay valid.
+  if (existing) return { ...DEFAULT_SETTINGS, ...existing };
 
   const defaults: Settings = {
     ...DEFAULT_SETTINGS,

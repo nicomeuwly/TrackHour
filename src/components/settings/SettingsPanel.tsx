@@ -4,15 +4,17 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { useSettings } from '@/lib/hooks/useSettings';
+import { useVacationUsage } from '@/lib/hooks/useVacationUsage';
 
 interface SettingsPanelProps {
   onClose?: () => void;
 }
 
-export default function SettingsPanel({ onClose }: SettingsPanelProps) {
+export default function SettingsPanel({}: SettingsPanelProps) {
   const t = useTranslations('Settings');
   const locale = useLocale();
   const { settings, updateSettings } = useSettings();
+  const { used: vacationUsed } = useVacationUsage(new Date().getFullYear());
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
   const [local, setLocal] = useState(settings);
@@ -94,6 +96,18 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-text/80">{t('annualVacationDays')}</label>
+            <input
+              type="number"
+              value={local.annualVacationDays}
+              onChange={e => handleChange('annualVacationDays', Math.max(0, parseInt(e.target.value) || 0))}
+              min={0} max={366} step={1}
+              className="w-32 rounded-lg border border-text/15 bg-background px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            />
+            <p className="text-xs text-text/50">{t('vacationUsed', { used: vacationUsed, total: local.annualVacationDays })}</p>
           </div>
         </div>
       </section>

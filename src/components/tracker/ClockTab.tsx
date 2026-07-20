@@ -3,8 +3,13 @@
 import { useState, useEffect, useRef, Fragment } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
+import {
+  Trash2, ArrowRight, Coffee, Calendar, ChevronLeft, ChevronRight,
+  Play, Briefcase, Square,
+} from 'lucide-react';
 import { useClockDay } from '@/lib/hooks/useClockDay';
 import { useSettings } from '@/lib/hooks/useSettings';
+import { useVacationUsage } from '@/lib/hooks/useVacationUsage';
 import {
   calculateFromPunches,
   formatMinutes,
@@ -12,7 +17,9 @@ import {
 } from '@/lib/business/calculations';
 import { useToast } from '@/components/ui/Toast';
 import BalanceDisplay from '@/components/ui/BalanceDisplay';
-import type { Punch } from '@/lib/types';
+import LeaveModal from '@/components/tracker/LeaveModal';
+import { LEAVE_LABEL_KEY, LEAVE_DESC_KEY, LEAVE_ICON, ABSENCE_ICON } from '@/components/tracker/leaveMeta';
+import type { Punch, LeaveType } from '@/lib/types';
 
 interface ClockTabProps {
   date: string;
@@ -61,17 +68,9 @@ function buildPairs(punches: Punch[]): PunchPair[] {
 }
 
 
-const TrashIcon = () => (
-  <svg width="16" height="16" className="sm:w-3 sm:h-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-    <polyline points="2 4 4 4 14 4" /><path d="M5 4V2h6v2" /><path d="M6 7v5M10 7v5" /><rect x="3" y="4" width="10" height="10" rx="1" />
-  </svg>
-);
+const TrashIcon = () => <Trash2 className="w-4 h-4 sm:w-3 sm:h-3" aria-hidden />;
 
-const ArrowIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden className="flex-none text-text/25">
-    <line x1="2" y1="8" x2="14" y2="8" /><polyline points="10 4 14 8 10 12" />
-  </svg>
-);
+const ArrowIcon = () => <ArrowRight size={12} className="flex-none text-text/25" aria-hidden />;
 
 function PunchTimeline({
   punches,
@@ -118,13 +117,7 @@ function PunchTimeline({
                   <div className="w-px h-4 bg-text/15" />
                 </div>
                 <span className="flex items-center gap-1 text-xs font-medium text-text/35">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <path d="M17 8h1a4 4 0 0 1 0 8h-1" />
-                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
-                    <line x1="6" y1="2" x2="6" y2="4" />
-                    <line x1="10" y1="2" x2="10" y2="4" />
-                    <line x1="14" y1="2" x2="14" y2="4" />
-                  </svg>
+                  <Coffee size={11} aria-hidden />
                   {formatMinutes(breakMins)}
                 </span>
               </div>
@@ -286,11 +279,11 @@ function DatePickerPopup({ current, onSelect, onClose }: { current: string; onSe
     <div className="absolute top-full left-0 z-50 mt-2 bg-background border border-text/15 rounded-xl shadow-xl p-3 w-64" role="dialog">
       <div className="flex items-center justify-between mb-2">
         <button onClick={prevM} className="p-1 rounded hover:bg-text/8" aria-label="←">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><polyline points="10 4 6 8 10 12" /></svg>
+          <ChevronLeft size={14} aria-hidden />
         </button>
         <span className="text-sm font-semibold">{MONTHS[viewMonth - 1]} {viewYear}</span>
         <button onClick={nextM} className="p-1 rounded hover:bg-text/8" aria-label="→">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><polyline points="6 4 10 8 6 12" /></svg>
+          <ChevronRight size={14} aria-hidden />
         </button>
       </div>
       <div className="grid grid-cols-7 mb-1">
@@ -371,12 +364,14 @@ function SegmentedProgressBar({ progressPct, isPaused }: { progressPct: number; 
 export default function ClockTab({ date, onDateChange }: ClockTabProps) {
   const t = useTranslations('ClockTab');
   const locale = useLocale();
-  const { punches, note, vacationMinutes, isLoading, error, clockIn, clockOut, deletePunch, editPunch, saveNote, setVacation } = useClockDay(date);
+  const { punches, note, leaveType, isLoading, error, clockIn, clockOut, deletePunch, editPunch, saveNote, setLeave } = useClockDay(date);
   const { settings } = useSettings();
+  const { used: vacationUsed, refresh: refreshVacation } = useVacationUsage(parseInt(date.slice(0, 4)));
   const { showToast } = useToast();
   const [now, setNow] = useState(new Date());
   const [manualMode, setManualMode] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [noteValue, setNoteValue] = useState(note);
   const noteTimer = useRef<ReturnType<typeof setTimeout>>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -403,10 +398,11 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
     return () => document.removeEventListener('mousedown', handle);
   }, [showPicker]);
 
-  const dayCalc = settings ? calculateFromPunches(punches, settings, now, date, vacationMinutes) : null;
+  const dayCalc = settings ? calculateFromPunches(punches, settings, now, date, leaveType) : null;
   const lastType = dayCalc?.lastPunchType ?? null;
   const expectedMinutes = (settings?.expectedHoursPerDay ?? 8) * 60;
   const progressPct = dayCalc ? Math.min(100, (dayCalc.workedMinutes / expectedMinutes) * 100) : 0;
+  const AbsenceIcon = leaveType !== null ? LEAVE_ICON[leaveType] : ABSENCE_ICON;
 
   async function handleClockIn(manualTime?: string) {
     try {
@@ -430,6 +426,19 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
     noteTimer.current = setTimeout(() => saveNote(v), 1000);
   }
 
+  async function handleLeaveSave(type: LeaveType | null, comment: string) {
+    // The "other" comment lives in the day note; clear it when leaving that type
+    // so it doesn't linger in the notes area after switching or removing the absence.
+    const wasOther = leaveType === 'other';
+    await setLeave(type);
+    if (type === 'other') {
+      await saveNote(comment);
+    } else if (wasOther) {
+      await saveNote('');
+    }
+    refreshVacation();
+  }
+
   const dateLabel = new Date(date + 'T00:00:00').toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' });
 
   return (
@@ -441,9 +450,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
             onClick={() => setShowPicker(s => !s)}
             className="flex items-center gap-2 hover:bg-text/5 rounded-xl px-2 py-1 transition-colors"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
+            <Calendar size={24} aria-hidden />
             <div>
               {isToday && <p className="text-xs font-semibold text-primary leading-none mb-0.5 capitalize text-left">{t('today')}</p>}
               <p className="font-bold text-base leading-none capitalize">{dateLabel}</p>
@@ -459,27 +466,24 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
             {t('backToToday')}
           </button>
         )}
-        {dayCalc && dayCalc.workedMinutes < expectedMinutes && (
+        {dayCalc && (leaveType !== null || dayCalc.workedMinutes < expectedMinutes) && (
           <button
-            role="switch"
-            aria-checked={vacationMinutes > 0}
-            onClick={() => setVacation(vacationMinutes > 0 ? 0 : (settings?.expectedHoursPerDay ?? 8) * 60)}
-            className={`flex items-center gap-1.5 rounded-lg px-2 py-1 transition-colors ${vacationMinutes > 0 ? 'bg-tertiary/10' : 'hover:bg-text/5'}`}
+            onClick={() => setShowLeaveModal(true)}
+            aria-haspopup="dialog"
+            className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 transition-colors ${leaveType !== null ? 'border-tertiary/30 bg-tertiary/10' : 'border-text/15 text-text/70 hover:bg-text/5'}`}
           >
-            <span className={`text-xs font-medium whitespace-nowrap ${vacationMinutes > 0 ? 'text-tertiary' : 'text-text/35'}`}>
-              {t('vacation')}
+            <AbsenceIcon size={13} aria-hidden className={leaveType !== null ? 'text-tertiary' : 'text-text/55'} />
+            <span className={`text-xs font-medium whitespace-nowrap ${leaveType !== null ? 'text-tertiary' : 'text-text/70'}`}>
+              {leaveType !== null ? t(LEAVE_LABEL_KEY[leaveType]) : t('absence')}
             </span>
-            <div className={`relative w-8 h-4.5 rounded-full transition-colors ${vacationMinutes > 0 ? 'bg-tertiary' : 'bg-text/15'}`}>
-              <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-transform ${vacationMinutes > 0 ? 'translate-x-4' : 'translate-x-0.5'}`} />
-            </div>
           </button>
         )}
         <div className="flex gap-1">
           <button onClick={() => onDateChange(shiftDate(date, -1))} aria-label="←" className="p-2 rounded-lg hover:bg-text/8 transition-colors">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><polyline points="10 4 6 8 10 12" /></svg>
+            <ChevronLeft size={14} aria-hidden />
           </button>
           <button onClick={() => onDateChange(shiftDate(date, 1))} aria-label="→" className="p-2 rounded-lg hover:bg-text/8 transition-colors">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><polyline points="6 4 10 8 6 12" /></svg>
+            <ChevronRight size={14} aria-hidden />
           </button>
         </div>
       </div>
@@ -497,12 +501,15 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
       ) : (
         <div className="rounded-xl border border-text/10 bg-background p-6 flex flex-col items-center gap-4 text-center">
 
-          {/* Vacation day — no punches */}
-          {punches.length === 0 && dayCalc?.status === 'vacation' && (
+          {/* Leave day — no punches */}
+          {punches.length === 0 && leaveType !== null && dayCalc && (
             <>
               <div>
-                <p className="text-2xl font-bold text-tertiary">{t('vacation')}</p>
-                <p className="text-sm text-text/50 mt-1">{t('vacationDesc')}</p>
+                <AbsenceIcon size={30} aria-hidden className="block mx-auto mb-2 text-tertiary" />
+                <p className="text-2xl font-bold text-tertiary">{t(LEAVE_LABEL_KEY[leaveType])}</p>
+                <p className="text-sm text-text/50 mt-1">
+                  {leaveType === 'other' && note ? note : t(LEAVE_DESC_KEY[leaveType])}
+                </p>
               </div>
               <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} size="lg" />
               {!manualMode ? (
@@ -516,7 +523,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
           )}
 
           {/* No punches yet */}
-          {punches.length === 0 && dayCalc?.status !== 'vacation' && (
+          {punches.length === 0 && leaveType === null && (
             <>
               <p className="text-sm text-text/40">
                 {t('noEntries')}{isToday ? `, ${t('noEntriesHint')}` : ''}
@@ -526,7 +533,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
                   {isToday ? (
                     <button onClick={() => handleClockIn()}
                       className="flex items-center gap-2 border border-primary bg-primary/10 text-primary px-8 py-3 rounded-xl font-semibold text-base hover:bg-primary/20 transition-colors">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                      <Play size={18} fill="currentColor" aria-hidden />
                       {t('clockIn')}
                     </button>
                   ) : null}
@@ -545,10 +552,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
           {punches.length > 0 && lastType === 'in' && (
             <>
               <p className="text-lg font-semibold text-primary flex items-center justify-center gap-2">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                </svg>
+                <Briefcase size={20} aria-hidden />
                 {dayCalc ? formatMinutes(dayCalc.workedMinutes) : '–'}
               </p>
               <div className="w-full flex flex-col gap-1.5">
@@ -565,7 +569,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
                   {isToday ? (
                     <button onClick={() => handleClockOut()}
                       className="flex items-center gap-2 border border-secondary bg-secondary/10 text-secondary px-8 py-3 rounded-xl font-semibold text-base hover:bg-secondary/20 transition-colors">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><rect x="4" y="4" width="16" height="16" rx="2" /></svg>
+                      <Square size={18} fill="currentColor" aria-hidden />
                       {t('clockOut')}
                     </button>
                   ) : null}
@@ -586,13 +590,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
               {dayCalc.status !== 'complete' ? (
                 <>
                   <p className="text-lg font-semibold text-text/35 flex items-center justify-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                      <path d="M17 8h1a4 4 0 0 1 0 8h-1" />
-                      <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
-                      <line x1="6" y1="2" x2="6" y2="4" />
-                      <line x1="10" y1="2" x2="10" y2="4" />
-                      <line x1="14" y1="2" x2="14" y2="4" />
-                    </svg>
+                    <Coffee size={20} aria-hidden />
                     {formatMinutes(dayCalc.liveBreakMinutes)}
                   </p>
                   <div className="w-full flex flex-col gap-1.5">
@@ -611,7 +609,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
                       {isToday ? (
                         <button onClick={() => handleClockIn()}
                           className="flex items-center gap-2 border border-primary bg-primary/10 text-primary px-8 py-3 rounded-xl font-semibold text-base hover:bg-primary/20 transition-colors">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                          <Play size={18} fill="currentColor" aria-hidden />
                           {t('clockIn')}
                         </button>
                       ) : null}
@@ -636,7 +634,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
                       {isToday ? (
                         <button onClick={() => handleClockIn()}
                           className="flex items-center gap-2 border border-primary bg-primary/10 text-primary px-8 py-3 rounded-xl font-semibold text-base hover:bg-primary/20 transition-colors">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                          <Play size={18} fill="currentColor" aria-hidden />
                           {t('clockInAgain')}
                         </button>
                       ) : null}
@@ -701,6 +699,16 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
           className="w-full rounded-xl border border-text/10 bg-background px-3 py-2 text-sm placeholder:text-text/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 resize-none"
         />
       </div>
+
+      <LeaveModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        current={leaveType}
+        note={note}
+        vacationUsed={vacationUsed}
+        vacationTotal={settings?.annualVacationDays ?? 0}
+        onSave={handleLeaveSave}
+      />
     </div>
   );
 }
