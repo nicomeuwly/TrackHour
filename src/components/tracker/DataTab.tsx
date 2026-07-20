@@ -8,7 +8,6 @@ import { useMonthEntries } from "@/lib/hooks/useMonthEntries";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { useToast } from "@/components/ui/Toast";
 import Modal from "@/components/ui/Modal";
-import AdSenseUnit from "@/components/ads/AdSenseUnit";
 import BalanceDisplay from "@/components/ui/BalanceDisplay";
 import {
   getWeekDates,
@@ -429,12 +428,6 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
 
         </div>
       </div>
-
-      {/* AdSense */}
-      <AdSenseUnit
-        slot="XXXXXXXX"
-        format={view === "month" ? "rectangle" : "horizontal"}
-      />
 
       {/* Data management */}
       <div className="flex flex-col gap-5 pt-1">

@@ -1,7 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link, getPathname } from '@/i18n/navigation';
 import { buildMetadata } from '@/lib/metadata';
-import AdSenseUnit from '@/components/ads/AdSenseUnit';
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -54,10 +53,6 @@ export default async function OvertimeGuidePage({ params }: Props) {
                     <h2 className="text-2xl font-bold mb-4">{t('dailyVsWeeklyTitle')}</h2>
                     <p className="text-text/70 leading-relaxed">{t('dailyVsWeeklyText')}</p>
                 </section>
-
-                <div className="flex justify-center">
-                    <AdSenseUnit slot="mid-overtime" format="horizontal" className="w-full max-w-2xl" />
-                </div>
 
                 <section>
                     <h2 className="text-2xl font-bold mb-4">{t('payTitle')}</h2>

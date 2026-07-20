@@ -1,7 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link, getPathname } from '@/i18n/navigation';
 import { buildMetadata } from '@/lib/metadata';
-import AdSenseUnit from '@/components/ads/AdSenseUnit';
 
 export function generateStaticParams() {
     return [{ locale: 'en' }, { locale: 'fr' }];
@@ -74,10 +73,6 @@ export default async function HomePage({ params }: Props) {
                     ))}
                 </div>
             </section>
-
-            <div className="my-10 flex justify-center">
-                <AdSenseUnit slot="mid-home" format="horizontal" className="w-full max-w-2xl" />
-            </div>
 
             {/* Who uses TrackHour */}
             <section className="mb-20">

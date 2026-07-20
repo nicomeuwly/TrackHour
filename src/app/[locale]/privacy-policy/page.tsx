@@ -32,7 +32,6 @@ export default async function PrivacyPolicyPage({ params }: Props) {
 
     const sections = [
         { title: t('dataTitle'), text: t('dataText') },
-        { title: t('adsenseTitle'), text: t('adsenseText') },
         { title: t('analyticsTitle'), text: t('analyticsText') },
         { title: t('cookiesTitle'), text: t('cookiesText') },
         { title: t('rightsTitle'), text: t('rightsText') },
