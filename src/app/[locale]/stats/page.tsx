@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props) {
     }
     return buildMetadata({
         title: 'Work Hours Statistics — Weekly & Monthly Overview',
-        description: 'View your work hours by week or month, track your overtime balance, and manage your data. Free and private — no account needed.',
+        description: 'View your work hours by week or month, track your overtime balance, and manage your data. Free and private, no account needed.',
         path,
         locale,
         href: '/stats',

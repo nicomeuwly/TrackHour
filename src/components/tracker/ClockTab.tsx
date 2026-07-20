@@ -519,7 +519,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
           {punches.length === 0 && dayCalc?.status !== 'vacation' && (
             <>
               <p className="text-sm text-text/40">
-                {t('noEntries')}{isToday ? ` — ${t('noEntriesHint')}` : ''}
+                {t('noEntries')}{isToday ? `, ${t('noEntriesHint')}` : ''}
               </p>
               {!manualMode && (
                 <>
