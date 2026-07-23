@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
         destination: 'https://trackhour.app/:path*',
         permanent: true,
       },
+      // Old guide pages moved under the /guide hub
+      { source: '/how-to-track-work-hours', destination: '/guide/daily-work-log', permanent: true },
+      { source: '/fr/comment-suivre-ses-heures-de-travail', destination: '/fr/guide/journal-de-travail-quotidien', permanent: true },
+      { source: '/overtime-guide', destination: '/guide/calculate-overtime-hours', permanent: true },
+      { source: '/fr/guide-heures-supplementaires', destination: '/fr/guide/calculer-les-heures-supplementaires', permanent: true },
     ];
   },
 };

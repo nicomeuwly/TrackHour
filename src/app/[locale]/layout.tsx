@@ -9,6 +9,8 @@ import { routing } from '@/i18n/routing';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
+import JsonLd from '@/components/JsonLd';
+import { SITE_URL, SITE_NAME } from '@/lib/site';
 import '../globals.css';
 
 const inter = Inter({
@@ -41,6 +43,12 @@ export default async function RootLayout({ children, params }: Props) {
   return (
     <html lang={locale} className={inter.variable}>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
+        <JsonLd
+          data={[
+            { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_NAME, url: SITE_URL, inLanguage: locale },
+            { '@context': 'https://schema.org', '@type': 'Organization', name: SITE_NAME, url: SITE_URL, logo: `${SITE_URL}/icon-512.png` },
+          ]}
+        />
         <NextIntlClientProvider>
           <Header />
           <main className="flex-1">

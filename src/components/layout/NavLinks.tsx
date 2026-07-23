@@ -7,7 +7,7 @@ const NAV_LINKS = [
     { href: '/' as const, key: 'home' as const },
     { href: '/time-tracker' as const, key: 'timeTracker' as const },
     { href: '/stats' as const, key: 'stats' as const },
-    { href: '/how-to-track-work-hours' as const, key: 'guide' as const },
+    { href: '/guide' as const, key: 'guide' as const },
 ];
 
 export default function NavLinks({ onClick }: { onClick?: () => void }) {

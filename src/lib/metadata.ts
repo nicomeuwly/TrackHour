@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { getPathname } from '@/i18n/navigation';
-
-const BASE_URL = 'https://trackhour.app';
-const SITE_NAME = 'TrackHour';
+import { SITE_URL as BASE_URL, SITE_NAME } from '@/lib/site';
 
 type BuildMetadataParams = {
     title: string;

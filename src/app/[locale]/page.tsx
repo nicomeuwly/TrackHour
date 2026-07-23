@@ -1,6 +1,8 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link, getPathname } from '@/i18n/navigation';
 import { buildMetadata } from '@/lib/metadata';
+import { SITE_URL, SITE_NAME } from '@/lib/site';
+import JsonLd from '@/components/JsonLd';
 
 export function generateStaticParams() {
     return [{ locale: 'en' }, { locale: 'fr' }];
@@ -13,7 +15,7 @@ export async function generateMetadata({ params }: Props) {
     const path = getPathname({ locale, href: '/' });
     if (locale === 'fr') {
         return buildMetadata({
-            title: 'TrackHour — Suivi des heures de travail gratuit',
+            title: 'Suivi des heures de travail gratuit',
             description: "Suivez vos heures de travail quotidiennes gratuitement. Sans compte, vos données restent dans votre navigateur. Simple, privé, toujours disponible.",
             path,
             locale,
@@ -21,7 +23,7 @@ export async function generateMetadata({ params }: Props) {
         });
     }
     return buildMetadata({
-        title: 'TrackHour — Free Online Work Hours Tracker',
+        title: 'Free Online Work Hours Tracker',
         description: 'Track your daily work hours for free. No account needed, your data stays in your browser. Simple, private, and always available.',
         path,
         locale,
@@ -36,6 +38,20 @@ export default async function HomePage({ params }: Props) {
 
     return (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+            <JsonLd
+                data={{
+                    '@context': 'https://schema.org',
+                    '@type': 'SoftwareApplication',
+                    name: SITE_NAME,
+                    applicationCategory: 'BusinessApplication',
+                    operatingSystem: 'Web',
+                    url: SITE_URL,
+                    description: t('subtitle'),
+                    inLanguage: locale,
+                    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+                }}
+            />
+
             {/* Hero */}
             <section className="text-center mb-20">
                 <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-6 leading-tight">

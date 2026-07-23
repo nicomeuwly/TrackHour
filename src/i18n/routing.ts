@@ -14,13 +14,29 @@ export const routing = defineRouting({
             en: '/stats',
             fr: '/statistiques'
         },
-        '/how-to-track-work-hours': {
-            en: '/how-to-track-work-hours',
-            fr: '/comment-suivre-ses-heures-de-travail'
+        '/guide': {
+            en: '/guide',
+            fr: '/guide'
         },
-        '/overtime-guide': {
-            en: '/overtime-guide',
-            fr: '/guide-heures-supplementaires'
+        '/guide/why-track-work-hours': {
+            en: '/guide/why-track-work-hours',
+            fr: '/guide/pourquoi-suivre-ses-heures'
+        },
+        '/guide/daily-work-log': {
+            en: '/guide/daily-work-log',
+            fr: '/guide/journal-de-travail-quotidien'
+        },
+        '/guide/common-time-tracking-mistakes': {
+            en: '/guide/common-time-tracking-mistakes',
+            fr: '/guide/erreurs-frequentes-suivi-des-heures'
+        },
+        '/guide/tracking-hours-remote-work': {
+            en: '/guide/tracking-hours-remote-work',
+            fr: '/guide/suivi-des-heures-en-teletravail'
+        },
+        '/guide/calculate-overtime-hours': {
+            en: '/guide/calculate-overtime-hours',
+            fr: '/guide/calculer-les-heures-supplementaires'
         },
         '/privacy-policy': {
             en: '/privacy-policy',
