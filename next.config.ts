@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
       { source: '/fr/comment-suivre-ses-heures-de-travail', destination: '/fr/guide/journal-de-travail-quotidien', permanent: true },
       { source: '/overtime-guide', destination: '/guide/calculate-overtime-hours', permanent: true },
       { source: '/fr/guide-heures-supplementaires', destination: '/fr/guide/calculer-les-heures-supplementaires', permanent: true },
+      // Legacy content URL indexed by Google (worked-hours calculation)
+      { source: '/fr/calcul-heures-travaillees', destination: '/fr/guide/journal-de-travail-quotidien', permanent: true },
     ];
   },
 };
