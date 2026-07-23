@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getEntriesByRange } from '@/lib/services/entries.service';
 import { getSettings } from '@/lib/services/settings.service';
-import { calculateWeekBalance, getWeekDates } from '@/lib/business/calculations';
+import { calculateWeekBalance, getWeekDates, localDateStr } from '@/lib/business/calculations';
 import type { DayEntry, WeekBalance } from '@/lib/types';
 
 export function useWeekEntries(date: string) {
@@ -23,7 +23,7 @@ export function useWeekEntries(date: string) {
       ]);
       setWeekDates(dates);
       setEntries(data);
-      setWeekBalance(calculateWeekBalance(data, settings, dates.start, dates.end));
+      setWeekBalance(calculateWeekBalance(data, settings, dates.start, dates.end, localDateStr(new Date())));
     } catch (e) {
       setError(String(e));
     } finally {

@@ -587,7 +587,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
           {/* On break or day complete */}
           {punches.length > 0 && lastType === 'out' && dayCalc && (
             <>
-              {dayCalc.status !== 'complete' ? (
+              {dayCalc.status !== 'complete' && isToday ? (
                 <>
                   <p className="text-lg font-semibold text-text/35 flex items-center justify-center gap-2">
                     <Coffee size={20} aria-hidden />

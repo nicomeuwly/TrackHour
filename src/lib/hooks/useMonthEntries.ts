@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getEntriesByMonth } from '@/lib/services/entries.service';
 import { getSettings } from '@/lib/services/settings.service';
-import { calculateMonthBalance, getMonthDates } from '@/lib/business/calculations';
+import { calculateMonthBalance, getMonthDates, localDateStr } from '@/lib/business/calculations';
 import type { DayEntry, MonthBalance } from '@/lib/types';
 
 export function useMonthEntries(year: number, month: number) {
@@ -21,7 +21,7 @@ export function useMonthEntries(year: number, month: number) {
         getSettings(),
       ]);
       setEntries(data);
-      setMonthBalance(calculateMonthBalance(data, settings, start, end));
+      setMonthBalance(calculateMonthBalance(data, settings, start, end, localDateStr(new Date())));
     } catch (e) {
       setError(String(e));
     } finally {

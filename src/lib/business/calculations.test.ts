@@ -204,6 +204,39 @@ describe('dayBalanceMinutes', () => {
   });
 });
 
+describe('current-day exclusion from the aggregate balance', () => {
+  const today = '2024-01-10'; // a Wednesday (workday)
+
+  it('excludes the current day while it is in progress (worked < expected)', () => {
+    const entries = [makeDayEntry('2024-01-08', 600), makeDayEntry(today, 180)];
+    const r = calculateWeekBalance(entries, baseSettings, '2024-01-08', '2024-01-12', today);
+    expect(r.balanceMinutes).toBe(120); // only Monday's +2h; today's -5h is ignored
+  });
+
+  it('includes the current day once expected hours are met', () => {
+    const entries = [makeDayEntry('2024-01-08', 600), makeDayEntry(today, 540)];
+    const r = calculateWeekBalance(entries, baseSettings, '2024-01-08', '2024-01-12', today);
+    expect(r.balanceMinutes).toBe(180); // +2h Monday, +1h today
+  });
+
+  it('includes the current day when it is marked as leave', () => {
+    const r = calculateWeekBalance([makeDayEntry(today, 0, 'compensation')], baseSettings, today, today, today);
+    expect(r.balanceMinutes).toBe(-480);
+  });
+
+  it('counts every logged day when no today argument is given (backward compatible)', () => {
+    const r = calculateWeekBalance([makeDayEntry(today, 180)], baseSettings, today, today);
+    expect(r.balanceMinutes).toBe(-300);
+  });
+
+  it('still counts the day in totalWorked and daysLogged even while excluded from balance', () => {
+    const r = calculateWeekBalance([makeDayEntry(today, 180)], baseSettings, today, today, today);
+    expect(r.balanceMinutes).toBe(0);
+    expect(r.totalWorkedMinutes).toBe(180);
+    expect(r.daysLogged).toBe(1);
+  });
+});
+
 describe('calculateMonthBalance', () => {
   it('returns averageHoursPerDay of 0 for empty entries', () => {
     expect(calculateMonthBalance([], baseSettings).averageHoursPerDay).toBe(0);

@@ -31,6 +31,18 @@ export function dayBalanceMinutes(
   return worked + fill - expected;
 }
 
+/**
+ * Whether a day should count toward an aggregate (week/month/year) balance.
+ * Past days always count. The current day counts only once it is settled:
+ * its expected hours are met, or it is marked as leave. This keeps a day still
+ * in progress from showing up as a deficit before it is finished.
+ */
+export function countsTowardBalance(entry: DayEntry, settings: Settings, today: string): boolean {
+  if (entry.date !== today) return true;
+  if (entry.leaveType !== null) return true;
+  return entry.totalWorkedMinutes >= settings.expectedHoursPerDay * 60;
+}
+
 /** Converts "HH:mm" to minutes since midnight. E.g. "09:30" → 570 */
 export function parseTime(time: string): number {
   const [hours, minutes] = time.split(':').map(Number);
@@ -106,7 +118,7 @@ export function countExpectedDays(startDate: string, endDate: string, workDays: 
 
 /** Aggregates DayEntries into a WeekBalance using cached totalWorkedMinutes.
  *  Pass periodStart/periodEnd to count expected days over the full period. */
-export function calculateWeekBalance(entries: DayEntry[], settings: Settings, periodStart?: string, periodEnd?: string): WeekBalance {
+export function calculateWeekBalance(entries: DayEntry[], settings: Settings, periodStart?: string, periodEnd?: string, today?: string): WeekBalance {
   const expectedPerDay = settings.expectedHoursPerDay * 60;
   let daysExpected: number;
   if (periodStart && periodEnd) {
@@ -120,11 +132,12 @@ export function calculateWeekBalance(entries: DayEntry[], settings: Settings, pe
   const totalExpectedMinutes = daysExpected * expectedPerDay;
   const totalWorkedMinutes = entries.reduce((sum, e) => sum + e.totalWorkedMinutes, 0);
   // Overtime balance counts only days that have been logged: unlogged workdays are
-  // hours still to do, not a deficit against accumulated overtime.
-  const balanceMinutes = entries.reduce(
-    (sum, e) => sum + dayBalanceMinutes(e, settings, isWorkday(e.date, settings.workDays)),
-    0,
-  );
+  // hours still to do, not a deficit against accumulated overtime. The current day
+  // is excluded until it is finished (see countsTowardBalance).
+  const balanceMinutes = entries.reduce((sum, e) => {
+    if (today && !countsTowardBalance(e, settings, today)) return sum;
+    return sum + dayBalanceMinutes(e, settings, isWorkday(e.date, settings.workDays));
+  }, 0);
   return {
     totalWorkedMinutes,
     totalExpectedMinutes,
@@ -135,8 +148,8 @@ export function calculateWeekBalance(entries: DayEntry[], settings: Settings, pe
 }
 
 /** Aggregates DayEntries into a MonthBalance. */
-export function calculateMonthBalance(entries: DayEntry[], settings: Settings, periodStart?: string, periodEnd?: string): MonthBalance {
-  const week = calculateWeekBalance(entries, settings, periodStart, periodEnd);
+export function calculateMonthBalance(entries: DayEntry[], settings: Settings, periodStart?: string, periodEnd?: string, today?: string): MonthBalance {
+  const week = calculateWeekBalance(entries, settings, periodStart, periodEnd, today);
   const averageHoursPerDay =
     week.daysLogged > 0 ? week.totalWorkedMinutes / week.daysLogged / 60 : 0;
   return { ...week, averageHoursPerDay };
