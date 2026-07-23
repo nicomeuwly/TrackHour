@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# Search Console / analytics exports (local only, never commit)
+/gsc
+
 # debug
 npm-debug.log*
 yarn-debug.log*
