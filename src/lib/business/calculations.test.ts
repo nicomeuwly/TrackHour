@@ -14,6 +14,9 @@ import {
   isFilledLeave,
   dayBalanceMinutes,
   msUntilNextMinute,
+  getCalendarDayStatus,
+  dayRowBalance,
+  isValidPunchSequence,
 } from './calculations';
 import type { DayEntry, Punch, Settings, LeaveType } from '@/lib/types';
 
@@ -344,5 +347,94 @@ describe('msUntilNextMinute', () => {
 
   it('returns a full minute exactly on a minute boundary', () => {
     expect(msUntilNextMinute(new Date(2024, 0, 8, 9, 15, 0, 0))).toBe(60_000);
+  });
+});
+
+describe('getCalendarDayStatus', () => {
+  // 2024-01-08 is a Monday; 2024-01-13 a Saturday.
+  const today = '2024-01-10';
+  const firstTracked = '2024-01-09';
+
+  it('flags non-workdays as weekend', () => {
+    expect(getCalendarDayStatus('2024-01-13', undefined, baseSettings, today, firstTracked)).toBe('weekend');
+  });
+
+  it('returns the leave type for leave days', () => {
+    expect(getCalendarDayStatus('2024-01-09', makeDayEntry('2024-01-09', 0, 'sick'), baseSettings, today, firstTracked)).toBe('sick');
+  });
+
+  it('marks days after today as future', () => {
+    expect(getCalendarDayStatus('2024-01-11', undefined, baseSettings, today, firstTracked)).toBe('future');
+  });
+
+  it('marks a day meeting expected hours as complete, including today', () => {
+    expect(getCalendarDayStatus(today, makeDayEntry(today, 480), baseSettings, today, firstTracked)).toBe('complete');
+  });
+
+  it('marks today as in progress until it is complete, rather than partial', () => {
+    expect(getCalendarDayStatus(today, makeDayEntry(today, 120), baseSettings, today, firstTracked)).toBe('inProgress');
+    expect(getCalendarDayStatus(today, undefined, baseSettings, today, firstTracked)).toBe('inProgress');
+  });
+
+  it('marks past days under expected hours as incomplete', () => {
+    expect(getCalendarDayStatus('2024-01-09', makeDayEntry('2024-01-09', 120), baseSettings, today, firstTracked)).toBe('incomplete');
+  });
+
+  it('marks unlogged past workdays as missing once tracking has started', () => {
+    expect(getCalendarDayStatus('2024-01-09', undefined, baseSettings, today, '2024-01-08')).toBe('missing');
+  });
+
+  it('does not flag days before the first tracked day as missing', () => {
+    expect(getCalendarDayStatus('2024-01-08', undefined, baseSettings, today, firstTracked)).toBe('untracked');
+  });
+
+  it('treats every unlogged past day as untracked when nothing was ever tracked', () => {
+    expect(getCalendarDayStatus('2024-01-08', undefined, baseSettings, today, null)).toBe('untracked');
+  });
+});
+
+describe('dayRowBalance', () => {
+  const today = '2024-01-10';
+
+  it('is null for days without an entry, which do not count toward the balance', () => {
+    expect(dayRowBalance('2024-01-09', undefined, baseSettings, today)).toBeNull();
+  });
+
+  it('is null for today while it is still in progress', () => {
+    expect(dayRowBalance(today, makeDayEntry(today, 120), baseSettings, today)).toBeNull();
+  });
+
+  it('matches the aggregate contribution for settled days', () => {
+    expect(dayRowBalance('2024-01-09', makeDayEntry('2024-01-09', 420), baseSettings, today)).toBe(-60);
+    expect(dayRowBalance(today, makeDayEntry(today, 510), baseSettings, today)).toBe(30);
+  });
+
+  it('counts weekend work as overtime', () => {
+    expect(dayRowBalance('2024-01-06', makeDayEntry('2024-01-06', 90), baseSettings, today)).toBe(90);
+  });
+});
+
+describe('isValidPunchSequence', () => {
+  const d = '2024-01-08';
+
+  it('accepts an empty day and alternating in/out punches', () => {
+    expect(isValidPunchSequence([])).toBe(true);
+    expect(isValidPunchSequence([makePunch(d, '09:00', 'in'), makePunch(d, '12:00', 'out'), makePunch(d, '13:00', 'in')])).toBe(true);
+  });
+
+  it('validates in chronological order regardless of input order', () => {
+    expect(isValidPunchSequence([makePunch(d, '12:00', 'out'), makePunch(d, '09:00', 'in')])).toBe(true);
+  });
+
+  it('rejects a day starting with a clock-out', () => {
+    expect(isValidPunchSequence([makePunch(d, '09:00', 'out')])).toBe(false);
+  });
+
+  it('rejects two consecutive punches of the same type', () => {
+    expect(isValidPunchSequence([makePunch(d, '09:00', 'in'), makePunch(d, '10:00', 'in')])).toBe(false);
+  });
+
+  it('rejects two punches at the same time', () => {
+    expect(isValidPunchSequence([makePunch(d, '09:00', 'in'), makePunch(d, '09:00', 'out')])).toBe(false);
   });
 });

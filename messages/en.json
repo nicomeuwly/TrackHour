@@ -213,8 +213,6 @@
         "punchIn": "Clock in",
         "punchOut": "Clock out",
         "punchManual": "(manual)",
-        "delete": "Delete",
-        "deleteCancel": "Cancel",
         "deletePunchLabel": "Delete punch at {time}",
         "editCancel": "Cancel",
         "editPunchLabel": "Edit punch at {time}",
@@ -234,7 +232,12 @@
         "leaveCommentLabel": "Comment",
         "leaveCommentPlaceholder": "Nature of the absence…",
         "leaveRemove": "Remove absence",
-        "vacationRemaining": "{remaining} of {total} vacation days left"
+        "vacationRemaining": "{remaining} of {total} vacation days left",
+        "previousDay": "Previous day",
+        "nextDay": "Next day",
+        "toastDeleted": "Entry deleted",
+        "undo": "Undo",
+        "toastRestored": "Entry restored"
     },
     "DataTab": {
         "viewWeek": "Week",
@@ -288,7 +291,8 @@
         "prevWeek": "Previous week",
         "nextWeek": "Next week",
         "prevMonth": "Previous month",
-        "nextMonth": "Next month"
+        "nextMonth": "Next month",
+        "statusInProgress": "in progress"
     },
     "Settings": {
         "expectedHours": "Expected hours per day",

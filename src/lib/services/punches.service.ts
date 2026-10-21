@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { parseTime } from '@/lib/business/calculations';
+import { parseTime, isValidPunchSequence } from '@/lib/business/calculations';
 import type { Punch, DayEntry, LeaveType } from '@/lib/types';
 
 export async function getPunchesByDate(date: string): Promise<Punch[]> {
@@ -120,11 +120,29 @@ export async function updatePunch(id: string, newTime: string): Promise<void> {
   await updateDayEntry(punch.date);
 }
 
-export async function deletePunch(id: string): Promise<void> {
-  const punch = await db.punches.get(id);
-  if (!punch) return;
-  await db.punches.delete(id);
-  await updateDayEntry(punch.date);
+/** Deletes punches and returns them, so the caller can offer an undo. */
+export async function deletePunches(ids: string[]): Promise<Punch[]> {
+  const punches = (await db.punches.bulkGet(ids)).filter((p): p is Punch => p !== undefined);
+  if (punches.length === 0) return [];
+  await db.punches.bulkDelete(punches.map(p => p.id));
+  for (const date of new Set(punches.map(p => p.date))) {
+    await updateDayEntry(date);
+  }
+  return punches;
+}
+
+/** Re-inserts previously deleted punches. Refuses if punches added in the meantime
+ *  would make the day's sequence invalid (e.g. two clock-ins in a row). */
+export async function restorePunches(punches: Punch[]): Promise<void> {
+  for (const date of new Set(punches.map(p => p.date))) {
+    const restored = punches.filter(p => p.date === date);
+    const existing = await getPunchesByDate(date);
+    if (!isValidPunchSequence([...existing, ...restored])) {
+      throw new Error('Cannot undo: the day has changed since the deletion.');
+    }
+    await db.punches.bulkAdd(restored);
+    await updateDayEntry(date);
+  }
 }
 
 export async function updateEntryNote(date: string, note: string): Promise<void> {

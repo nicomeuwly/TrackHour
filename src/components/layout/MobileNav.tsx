@@ -15,7 +15,7 @@ export default function MobileNav() {
                 onClick={() => setOpen(v => !v)}
                 aria-label={open ? 'Close menu' : 'Open menu'}
                 aria-expanded={open}
-                className="p-2 hover:opacity-70 transition-opacity"
+                className="inline-flex items-center justify-center size-11 -mr-2.5 hover:opacity-70 transition-opacity"
             >
                 {open ? <X size={20} aria-hidden /> : <Menu size={20} aria-hidden />}
             </button>

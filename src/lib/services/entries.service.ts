@@ -15,6 +15,12 @@ export async function getEntriesByMonth(year: number, month: number): Promise<Da
   return getEntriesByRange(start, end);
 }
 
+/** Date of the earliest logged day, or null when nothing has been tracked yet. */
+export async function getFirstEntryDate(): Promise<string | null> {
+  const first = await db.entries.orderBy('date').first();
+  return first?.date ?? null;
+}
+
 export async function getAllEntries(): Promise<DayEntry[]> {
   const entries = await db.entries.toArray();
   return entries.sort((a, b) => b.date.localeCompare(a.date));

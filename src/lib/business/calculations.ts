@@ -1,4 +1,4 @@
-import type { Punch, DayEntry, DayCalculation, Settings, WeekBalance, MonthBalance, DayStatus, LeaveType } from '@/lib/types';
+import type { Punch, DayEntry, DayCalculation, Settings, WeekBalance, MonthBalance, DayStatus, LeaveType, CalendarDayStatus } from '@/lib/types';
 
 /** True when the leave tops the day up to expected hours (balance-neutral).
  *  `compensation` and no-leave return false. */
@@ -41,6 +41,51 @@ export function countsTowardBalance(entry: DayEntry, settings: Settings, today: 
   if (entry.date !== today) return true;
   if (entry.leaveType !== null) return true;
   return entry.totalWorkedMinutes >= settings.expectedHoursPerDay * 60;
+}
+
+/**
+ * Status shown for a day in the week list and month calendar.
+ * `firstTrackedDate` is the earliest logged day (null if none): unlogged days before
+ * it are `untracked`, not `missing`, so a new user isn't greeted with a wall of red.
+ * Today stays `inProgress` until it is complete, mirroring countsTowardBalance.
+ */
+export function getCalendarDayStatus(
+  date: string,
+  entry: DayEntry | undefined,
+  settings: Settings,
+  today: string,
+  firstTrackedDate: string | null,
+): CalendarDayStatus {
+  if (!isWorkday(date, settings.workDays)) return 'weekend';
+  if (entry?.leaveType) return entry.leaveType;
+  if (date > today) return 'future';
+  if (entry && entry.totalWorkedMinutes >= settings.expectedHoursPerDay * 60) return 'complete';
+  if (date === today) return 'inProgress';
+  if (!entry) return firstTrackedDate !== null && date >= firstTrackedDate ? 'missing' : 'untracked';
+  return 'incomplete';
+}
+
+/** Balance shown on a single day row: the day's contribution to the aggregate balance,
+ *  or null when the day doesn't count toward it (unlogged, or today still in progress). */
+export function dayRowBalance(
+  date: string,
+  entry: DayEntry | undefined,
+  settings: Settings,
+  today: string,
+): number | null {
+  if (!entry || !countsTowardBalance(entry, settings, today)) return null;
+  return dayBalanceMinutes(entry, settings, isWorkday(date, settings.workDays));
+}
+
+/** True when punches, in chronological order, alternate in/out starting with a
+ *  clock-in, with strictly increasing times. Guards restoring deleted punches. */
+export function isValidPunchSequence(punches: Punch[]): boolean {
+  const sorted = [...punches].sort((a, b) => a.time.localeCompare(b.time));
+  return sorted.every((punch, i) => {
+    const expectedType = i % 2 === 0 ? 'in' : 'out';
+    const prev = sorted[i - 1];
+    return punch.type === expectedType && (!prev || prev.time < punch.time);
+  });
 }
 
 /** Converts "HH:mm" to minutes since midnight. E.g. "09:30" → 570 */

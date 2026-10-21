@@ -213,8 +213,6 @@
         "punchIn": "Arrivée",
         "punchOut": "Départ",
         "punchManual": "(manuel)",
-        "delete": "Supprimer",
-        "deleteCancel": "Annuler",
         "deletePunchLabel": "Supprimer le pointage à {time}",
         "editCancel": "Annuler",
         "editPunchLabel": "Modifier le pointage à {time}",
@@ -234,7 +232,12 @@
         "leaveCommentLabel": "Commentaire",
         "leaveCommentPlaceholder": "Nature de l'absence…",
         "leaveRemove": "Retirer l'absence",
-        "vacationRemaining": "{remaining} jours de vacances restants sur {total}"
+        "vacationRemaining": "{remaining} jours de vacances restants sur {total}",
+        "previousDay": "Jour précédent",
+        "nextDay": "Jour suivant",
+        "toastDeleted": "Pointage supprimé",
+        "undo": "Annuler",
+        "toastRestored": "Pointage restauré"
     },
     "DataTab": {
         "viewWeek": "Semaine",
@@ -288,7 +291,8 @@
         "prevWeek": "Semaine précédente",
         "nextWeek": "Semaine suivante",
         "prevMonth": "Mois précédent",
-        "nextMonth": "Mois suivant"
+        "nextMonth": "Mois suivant",
+        "statusInProgress": "en cours"
     },
     "Settings": {
         "expectedHours": "Heures attendues par jour",

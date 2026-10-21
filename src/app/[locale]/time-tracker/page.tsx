@@ -36,14 +36,16 @@ export default async function TimeTrackerPage({ params }: Props) {
     const t = await getTranslations('TimeTracker');
 
     return (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
+        // The tool comes first: it is what people open this page for every day.
+        // The intro stays on the page for first-time visitors and search engines.
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
+            <h1 className="text-2xl sm:text-4xl font-bold tracking-tight mb-4 sm:mb-8">
                 {t('title')}
             </h1>
-            <p className="text-text/60 text-base mb-8 max-w-2xl">
+            <DashboardLoader />
+            <p className="text-text/60 text-base mt-10 max-w-2xl">
                 {t('intro')}
             </p>
-            <DashboardLoader />
         </div>
     );
 }

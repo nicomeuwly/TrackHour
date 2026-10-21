@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, Fragment } from 'react';
+import { useState, useEffect, useRef, Fragment, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import {
@@ -25,6 +25,8 @@ import type { Punch, LeaveType } from '@/lib/types';
 interface ClockTabProps {
   date: string;
   onDateChange: (date: string) => void;
+  /** Extra control rendered at the end of the date header (e.g. a settings button). */
+  headerAction?: ReactNode;
 }
 
 function shiftDate(d: string, delta: number): string {
@@ -35,10 +37,7 @@ function shiftDate(d: string, delta: number): string {
 
 // ── Punch timeline ──────────────────────────────────────────────────────────
 
-type PunchAction =
-  | { kind: 'confirmDeletePair'; inId: string; outId: string | null }
-  | { kind: 'edit'; id: string; value: string }
-  | null;
+type PunchAction = { kind: 'edit'; id: string; value: string } | null;
 
 type PunchPair = { inPunch: Punch; outPunch: Punch | null };
 
@@ -71,6 +70,9 @@ function buildPairs(punches: Punch[]): PunchPair[] {
 
 const TrashIcon = () => <Trash2 className="w-4 h-4 sm:w-3 sm:h-3" aria-hidden />;
 
+const EDITABLE_TIME_CLASS =
+  'inline-flex items-center min-h-11 sm:min-h-0 px-1.5 -mx-1.5 rounded-md text-sm font-mono font-semibold underline decoration-dotted underline-offset-4 hover:decoration-solid';
+
 const ArrowIcon = () => <ArrowRight size={12} className="flex-none text-text/25" aria-hidden />;
 
 function PunchTimeline({
@@ -79,7 +81,7 @@ function PunchTimeline({
   onEdit,
 }: {
   punches: Punch[];
-  onDelete: (id: string) => void;
+  onDelete: (ids: string[]) => void;
   onEdit: (id: string, newTime: string) => Promise<void>;
 }) {
   const t = useTranslations('ClockTab');
@@ -106,7 +108,6 @@ function PunchTimeline({
 
         const isEditingIn = action?.kind === 'edit' && action.id === inPunch.id;
         const isEditingOut = !!(outPunch && action?.kind === 'edit' && action.id === outPunch.id);
-        const isDeletingPair = action?.kind === 'confirmDeletePair' && action.inId === inPunch.id;
         const editValue = action?.kind === 'edit' ? action.value : '';
 
         return (
@@ -160,13 +161,14 @@ function PunchTimeline({
                 </button>
               </div>
             ) : (
-              /* Pair row — normal (delete confirm inline) */
+              /* Pair row — normal. Times carry a dotted underline so they read as
+                 editable without hover (touch); deletion is immediate with an undo toast. */
               <div role="listitem" className="flex items-center gap-2 px-4 py-3 sm:px-3 sm:py-2 min-h-14 sm:min-h-12 rounded-xl hover:bg-text/4 group">
                 <span className="flex-none w-2 h-2 rounded-full bg-primary" aria-hidden />
                 <button
                   onClick={() => setAction({ kind: 'edit', id: inPunch.id, value: inPunch.time })}
                   aria-label={t('editPunchLabel', { time: inPunch.time })}
-                  className="text-sm font-mono font-semibold text-primary hover:underline underline-offset-2 decoration-primary/40"
+                  className={`${EDITABLE_TIME_CLASS} text-primary decoration-primary/40`}
                 >
                   {inPunch.time}
                 </button>
@@ -175,7 +177,7 @@ function PunchTimeline({
                   <button
                     onClick={() => setAction({ kind: 'edit', id: outPunch.id, value: outPunch.time })}
                     aria-label={t('editPunchLabel', { time: outPunch.time })}
-                    className="text-sm font-mono font-semibold text-secondary hover:underline underline-offset-2 decoration-secondary/40"
+                    className={`${EDITABLE_TIME_CLASS} text-secondary decoration-secondary/40`}
                   >
                     {outPunch.time}
                   </button>
@@ -189,31 +191,15 @@ function PunchTimeline({
                   </>
                 )}
                 <span className="flex-1" />
-                {isDeletingPair ? (
-                  <span className="flex items-center gap-1.5 text-xs">
-                    <button
-                      onClick={() => {
-                        onDelete(inPunch.id);
-                        if (outPunch) onDelete(outPunch.id);
-                        setAction(null);
-                      }}
-                      className="text-secondary font-medium hover:underline"
-                    >
-                      {t('delete')}
-                    </button>
-                    <button onClick={() => setAction(null)} className="text-text/40 hover:text-text/60">
-                      {t('deleteCancel')}
-                    </button>
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => setAction({ kind: 'confirmDeletePair', inId: inPunch.id, outId: outPunch?.id ?? null })}
-                    aria-label={t('deletePunchLabel', { time: inPunch.time })}
-                    className="p-2 sm:p-1 rounded hover:bg-text/8 text-text/30 hover:text-secondary transition-colors sm:opacity-0 sm:group-hover:opacity-100"
-                  >
-                    <TrashIcon />
-                  </button>
-                )}
+                {/* Hidden until hover only where hover exists (fine pointer); always
+                    visible on touch, and revealed on keyboard focus. */}
+                <button
+                  onClick={() => onDelete(outPunch ? [inPunch.id, outPunch.id] : [inPunch.id])}
+                  aria-label={t('deletePunchLabel', { time: inPunch.time })}
+                  className="inline-flex items-center justify-center size-11 sm:size-8 -mr-2 sm:mr-0 rounded-lg hover:bg-text/8 text-text/40 hover:text-secondary transition-colors pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:group-focus-within:opacity-100 focus-visible:opacity-100"
+                >
+                  <TrashIcon />
+                </button>
               </div>
             )}
           </Fragment>
@@ -360,12 +346,89 @@ function SegmentedProgressBar({ progressPct, isPaused }: { progressPct: number; 
   );
 }
 
+function DayProgress({ progressPct, isPaused, startTime, endTime }: {
+  progressPct: number;
+  isPaused: boolean;
+  startTime: string;
+  endTime: string | null;
+}) {
+  return (
+    <div className="w-full flex flex-col gap-1.5">
+      <SegmentedProgressBar progressPct={progressPct} isPaused={isPaused} />
+      <div className="flex justify-between">
+        <span className="text-xs font-semibold text-text/50 tabular-nums">{startTime}</span>
+        {endTime && <span className="text-xs font-semibold text-text/50 tabular-nums">{endTime}</span>}
+      </div>
+    </div>
+  );
+}
+
+// ── Clock actions ────────────────────────────────────────────────────────────
+
+const CLOCK_BUTTON_TONE = {
+  in: 'border-primary bg-primary/10 text-primary hover:bg-primary/20',
+  out: 'border-secondary bg-secondary/10 text-secondary hover:bg-secondary/20',
+} as const;
+
+const CLOCK_BUTTON_ICON = { in: Play, out: Square } as const;
+
+// Manual entry is a quiet link next to a primary clock button, and becomes the
+// secondary button itself when it is the only available action (past days, leave).
+const MANUAL_LINK_CLASS = 'min-h-11 px-3 text-sm text-text/50 hover:text-text/80 transition-colors';
+const MANUAL_BUTTON_CLASS = 'border border-text/20 text-text/60 px-8 py-3 rounded-xl font-semibold text-base hover:bg-text/5 transition-colors';
+
+// Chips stay visually compact (h-8) while a pseudo-element extends the touch
+// target to 44px on coarse pointers.
+const CHIP_HIT_AREA_CLASS = 'relative h-8 pointer-coarse:after:absolute pointer-coarse:after:inset-x-0 pointer-coarse:after:-inset-y-1.5';
+
+const DAY_NAV_BUTTON_CLASS = 'inline-flex flex-none items-center justify-center size-11 sm:size-9 rounded-lg hover:bg-text/8 transition-colors';
+
+function ClockActions({
+  kind,
+  label,
+  manualLabel,
+  canClockNow,
+  manualMode,
+  onClock,
+  onOpenManual,
+  onCancelManual,
+}: {
+  kind: 'in' | 'out';
+  label: string;
+  manualLabel: string;
+  canClockNow: boolean;
+  manualMode: boolean;
+  onClock: (manualTime?: string) => void;
+  onOpenManual: () => void;
+  onCancelManual: () => void;
+}) {
+  const t = useTranslations('ClockTab');
+  if (manualMode) {
+    return <ManualInput label={manualLabel} onConfirm={onClock} onCancel={onCancelManual} />;
+  }
+  const Icon = CLOCK_BUTTON_ICON[kind];
+  return (
+    <>
+      {canClockNow && (
+        <button onClick={() => onClock()}
+          className={`flex items-center gap-2 border px-8 py-3 rounded-xl font-semibold text-base transition-colors ${CLOCK_BUTTON_TONE[kind]}`}>
+          <Icon size={18} fill="currentColor" aria-hidden />
+          {label}
+        </button>
+      )}
+      <button onClick={onOpenManual} className={canClockNow ? MANUAL_LINK_CLASS : MANUAL_BUTTON_CLASS}>
+        {t('enterManually')}
+      </button>
+    </>
+  );
+}
+
 // ── Main component ──────────────────────────────────────────────────────────
 
-export default function ClockTab({ date, onDateChange }: ClockTabProps) {
+export default function ClockTab({ date, onDateChange, headerAction }: ClockTabProps) {
   const t = useTranslations('ClockTab');
   const locale = useLocale();
-  const { punches, note, leaveType, isLoading, error, clockIn, clockOut, deletePunch, editPunch, saveNote, setLeave } = useClockDay(date);
+  const { punches, note, leaveType, isLoading, error, clockIn, clockOut, deletePunches, restorePunches, editPunch, saveNote, setLeave } = useClockDay(date);
   const { settings } = useSettings();
   const { used: vacationUsed, refresh: refreshVacation } = useVacationUsage(parseInt(date.slice(0, 4)));
   const { showToast } = useToast();
@@ -414,6 +477,31 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
   const expectedMinutes = (settings?.expectedHoursPerDay ?? 8) * 60;
   const progressPct = dayCalc ? Math.min(100, (dayCalc.workedMinutes / expectedMinutes) * 100) : 0;
   const AbsenceIcon = leaveType !== null ? LEAVE_ICON[leaveType] : ABSENCE_ICON;
+  const isOnBreak = dayCalc?.status !== 'complete' && isToday;
+  const projectedEndTime = isToday ? dayCalc?.projectedEndTime ?? null : null;
+  const manualProps = {
+    manualMode,
+    onOpenManual: () => setManualMode(true),
+    onCancelManual: () => setManualMode(false),
+  };
+
+  // Delete immediately and offer an undo: forgiving, and one tap fewer than a confirm.
+  async function handleDeletePunches(ids: string[]) {
+    try {
+      const deleted = await deletePunches(ids);
+      showToast(t('toastDeleted'), 'info', {
+        action: {
+          label: t('undo'),
+          onClick: async () => {
+            try {
+              await restorePunches(deleted);
+              showToast(t('toastRestored'), 'success');
+            } catch (e) { showToast(String(e).replace('Error: ', ''), 'error'); }
+          },
+        },
+      });
+    } catch (e) { showToast(String(e).replace('Error: ', ''), 'error'); }
+  }
 
   async function handleClockIn(manualTime?: string) {
     try {
@@ -454,48 +542,55 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Date header */}
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1" ref={pickerRef}>
-          <button
-            onClick={() => setShowPicker(s => !s)}
-            className="flex items-center gap-2 hover:bg-text/5 rounded-xl px-2 py-1 transition-colors"
-          >
-            <Calendar size={24} aria-hidden />
-            <div>
-              {isToday && <p className="text-xs font-semibold text-primary leading-none mb-0.5 capitalize text-left">{t('today')}</p>}
-              <p className="font-bold text-base leading-none capitalize">{dateLabel}</p>
-            </div>
+      {/* Date header — the date and its prev/next arrows act on the same thing, so they
+          are grouped; day-level actions sit beside them and wrap below on narrow screens. */}
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        {/* basis-64 keeps the full date readable: actions wrap below instead of truncating it */}
+        <div className="flex items-center grow basis-64 min-w-0">
+          <div className="relative min-w-0" ref={pickerRef}>
+            <button
+              onClick={() => setShowPicker(s => !s)}
+              aria-haspopup="dialog"
+              aria-expanded={showPicker}
+              className="flex items-center gap-2 min-h-11 max-w-full hover:bg-text/5 rounded-xl px-2 py-1 transition-colors text-left"
+            >
+              <Calendar size={24} aria-hidden className="flex-none" />
+              <div className="min-w-0">
+                {isToday && <p className="text-xs font-semibold text-primary leading-none mb-0.5 capitalize">{t('today')}</p>}
+                <p className="font-bold text-base leading-tight capitalize truncate">{dateLabel}</p>
+              </div>
+            </button>
+            {showPicker && (
+              <DatePickerPopup current={date} onSelect={onDateChange} onClose={() => setShowPicker(false)} />
+            )}
+          </div>
+          <button onClick={() => onDateChange(shiftDate(date, -1))} aria-label={t('previousDay')} className={DAY_NAV_BUTTON_CLASS}>
+            <ChevronLeft size={16} aria-hidden />
           </button>
-          {showPicker && (
-            <DatePickerPopup current={date} onSelect={onDateChange} onClose={() => setShowPicker(false)} />
-          )}
+          <button onClick={() => onDateChange(shiftDate(date, 1))} aria-label={t('nextDay')} className={DAY_NAV_BUTTON_CLASS}>
+            <ChevronRight size={16} aria-hidden />
+          </button>
         </div>
-        {!isToday && (
-          <button onClick={() => onDateChange(today)}
-            className="text-xs font-medium text-primary border border-primary/30 rounded-lg px-2.5 py-1 hover:bg-primary/8 transition-colors">
-            {t('backToToday')}
-          </button>
-        )}
-        {dayCalc && (leaveType !== null || dayCalc.workedMinutes < expectedMinutes) && (
-          <button
-            onClick={() => setShowLeaveModal(true)}
-            aria-haspopup="dialog"
-            className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 transition-colors ${leaveType !== null ? 'border-tertiary/30 bg-tertiary/10' : 'border-text/15 text-text/70 hover:bg-text/5'}`}
-          >
-            <AbsenceIcon size={13} aria-hidden className={leaveType !== null ? 'text-tertiary' : 'text-text/55'} />
-            <span className={`text-xs font-medium whitespace-nowrap ${leaveType !== null ? 'text-tertiary' : 'text-text/70'}`}>
-              {leaveType !== null ? t(LEAVE_LABEL_KEY[leaveType]) : t('absence')}
-            </span>
-          </button>
-        )}
-        <div className="flex gap-1">
-          <button onClick={() => onDateChange(shiftDate(date, -1))} aria-label="←" className="p-2 rounded-lg hover:bg-text/8 transition-colors">
-            <ChevronLeft size={14} aria-hidden />
-          </button>
-          <button onClick={() => onDateChange(shiftDate(date, 1))} aria-label="→" className="p-2 rounded-lg hover:bg-text/8 transition-colors">
-            <ChevronRight size={14} aria-hidden />
-          </button>
+        <div className="flex items-center gap-2 ml-auto">
+          {!isToday && (
+            <button onClick={() => onDateChange(today)}
+              className={`${CHIP_HIT_AREA_CLASS} text-xs font-medium text-primary border border-primary/30 rounded-lg px-3 hover:bg-primary/8 transition-colors`}>
+              {t('backToToday')}
+            </button>
+          )}
+          {dayCalc && (leaveType !== null || dayCalc.workedMinutes < expectedMinutes) && (
+            <button
+              onClick={() => setShowLeaveModal(true)}
+              aria-haspopup="dialog"
+              className={`${CHIP_HIT_AREA_CLASS} flex items-center gap-1.5 rounded-lg border px-3 transition-colors ${leaveType !== null ? 'border-tertiary/30 bg-tertiary/10' : 'border-text/15 text-text/70 hover:bg-text/5'}`}
+            >
+              <AbsenceIcon size={13} aria-hidden className={leaveType !== null ? 'text-tertiary' : 'text-text/55'} />
+              <span className={`text-xs font-medium whitespace-nowrap ${leaveType !== null ? 'text-tertiary' : 'text-text/70'}`}>
+                {leaveType !== null ? t(LEAVE_LABEL_KEY[leaveType]) : t('absence')}
+              </span>
+            </button>
+          )}
+          {headerAction}
         </div>
       </div>
 
@@ -523,13 +618,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
                 </p>
               </div>
               <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} size="lg" />
-              {!manualMode ? (
-                <button onClick={() => setManualMode(true)} className="text-sm text-text/40 hover:text-text/70 transition-colors">
-                  {t('enterManually')}
-                </button>
-              ) : (
-                <ManualInput label={t('clockInAt')} onConfirm={handleClockIn} onCancel={() => setManualMode(false)} />
-              )}
+              <ClockActions {...manualProps} kind="in" label={t('clockIn')} manualLabel={t('clockInAt')} canClockNow={false} onClock={handleClockIn} />
             </>
           )}
 
@@ -539,23 +628,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
               <p className="text-sm text-text/40">
                 {t('noEntries')}{isToday ? `, ${t('noEntriesHint')}` : ''}
               </p>
-              {!manualMode && (
-                <>
-                  {isToday ? (
-                    <button onClick={() => handleClockIn()}
-                      className="flex items-center gap-2 border border-primary bg-primary/10 text-primary px-8 py-3 rounded-xl font-semibold text-base hover:bg-primary/20 transition-colors">
-                      <Play size={18} fill="currentColor" aria-hidden />
-                      {t('clockIn')}
-                    </button>
-                  ) : null}
-                  <button onClick={() => setManualMode(true)} className={isToday ? "text-sm text-text/40 hover:text-text/70 transition-colors" : "border border-text/20 text-text/60 px-8 py-3 rounded-xl font-semibold text-base hover:bg-text/5 transition-colors"}>
-                    {t('enterManually')}
-                  </button>
-                </>
-              )}
-              {manualMode && (
-                <ManualInput label={t('clockInAt')} onConfirm={handleClockIn} onCancel={() => setManualMode(false)} />
-              )}
+              <ClockActions {...manualProps} kind="in" label={t('clockIn')} manualLabel={t('clockInAt')} canClockNow={isToday} onClock={handleClockIn} />
             </>
           )}
 
@@ -566,98 +639,32 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
                 <Briefcase size={20} aria-hidden />
                 {dayCalc ? formatMinutes(dayCalc.workedMinutes) : '–'}
               </p>
-              <div className="w-full flex flex-col gap-1.5">
-                <SegmentedProgressBar progressPct={progressPct} isPaused={false} />
-                <div className="flex justify-between">
-                  <span className="text-xs font-semibold text-text/50 tabular-nums">{punches[0].time}</span>
-                  {dayCalc?.projectedEndTime && isToday && (
-                    <span className="text-xs font-semibold text-text/50 tabular-nums">{dayCalc.projectedEndTime}</span>
-                  )}
-                </div>
-              </div>
-              {!manualMode && (
-                <>
-                  {isToday ? (
-                    <button onClick={() => handleClockOut()}
-                      className="flex items-center gap-2 border border-secondary bg-secondary/10 text-secondary px-8 py-3 rounded-xl font-semibold text-base hover:bg-secondary/20 transition-colors">
-                      <Square size={18} fill="currentColor" aria-hidden />
-                      {t('clockOut')}
-                    </button>
-                  ) : null}
-                  <button onClick={() => setManualMode(true)} className={isToday ? "text-sm text-text/40 hover:text-text/70 transition-colors" : "border border-text/20 text-text/60 px-8 py-3 rounded-xl font-semibold text-base hover:bg-text/5 transition-colors"}>
-                    {t('enterManually')}
-                  </button>
-                </>
-              )}
-              {manualMode && (
-                <ManualInput label={t('clockOutAt')} onConfirm={handleClockOut} onCancel={() => setManualMode(false)} />
-              )}
+              <DayProgress progressPct={progressPct} isPaused={false} startTime={punches[0].time} endTime={projectedEndTime} />
+              <ClockActions {...manualProps} kind="out" label={t('clockOut')} manualLabel={t('clockOutAt')} canClockNow={isToday} onClock={handleClockOut} />
             </>
           )}
 
-          {/* On break or day complete */}
-          {punches.length > 0 && lastType === 'out' && dayCalc && (
+          {/* On break (today, day not complete yet) */}
+          {punches.length > 0 && lastType === 'out' && dayCalc && isOnBreak && (
             <>
-              {dayCalc.status !== 'complete' && isToday ? (
-                <>
-                  <p className="text-lg font-semibold text-text/35 flex items-center justify-center gap-2">
-                    <Coffee size={20} aria-hidden />
-                    {formatMinutes(dayCalc.liveBreakMinutes)}
-                  </p>
-                  <div className="w-full flex flex-col gap-1.5">
-                    <div className="flex items-center gap-3">
-                      <SegmentedProgressBar progressPct={progressPct} isPaused={true} />
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-xs font-semibold text-text/50 tabular-nums">{punches[0].time}</span>
-                      {dayCalc?.projectedEndTime && isToday && (
-                        <span className="text-xs font-semibold text-text/50 tabular-nums">{dayCalc.projectedEndTime}</span>
-                      )}
-                    </div>
-                  </div>
-                  {!manualMode && (
-                    <>
-                      {isToday ? (
-                        <button onClick={() => handleClockIn()}
-                          className="flex items-center gap-2 border border-primary bg-primary/10 text-primary px-8 py-3 rounded-xl font-semibold text-base hover:bg-primary/20 transition-colors">
-                          <Play size={18} fill="currentColor" aria-hidden />
-                          {t('clockIn')}
-                        </button>
-                      ) : null}
-                      <button onClick={() => setManualMode(true)} className="text-sm text-text/40 hover:text-text/70 transition-colors">
-                        {t('enterManually')}
-                      </button>
-                    </>
-                  )}
-                  {manualMode && (
-                    <ManualInput label={t('clockInAt')} onConfirm={handleClockIn} onCancel={() => setManualMode(false)} />
-                  )}
-                </>
-              ) : (
-                <>
-                  <div>
-                    <p className="text-2xl font-bold text-primary">{t('dayComplete')}</p>
-                    <p className="text-sm text-text/50 mt-1">{formatMinutes(dayCalc.workedMinutes)} {t('workedSuffix')}</p>
-                  </div>
-                  <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} size="lg" />
-                  {!manualMode ? (
-                    <>
-                      {isToday ? (
-                        <button onClick={() => handleClockIn()}
-                          className="flex items-center gap-2 border border-primary bg-primary/10 text-primary px-8 py-3 rounded-xl font-semibold text-base hover:bg-primary/20 transition-colors">
-                          <Play size={18} fill="currentColor" aria-hidden />
-                          {t('clockInAgain')}
-                        </button>
-                      ) : null}
-                      <button onClick={() => setManualMode(true)} className="text-sm text-text/40 hover:text-text/70 transition-colors">
-                        {t('enterManually')}
-                      </button>
-                    </>
-                  ) : (
-                    <ManualInput label={t('clockInAt')} onConfirm={handleClockIn} onCancel={() => setManualMode(false)} />
-                  )}
-                </>
-              )}
+              <p className="text-lg font-semibold text-text/35 flex items-center justify-center gap-2">
+                <Coffee size={20} aria-hidden />
+                {formatMinutes(dayCalc.liveBreakMinutes)}
+              </p>
+              <DayProgress progressPct={progressPct} isPaused startTime={punches[0].time} endTime={projectedEndTime} />
+              <ClockActions {...manualProps} kind="in" label={t('clockIn')} manualLabel={t('clockInAt')} canClockNow={isToday} onClock={handleClockIn} />
+            </>
+          )}
+
+          {/* Day complete, or a past day that ended clocked out */}
+          {punches.length > 0 && lastType === 'out' && dayCalc && !isOnBreak && (
+            <>
+              <div>
+                <p className="text-2xl font-bold text-primary">{t('dayComplete')}</p>
+                <p className="text-sm text-text/50 mt-1">{formatMinutes(dayCalc.workedMinutes)} {t('workedSuffix')}</p>
+              </div>
+              <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} size="lg" />
+              <ClockActions {...manualProps} kind="in" label={t('clockInAgain')} manualLabel={t('clockInAt')} canClockNow={isToday} onClock={handleClockIn} />
             </>
           )}
         </div>
@@ -684,7 +691,7 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
           <div className="flex-1 min-w-full sm:min-w-44 rounded-xl border border-text/10 divide-y divide-text/8">
             <PunchTimeline
               punches={punches}
-              onDelete={deletePunch}
+              onDelete={handleDeletePunches}
               onEdit={async (id, newTime) => {
                 try {
                   await editPunch(id, newTime);

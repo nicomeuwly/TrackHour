@@ -17,33 +17,29 @@ import {
   getMonthDates,
   localDateStr,
   formatMinutes,
-  dayBalanceMinutes,
+  getCalendarDayStatus,
+  dayRowBalance,
 } from "@/lib/business/calculations";
+import { useFirstTrackedDate } from "@/lib/hooks/useFirstTrackedDate";
 import {
   exportPeriodAsCSV,
   deletePeriodData,
   deleteAllData,
 } from "@/lib/services/export.service";
 import { exportData, importData } from "@/lib/services/backup.service";
-import type { DayEntry, Settings } from "@/lib/types";
+import type { DayEntry, CalendarDayStatus } from "@/lib/types";
 
 interface DataTabProps {
   onNavigateToDay?: (date: string) => void;
 }
 
-type CellStatus = "complete" | "incomplete" | "missing" | "weekend" | "future" | "vacation" | "sick" | "other" | "compensation";
+type CellStatus = CalendarDayStatus;
+// Days that are not actionable yet (or not tracked at all) carry no badge.
+type BadgedStatus = Exclude<CellStatus, "future" | "untracked">;
 
-function getCellStatus(date: string, entry: DayEntry | undefined, settings: Settings, today: string): CellStatus {
-  const dow = new Date(date + "T00:00:00").getDay();
-  const isoDay = dow === 0 ? 7 : dow;
-  if (!settings.workDays.includes(isoDay)) return "weekend";
-  if (entry?.leaveType) return entry.leaveType;
-  if (date > today) return "future";
-  if (!entry) return "missing";
-  if (entry.totalWorkedMinutes >= settings.expectedHoursPerDay * 60) return "complete";
-  return "incomplete";
+function hasBadge(status: CellStatus): status is BadgedStatus {
+  return status !== "future" && status !== "untracked";
 }
-
 
 const CELL_BG: Record<CellStatus, string> = {
   complete: "bg-primary/20 hover:brightness-85",
@@ -55,9 +51,12 @@ const CELL_BG: Record<CellStatus, string> = {
   other: "bg-text/10 hover:brightness-95",
   compensation: "bg-primary/15 hover:brightness-85",
   future: "bg-background hover:brightness-95",
+  untracked: "bg-background hover:brightness-95",
+  inProgress: "bg-primary/10 hover:brightness-85",
 };
 
-const STATUS_BADGE: Record<Exclude<CellStatus, "future">, string> = {
+const STATUS_BADGE: Record<BadgedStatus, string> = {
+  inProgress: "bg-primary/10 text-primary",
   complete: "bg-primary/15 text-primary",
   incomplete: "bg-tertiary/15 text-tertiary",
   missing: "bg-secondary/15 text-secondary",
@@ -91,6 +90,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
 
   const { settings } = useSettings();
   const { showToast } = useToast();
+  const { firstTrackedDate, refresh: firstTrackedRefresh } = useFirstTrackedDate();
 
   const refYear = parseInt(refDate.slice(0, 4));
   const refMonth = parseInt(refDate.slice(5, 7));
@@ -154,6 +154,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
     weekRefresh();
     monthRefresh();
     yearRefresh();
+    firstTrackedRefresh();
   }
 
   async function handleExportCSV(type: "week" | "month") {
@@ -238,7 +239,8 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
     ? monthEntries.filter(e => e.totalWorkedMinutes >= settings.expectedHoursPerDay * 60).length
     : 0;
 
-  const STATUS_LABEL: Record<Exclude<CellStatus, "future">, string> = {
+  const STATUS_LABEL: Record<BadgedStatus, string> = {
+    inProgress: t("statusInProgress"),
     complete: t("statusComplete"),
     incomplete: t("statusPartial"),
     missing: t("statusMissing"),
@@ -350,20 +352,18 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
               <div className="rounded-xl border border-text/10 bg-background overflow-hidden divide-y divide-text/6">
                 {weekDatesArr.map((date, i) => {
                   const entry = entriesByDate[date];
-                  const status = settings ? getCellStatus(date, entry, settings, today) : "future";
+                  const status = settings ? getCalendarDayStatus(date, entry, settings, today, firstTrackedDate) : "future";
                   const d = new Date(date + "T00:00:00");
                   const dayNum = d.getDate();
-                  const balanceMinutes: number | null =
-                    !settings || status === "weekend" || status === "future"
-                      ? null
-                      : dayBalanceMinutes(entry, settings, true);
+                  // Same rule as the period balance: only settled, logged days show a balance.
+                  const balanceMinutes = settings ? dayRowBalance(date, entry, settings, today) : null;
 
                   return (
                     <button
                       key={date}
                       onClick={() => onNavigateToDay?.(date)}
                       aria-label={d.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric" })}
-                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-text/5 transition-colors text-left ${status === "weekend" || status === "future" ? "opacity-55" : ""}`}
+                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-text/5 transition-colors text-left ${status === "weekend" || !hasBadge(status) ? "opacity-55" : ""}`}
                     >
                       <div className="w-14 flex-none">
                         <p className={`text-sm capitalize font-semibold ${date === today ? "text-primary" : ""}`}>
@@ -385,7 +385,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                         )}
                       </div>
                       <div className="flex-none min-w-20">
-                        {status !== "future" && (() => {
+                        {hasBadge(status) && (() => {
                           const LeaveIcon = leaveIconFor(status);
                           return (
                             <span className={`inline-flex items-center gap-1 text-xs capitalize font-medium px-2 py-1 rounded-full ${STATUS_BADGE[status]}`}>
@@ -419,7 +419,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                     const day = i + 1;
                     const dateStr = `${refYear}-${String(refMonth).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
                     const entry = entriesByDate[dateStr];
-                    const status = settings ? getCellStatus(dateStr, entry, settings, today) : "future";
+                    const status = settings ? getCalendarDayStatus(dateStr, entry, settings, today, firstTrackedDate) : "future";
                     const isToday = dateStr === today;
                     const LeaveIcon = leaveIconFor(status);
 
@@ -430,7 +430,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                         aria-label={new Date(refYear, refMonth - 1, day).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}
                         className={`rounded-lg p-0.5 flex flex-col items-center justify-center aspect-square min-h-9.5 transition-colors dark:hover:brightness-140 active:scale-95 ${CELL_BG[status]} ${isToday ? "ring-1 ring-primary ring-inset" : ""}`}
                       >
-                        <span className={`text-xs font-semibold leading-none ${isToday ? "text-primary" : status === "future" ? "text-text/30" : ""}`}>
+                        <span className={`text-xs font-semibold leading-none ${isToday ? "text-primary" : !hasBadge(status) ? "text-text/30" : ""}`}>
                           {day}
                         </span>
                         {LeaveIcon ? (

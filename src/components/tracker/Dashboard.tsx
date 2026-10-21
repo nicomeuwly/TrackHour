@@ -53,24 +53,25 @@ function DashboardInner() {
         </div>
       )}
 
-      {/* Top bar */}
-      <div className="flex items-center justify-end mb-4">
-        <button
-          onClick={() => setSettingsOpen(true)}
-          aria-label={t('settingsTitle')}
-          className="p-2.5 rounded-xl hover:bg-text/8 transition-colors text-text/60 hover:text-text"
-        >
-          <Settings size={18} aria-hidden />
-        </button>
-      </div>
-
-      {/* Content */}
+      {/* Content — settings live in the date header rather than on a row of their own */}
       {isLoading && !settings ? (
         <div className="flex flex-col gap-3">
           {[1, 2, 3].map(i => <div key={i} className="h-12 rounded-xl bg-text/5 animate-pulse" />)}
         </div>
       ) : (
-        <ClockTab date={selectedDate} onDateChange={setSelectedDate} />
+        <ClockTab
+          date={selectedDate}
+          onDateChange={setSelectedDate}
+          headerAction={
+            <button
+              onClick={() => setSettingsOpen(true)}
+              aria-label={t('settingsTitle')}
+              className="inline-flex items-center justify-center size-11 sm:size-9 rounded-xl hover:bg-text/8 transition-colors text-text/60 hover:text-text"
+            >
+              <Settings size={18} aria-hidden />
+            </button>
+          }
+        />
       )}
 
       {/* Settings modal */}

@@ -63,3 +63,7 @@ export interface MonthBalance extends WeekBalance {
 }
 
 export type DayStatus = 'complete' | 'incomplete' | 'missing' | 'weekend' | 'vacation' | 'sick' | 'other' | 'compensation';
+
+/** Status of a day in the week/month views. Adds states that only make sense relative
+ *  to today and to when tracking started, so they never read as a deficit. */
+export type CalendarDayStatus = DayStatus | 'future' | 'inProgress' | 'untracked';

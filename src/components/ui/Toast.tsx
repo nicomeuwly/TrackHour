@@ -4,15 +4,29 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 
 type ToastType = 'success' | 'error' | 'info';
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
+interface ToastOptions {
+  action?: ToastAction;
+}
+
 interface Toast {
   id: string;
   message: string;
   type: ToastType;
+  action?: ToastAction;
 }
 
 interface ToastContextValue {
-  showToast: (message: string, type?: ToastType) => void;
+  showToast: (message: string, type?: ToastType, options?: ToastOptions) => void;
 }
+
+const TOAST_DURATION_MS = 3000;
+// Toasts carrying an action (e.g. undo) stay longer so there is time to reach it.
+const TOAST_WITH_ACTION_DURATION_MS = 5000;
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
@@ -31,11 +45,15 @@ const typeIcons: Record<ToastType, string> = {
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = useCallback((message: string, type: ToastType = 'info') => {
-    const id = crypto.randomUUID();
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
+  const dismissToast = useCallback((id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
+
+  const showToast = useCallback((message: string, type: ToastType = 'info', options?: ToastOptions) => {
+    const id = crypto.randomUUID();
+    setToasts(prev => [...prev, { id, message, type, action: options?.action }]);
+    setTimeout(() => dismissToast(id), options?.action ? TOAST_WITH_ACTION_DURATION_MS : TOAST_DURATION_MS);
+  }, [dismissToast]);
 
   return (
     <ToastContext.Provider value={{ showToast }}>
@@ -54,7 +72,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <span className="flex-none w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
               {typeIcons[t.type]}
             </span>
-            {t.message}
+            <span className="flex-1">{t.message}</span>
+            {t.action && (
+              <button
+                onClick={() => { dismissToast(t.id); t.action?.onClick(); }}
+                className="-my-2 -mr-2 min-h-11 px-3 rounded-lg font-semibold underline underline-offset-2 hover:bg-current/15 transition-colors"
+              >
+                {t.action.label}
+              </button>
+            )}
           </div>
         ))}
       </div>
