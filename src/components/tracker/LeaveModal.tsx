@@ -86,7 +86,7 @@ export default function LeaveModal({
               value={comment}
               onChange={e => setComment(e.target.value)}
               placeholder={t('leaveCommentPlaceholder')}
-              className="w-full rounded-xl border border-text/10 bg-background px-3 py-2 text-sm placeholder:text-text/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              className="w-full rounded-xl border border-text/10 bg-background px-3 py-2 text-sm placeholder:text-text/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             />
           </div>
         )}

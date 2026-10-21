@@ -68,11 +68,11 @@ export default async function HomePage({ params }: Props) {
                 </Link>
                 <picture className="dark:hidden">
                     <source media="(max-width: 640px)" srcSet={`/hero-image-light-${locale}-mobile.webp`} />
-                    <img src={`/hero-image-light-${locale}.webp`} alt="Hero Image" className="mx-auto mt-10" />
+                    <img src={`/hero-image-light-${locale}.webp`} alt={t('heroAlt')} className="mx-auto mt-10" />
                 </picture>
                 <picture className="hidden dark:block">
                     <source media="(max-width: 640px)" srcSet={`/hero-image-dark-${locale}-mobile.webp`} />
-                    <img src={`/hero-image-dark-${locale}.webp`} alt="Hero Image" className="mx-auto mt-10" />
+                    <img src={`/hero-image-dark-${locale}.webp`} alt={t('heroAlt')} className="mx-auto mt-10" />
                 </picture>
             </section>
 

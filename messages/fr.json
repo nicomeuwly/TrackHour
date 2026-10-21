@@ -34,7 +34,8 @@
         "faq3Q": "Où sont stockées mes données ?",
         "faq3A": "Toutes vos données sont stockées localement dans votre navigateur via IndexedDB. Elles ne quittent jamais votre appareil et ne sont jamais envoyées à un serveur. Nous n'avons aucun accès à vos heures de travail.",
         "faq4Q": "TrackHour fonctionne-t-il sur mobile ?",
-        "faq4A": "Oui. TrackHour est une Progressive Web App (PWA) et fonctionne sur tout smartphone, tablette ou ordinateur avec un navigateur moderne. Vous pouvez également l'ajouter à votre écran d'accueil pour un accès rapide."
+        "faq4A": "Oui. TrackHour est une Progressive Web App (PWA) et fonctionne sur tout smartphone, tablette ou ordinateur avec un navigateur moderne. Vous pouvez également l'ajouter à votre écran d'accueil pour un accès rapide.",
+        "heroAlt": "La pointeuse TrackHour affichant une journée de travail en cours"
     },
     "TimeTracker": {
         "title": "Pointeuse en ligne gratuite",
@@ -162,7 +163,9 @@
         "home": "Accueil",
         "timeTracker": "Pointeuse",
         "stats": "Statistiques",
-        "guide": "Guide"
+        "guide": "Guide",
+        "openMenu": "Ouvrir le menu",
+        "closeMenu": "Fermer le menu"
     },
     "Footer": {
         "copyright": "© 2026 TrackHour. Tous droits réservés.",
@@ -185,7 +188,8 @@
         "welcomeTitle": "Bienvenue sur TrackHour !",
         "welcomeSubtitle": "Commencez par configurer votre planning de travail.",
         "welcomeSetup": "Configurer",
-        "settingsTitle": "Paramètres"
+        "settingsTitle": "Paramètres",
+        "welcomeDismiss": "Masquer"
     },
     "ClockTab": {
         "today": "Aujourd'hui",
@@ -237,7 +241,12 @@
         "nextDay": "Jour suivant",
         "toastDeleted": "Pointage supprimé",
         "undo": "Annuler",
-        "toastRestored": "Pointage restauré"
+        "toastRestored": "Pointage restauré",
+        "pickDate": "Choisir une date",
+        "previousMonth": "Mois précédent",
+        "nextMonth": "Mois suivant",
+        "breakSufficient": "Pause suffisante",
+        "breakInsufficient": "Pause inférieure au minimum"
     },
     "DataTab": {
         "viewWeek": "Semaine",
@@ -303,7 +312,8 @@
         "preferences": "Préférences",
         "language": "Langue",
         "theme": "Thème",
-        "loading": "Chargement…"
+        "loading": "Chargement…",
+        "saved": "Enregistré"
     },
     "Errors": {
         "alreadyClockedIn": "Arrivée déjà pointée. Pointez d'abord le départ.",

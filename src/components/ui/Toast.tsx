@@ -1,5 +1,6 @@
 'use client';
 
+import { Check, X, Info, type LucideIcon } from 'lucide-react';
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 
 type ToastType = 'success' | 'error' | 'info';
@@ -39,11 +40,16 @@ const typeStyles: Record<ToastType, string> = {
   info: 'bg-text text-background',
 };
 
-const typeIcons: Record<ToastType, string> = {
-  success: '✓',
-  error: '✕',
-  info: 'i',
+const typeIcons: Record<ToastType, LucideIcon> = {
+  success: Check,
+  error: X,
+  info: Info,
 };
+
+function ToastIcon({ type }: { type: ToastType }) {
+  const Icon = typeIcons[type];
+  return <Icon size={12} strokeWidth={3} aria-hidden />;
+}
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -76,7 +82,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             className={`toast flex items-center gap-2.5 rounded-xl px-4 py-3 shadow-lg text-sm font-medium pointer-events-auto ${typeStyles[t.type]}`}
           >
             <span className="flex-none w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-              {typeIcons[t.type]}
+              <ToastIcon type={t.type} />
             </span>
             <span className="flex-1">{t.message}</span>
             {t.action && (

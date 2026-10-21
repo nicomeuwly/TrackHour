@@ -45,8 +45,8 @@ function DashboardInner() {
             <button onClick={() => dismissWelcome(true)} className="text-xs font-medium text-primary hover:underline">
               {t('welcomeSetup')}
             </button>
-            <button onClick={() => dismissWelcome(false)} aria-label="Dismiss"
-              className="text-text/30 hover:text-text/60">
+            <button onClick={() => dismissWelcome(false)} aria-label={t('welcomeDismiss')}
+              className="inline-flex items-center justify-center size-8 -m-2 text-text/50 hover:text-text">
               <X size={14} aria-hidden />
             </button>
           </div>

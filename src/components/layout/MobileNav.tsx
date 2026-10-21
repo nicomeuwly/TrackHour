@@ -1,19 +1,21 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Menu, X } from 'lucide-react';
 import LocaleSwitcher from './LocaleSwitcher';
 import ThemeToggle from './ThemeToggle';
 import NavLinks from './NavLinks';
 
 export default function MobileNav() {
+    const t = useTranslations('Header');
     const [open, setOpen] = useState(false);
 
     return (
         <div className="sm:hidden">
             <button
                 onClick={() => setOpen(v => !v)}
-                aria-label={open ? 'Close menu' : 'Open menu'}
+                aria-label={open ? t('closeMenu') : t('openMenu')}
                 aria-expanded={open}
                 className="inline-flex items-center justify-center size-11 -mr-2.5 hover:opacity-70"
             >

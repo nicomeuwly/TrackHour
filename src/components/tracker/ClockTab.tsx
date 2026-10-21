@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef, Fragment, type ReactNode } from 'react';
+import { useState, useEffect, useRef, useId, Fragment, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import {
   Trash2, ArrowRight, Coffee, Calendar, ChevronLeft, ChevronRight,
-  Play, Briefcase, Square,
+  Play, Briefcase, Square, Check, TriangleAlert,
 } from 'lucide-react';
 import { useClockDay } from '@/lib/hooks/useClockDay';
 import { useSettings } from '@/lib/hooks/useSettings';
@@ -72,7 +72,7 @@ function buildPairs(punches: Punch[]): PunchPair[] {
 const TrashIcon = () => <Trash2 className="w-4 h-4 sm:w-3 sm:h-3" aria-hidden />;
 
 const EDITABLE_TIME_CLASS =
-  'inline-flex items-center min-h-11 sm:min-h-0 px-1.5 -mx-1.5 rounded-md text-sm font-mono font-semibold underline decoration-dotted underline-offset-4 hover:decoration-solid';
+  'inline-flex items-center min-h-11 sm:min-h-0 px-1.5 -mx-1.5 rounded-md text-sm font-semibold tabular-nums underline decoration-dotted underline-offset-4 hover:decoration-solid';
 
 const ArrowIcon = () => <ArrowRight size={12} className="flex-none text-text/25" aria-hidden />;
 
@@ -119,7 +119,7 @@ function PunchTimeline({
                 <div className="flex-none w-2 flex justify-center">
                   <div className="w-px h-4 bg-text/15" />
                 </div>
-                <span className="flex items-center gap-1 text-xs font-medium text-text/35">
+                <span className="flex items-center gap-1 text-xs font-medium text-text-muted">
                   <Coffee size={11} aria-hidden />
                   {formatMinutes(breakMins)}
                 </span>
@@ -134,7 +134,7 @@ function PunchTimeline({
                     onChange={e => setAction({ kind: 'edit', id: inPunch.id, value: e.target.value })}
                     className={inputClass} autoFocus />
                 ) : (
-                  <span className="text-sm font-mono font-semibold text-primary">{inPunch.time}</span>
+                  <span className="text-sm font-semibold tabular-nums text-primary">{inPunch.time}</span>
                 )}
                 <ArrowIcon />
                 {isEditingOut && outPunch ? (
@@ -142,9 +142,9 @@ function PunchTimeline({
                     onChange={e => setAction({ kind: 'edit', id: outPunch.id, value: e.target.value })}
                     className={inputClass} autoFocus />
                 ) : outPunch ? (
-                  <span className="text-sm font-mono font-semibold text-secondary">{outPunch.time}</span>
+                  <span className="text-sm font-semibold tabular-nums text-secondary">{outPunch.time}</span>
                 ) : (
-                  <span className="text-sm text-text/30">…</span>
+                  <span className="text-sm text-text-muted">…</span>
                 )}
                 <button
                   onClick={async () => {
@@ -183,12 +183,12 @@ function PunchTimeline({
                     {outPunch.time}
                   </button>
                 ) : (
-                  <span className="text-sm text-text/30">…</span>
+                  <span className="text-sm text-text-muted">…</span>
                 )}
                 {durationMins !== null && (
                   <>
                     <span className="text-sm text-text/30 select-none" aria-hidden>:</span>
-                    <span className="text-sm font-semibold tabular-nums font-mono">{formatMinutes(durationMins)}</span>
+                    <span className="text-sm font-semibold tabular-nums">{formatMinutes(durationMins)}</span>
                   </>
                 )}
                 <span className="flex-1" />
@@ -223,10 +223,11 @@ function ManualInput({
 }) {
   const t = useTranslations('ClockTab');
   const [value, setValue] = useState('');
+  const inputId = useId();
   return (
     <div className="flex items-center gap-2 py-1">
-      <label className="text-sm text-text/60 whitespace-nowrap">{label}</label>
-      <input type="time" value={value} onChange={e => setValue(e.target.value)}
+      <label htmlFor={inputId} className="text-sm text-text/60 whitespace-nowrap">{label}</label>
+      <input id={inputId} type="time" value={value} onChange={e => setValue(e.target.value)}
         className="rounded-lg border border-text/15 bg-background px-2 py-1 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 dark:[&::-webkit-calendar-picker-indicator]:invert"
         autoFocus
       />
@@ -236,7 +237,7 @@ function ManualInput({
       >
         {t('confirm')}
       </button>
-      <button onClick={onCancel} className="text-sm text-text/40 hover:text-text/70">{t('cancel')}</button>
+      <button onClick={onCancel} className="text-sm text-text-muted hover:text-text">{t('cancel')}</button>
     </div>
   );
 }
@@ -244,6 +245,7 @@ function ManualInput({
 // ── Mini date picker ─────────────────────────────────────────────────────────
 
 function DatePickerPopup({ current, onSelect, onClose }: { current: string; onSelect: (d: string) => void; onClose: () => void }) {
+  const t = useTranslations('ClockTab');
   const locale = useLocale();
   const [viewYear, setViewYear] = useState(() => parseInt(current.slice(0, 4)));
   const [viewMonth, setViewMonth] = useState(() => parseInt(current.slice(5, 7)));
@@ -264,19 +266,19 @@ function DatePickerPopup({ current, onSelect, onClose }: { current: string; onSe
   function nextM() { if (viewMonth === 12) { setViewYear(y => y + 1); setViewMonth(1); } else setViewMonth(m => m + 1); }
 
   return (
-    <div className="popover-enter absolute top-full left-0 z-50 mt-2 bg-background border border-text/15 rounded-xl shadow-xl p-3 w-64" role="dialog">
+    <div className="popover-enter absolute top-full left-0 z-50 mt-2 bg-background border border-text/15 rounded-xl shadow-xl p-3 w-64" role="dialog" aria-label={t('pickDate')}>
       <div className="flex items-center justify-between mb-2">
-        <button onClick={prevM} className="p-1 rounded hover:bg-text/8" aria-label="←">
-          <ChevronLeft size={14} aria-hidden />
+        <button onClick={prevM} className={DAY_NAV_BUTTON_CLASS} aria-label={t('previousMonth')}>
+          <ChevronLeft size={16} aria-hidden />
         </button>
-        <span className="text-sm font-semibold">{MONTHS[viewMonth - 1]} {viewYear}</span>
-        <button onClick={nextM} className="p-1 rounded hover:bg-text/8" aria-label="→">
-          <ChevronRight size={14} aria-hidden />
+        <span className="text-sm font-semibold capitalize" aria-live="polite">{MONTHS[viewMonth - 1]} {viewYear}</span>
+        <button onClick={nextM} className={DAY_NAV_BUTTON_CLASS} aria-label={t('nextMonth')}>
+          <ChevronRight size={16} aria-hidden />
         </button>
       </div>
       <div className="grid grid-cols-7 mb-1">
         {DAY_HEADERS.map((d, i) => (
-          <div key={i} className="text-center text-[10px] text-text/40 font-medium py-0.5">{d}</div>
+          <div key={i} className="text-center text-xs text-text-muted font-medium py-0.5" aria-hidden>{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1">
@@ -463,14 +465,23 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
   // Sync note from hook
   useEffect(() => { setNoteValue(note); }, [note]);
 
-  // Close picker on outside click
+  // Close picker on outside click, or on Escape (returning focus to its trigger)
   useEffect(() => {
     if (!showPicker) return;
-    function handle(e: MouseEvent) {
+    function handleMouseDown(e: MouseEvent) {
       if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) setShowPicker(false);
     }
-    document.addEventListener('mousedown', handle);
-    return () => document.removeEventListener('mousedown', handle);
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return;
+      setShowPicker(false);
+      pickerRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    }
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [showPicker]);
 
   const dayCalc = settings ? calculateFromPunches(punches, settings, now, date, leaveType) : null;
@@ -626,7 +637,7 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
           {/* No punches yet */}
           {punches.length === 0 && leaveType === null && (
             <>
-              <p className="text-sm text-text/40">
+              <p className="text-sm text-text-muted">
                 {t('noEntries')}{isToday ? `, ${t('noEntriesHint')}` : ''}
               </p>
               <ClockActions {...manualProps} kind="in" label={t('clockIn')} manualLabel={t('clockInAt')} canClockNow={isToday} onClock={handleClockIn} />
@@ -648,7 +659,7 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
           {/* On break (today, day not complete yet) */}
           {punches.length > 0 && lastType === 'out' && dayCalc && isOnBreak && (
             <>
-              <p className="text-lg font-semibold text-text/35 flex items-center justify-center gap-2">
+              <p className="text-lg font-semibold text-text-muted flex items-center justify-center gap-2">
                 <Coffee size={20} aria-hidden />
                 {formatMinutes(dayCalc.liveBreakMinutes)}
               </p>
@@ -680,13 +691,23 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
             <div className="flex-1 min-w-44 rounded-xl border border-text/10 bg-background divide-y divide-text/8 text-sm">
               {[
                 { label: t('summaryWorked'), value: formatMinutes(dayCalc.workedMinutes) },
-                { label: t('summaryBreak'), value: `${formatMinutes(dayCalc.breakMinutes)} ${dayCalc.breakMinutes > 0 ? (dayCalc.isBreakSufficient ? '✓' : '⚠') : ''}` },
-                { label: t('summaryBalance'), value: <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} />, isReact: true },
+                {
+                  label: t('summaryBreak'),
+                  value: (
+                    <span className="inline-flex items-center gap-1.5">
+                      {formatMinutes(dayCalc.breakMinutes)}
+                      {dayCalc.breakMinutes > 0 && (dayCalc.isBreakSufficient
+                        ? <Check size={14} role="img" aria-label={t('breakSufficient')} className="text-primary" />
+                        : <TriangleAlert size={14} role="img" aria-label={t('breakInsufficient')} className="text-tertiary" />)}
+                    </span>
+                  ),
+                },
+                { label: t('summaryBalance'), value: <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} /> },
                 { label: t('summaryExpected'), value: formatMinutes((settings?.expectedHoursPerDay ?? 8) * 60) },
               ].map(row => (
                 <div key={row.label} className="flex items-center justify-between px-4 py-2.5">
-                  <span className="text-text/50">{row.label}</span>
-                  <span className="font-semibold">{row.value}</span>
+                  <span className="text-text-muted">{row.label}</span>
+                  <span className="font-semibold tabular-nums">{row.value}</span>
                 </div>
               ))}
             </div>
@@ -717,7 +738,7 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
           onChange={e => handleNoteChange(e.target.value)}
           placeholder={t('notePlaceholder')}
           rows={2}
-          className="w-full rounded-xl border border-text/10 bg-background px-3 py-2 text-sm placeholder:text-text/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 resize-none"
+          className="w-full rounded-xl border border-text/10 bg-background px-3 py-2 text-sm placeholder:text-text/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 resize-none"
         />
       </div>
 

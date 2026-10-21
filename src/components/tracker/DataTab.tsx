@@ -384,14 +384,14 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                         {entry ? (
                           <p className="text-sm font-medium">{formatMinutes(entry.totalWorkedMinutes)}</p>
                         ) : (
-                          <p className="text-sm text-text/25">—</p>
+                          <p className="text-sm text-text/45">—</p>
                         )}
                       </div>
                       <div className="flex-none min-w-20 text-right">
                         {balanceMinutes !== null ? (
                           <BalanceDisplay balanceMinutes={balanceMinutes} />
                         ) : (
-                          <span className="text-sm text-text/20">—</span>
+                          <span className="text-sm text-text/45">—</span>
                         )}
                       </div>
                       <div className="flex-none min-w-20">
@@ -420,7 +420,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
               <div>
                 <div className="grid grid-cols-7 mb-1">
                   {DAY_HEADERS.map((d, i) => (
-                    <div key={i} className="text-center text-[10px] font-medium text-text/40 py-1">{d}</div>
+                    <div key={i} className="text-center text-xs font-medium text-text-muted py-1" aria-hidden>{d}</div>
                   ))}
                 </div>
                 <div className="grid grid-cols-7 gap-1">
@@ -440,13 +440,13 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                         aria-label={new Date(refYear, refMonth - 1, day).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}
                         className={`rounded-lg p-0.5 flex flex-col items-center justify-center aspect-square min-h-9.5 dark:hover:brightness-140 ${CELL_BG[status]} ${isToday ? "ring-1 ring-primary ring-inset" : ""}`}
                       >
-                        <span className={`text-xs font-semibold leading-none ${isToday ? "text-primary" : !hasBadge(status) ? "text-text/30" : ""}`}>
+                        <span className={`text-xs font-semibold leading-none ${isToday ? "text-primary" : !hasBadge(status) ? "text-text/45" : ""}`}>
                           {day}
                         </span>
                         {LeaveIcon ? (
                           <LeaveIcon size={11} aria-hidden className="mt-0.5 text-text/60" />
                         ) : entry && (
-                          <span className="text-[10px] text-text/50 leading-none mt-0.5 tabular-nums">
+                          <span className="text-[11px] text-text/70 leading-none mt-0.5 tabular-nums">
                             {formatMinutes(entry.totalWorkedMinutes)}
                           </span>
                         )}

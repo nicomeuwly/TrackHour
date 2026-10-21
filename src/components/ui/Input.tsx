@@ -31,7 +31,7 @@ export default function Input({
 }: InputProps) {
   const inputId = id ?? label.toLowerCase().replace(/\s+/g, '-');
   const baseClass =
-    'w-full rounded-lg border px-3 py-2 text-sm bg-background text-text placeholder:text-text/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors';
+    'w-full rounded-lg border px-3 py-2 text-sm bg-background text-text placeholder:text-text/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors';
   const borderClass = error
     ? 'border-secondary'
     : 'border-text/15';
