@@ -3,6 +3,7 @@ import { Link, getPathname } from '@/i18n/navigation';
 import { buildMetadata } from '@/lib/metadata';
 import { SITE_URL, SITE_NAME } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
+import Card from '@/components/ui/Card';
 
 export function generateStaticParams() {
     return [{ locale: 'en' }, { locale: 'fr' }];
@@ -109,10 +110,10 @@ export default async function HomePage({ params }: Props) {
                         { title: t('user2Title'), desc: t('user2Desc') },
                         { title: t('user3Title'), desc: t('user3Desc') },
                     ].map(({ title, desc }) => (
-                        <div key={title} className="border border-text/10 rounded-xl p-6 bg-background">
+                        <Card key={title} padding="lg">
                             <h3 className="font-semibold text-lg mb-2">{title}</h3>
                             <p className="text-text/60 text-sm leading-relaxed">{desc}</p>
-                        </div>
+                        </Card>
                     ))}
                 </div>
             </section>
@@ -129,10 +130,10 @@ export default async function HomePage({ params }: Props) {
                         { title: t('feature3Title'), desc: t('feature3Desc') },
                         { title: t('feature4Title'), desc: t('feature4Desc') },
                     ].map(({ title, desc }) => (
-                        <div key={title} className="border border-text/10 rounded-xl p-6 bg-background">
+                        <Card key={title} padding="lg">
                             <h3 className="font-semibold text-lg mb-2">{title}</h3>
                             <p className="text-text/60 text-sm">{desc}</p>
-                        </div>
+                        </Card>
                     ))}
                 </div>
             </section>
@@ -144,10 +145,10 @@ export default async function HomePage({ params }: Props) {
                 </h2>
                 <div className="max-w-3xl mx-auto space-y-6">
                     {(['1', '2', '3', '4'] as const).map((n) => (
-                        <div key={n} className="border border-text/10 rounded-xl p-6 bg-background">
+                        <Card key={n} padding="lg">
                             <h3 className="font-semibold text-base mb-2">{t(`faq${n}Q`)}</h3>
                             <p className="text-text/60 text-sm leading-relaxed">{t(`faq${n}A`)}</p>
-                        </div>
+                        </Card>
                     ))}
                 </div>
             </section>

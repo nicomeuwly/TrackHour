@@ -6,6 +6,7 @@ import { Menu, X } from 'lucide-react';
 import LocaleSwitcher from './LocaleSwitcher';
 import ThemeToggle from './ThemeToggle';
 import NavLinks from './NavLinks';
+import Button from '@/components/ui/Button';
 
 export default function MobileNav() {
     const t = useTranslations('Header');
@@ -13,14 +14,16 @@ export default function MobileNav() {
 
     return (
         <div className="sm:hidden">
-            <button
+            <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setOpen(v => !v)}
                 aria-label={open ? t('closeMenu') : t('openMenu')}
                 aria-expanded={open}
-                className="inline-flex items-center justify-center size-11 -mr-2.5 hover:opacity-70"
+                className="-mr-2.5"
             >
                 {open ? <X size={20} aria-hidden /> : <Menu size={20} aria-hidden />}
-            </button>
+            </Button>
 
             {open && (
                 <div className="absolute left-0 right-0 top-16 bg-background border-b border-text/10 z-50 px-4 py-6 flex flex-col gap-5">

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
+import Button from './Button';
 
 interface ModalProps {
   isOpen: boolean;
@@ -87,13 +88,16 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
           <h2 id={titleId} className="font-semibold text-base">
             {title}
           </h2>
-          <button
+          {/* Negative margins keep the header as tall as the icon while the target grows. */}
+          <Button
+            variant="subtle"
+            size="icon"
             onClick={onClose}
             aria-label={t('close')}
-            className="p-1.5 rounded-lg hover:bg-text/8 text-text/50"
+            className="-my-2 -mr-2 sm:-my-1 sm:-mr-1"
           >
             <X size={16} aria-hidden />
-          </button>
+          </Button>
         </div>
         <div className="px-5 py-5">{children}</div>
       </div>

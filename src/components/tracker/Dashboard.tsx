@@ -8,6 +8,7 @@ import { useSettings } from '@/lib/hooks/useSettings';
 import { localDateStr } from '@/lib/business/calculations';
 import { ToastProvider } from '@/components/ui/Toast';
 import Modal from '@/components/ui/Modal';
+import Button from '@/components/ui/Button';
 import ClockTab from './ClockTab';
 import SettingsPanel from '@/components/settings/SettingsPanel';
 
@@ -42,13 +43,12 @@ function DashboardInner() {
             <p className="text-xs text-text/60 mt-0.5">{t('welcomeSubtitle')}</p>
           </div>
           <div className="flex items-center gap-2 flex-none">
-            <button onClick={() => dismissWelcome(true)} className="text-xs font-medium text-primary hover:underline">
+            <Button variant="link-primary" size="text" onClick={() => dismissWelcome(true)}>
               {t('welcomeSetup')}
-            </button>
-            <button onClick={() => dismissWelcome(false)} aria-label={t('welcomeDismiss')}
-              className="inline-flex items-center justify-center size-8 -m-2 text-text/50 hover:text-text">
+            </Button>
+            <Button variant="subtle" size="icon" onClick={() => dismissWelcome(false)} aria-label={t('welcomeDismiss')} className="-m-2">
               <X size={14} aria-hidden />
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -63,13 +63,9 @@ function DashboardInner() {
           date={selectedDate}
           onDateChange={setSelectedDate}
           headerAction={
-            <button
-              onClick={() => setSettingsOpen(true)}
-              aria-label={t('settingsTitle')}
-              className="inline-flex items-center justify-center size-11 sm:size-9 rounded-xl hover:bg-text/8 text-text/60 hover:text-text"
-            >
+            <Button variant="subtle" size="icon" onClick={() => setSettingsOpen(true)} aria-label={t('settingsTitle')}>
               <Settings size={18} aria-hidden />
-            </button>
+            </Button>
           }
         />
       )}

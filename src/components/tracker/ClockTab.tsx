@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useId, Fragment, type ReactNode } from 'react';
+import { useState, useEffect, useRef, Fragment, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import {
@@ -19,6 +19,9 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { useErrorMessage } from '@/lib/hooks/useErrorMessage';
 import BalanceDisplay from '@/components/ui/BalanceDisplay';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import Input, { Textarea } from '@/components/ui/Input';
 import LeaveModal from '@/components/tracker/LeaveModal';
 import { LEAVE_LABEL_KEY, LEAVE_DESC_KEY, LEAVE_ICON, ABSENCE_ICON } from '@/components/tracker/leaveMeta';
 import type { Punch, LeaveType } from '@/lib/types';
@@ -91,7 +94,6 @@ function PunchTimeline({
   if (punches.length === 0) return null;
 
   const pairs = buildPairs(punches);
-  const inputClass = "rounded-lg border border-text/15 bg-background px-2 py-1 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 dark:[&::-webkit-calendar-picker-indicator]:invert";
 
   return (
     <div className="flex flex-col gap-1 bg-background rounded-xl" role="list" aria-label={t('punchTimeline')}>
@@ -130,36 +132,37 @@ function PunchTimeline({
             {(isEditingIn || isEditingOut) ? (
               <div role="listitem" className="flex items-center gap-2 px-4 py-3 sm:px-3 sm:py-2 min-h-14 sm:min-h-12 rounded-xl bg-text/4">
                 {isEditingIn ? (
-                  <input type="time" value={editValue}
-                    onChange={e => setAction({ kind: 'edit', id: inPunch.id, value: e.target.value })}
-                    className={inputClass} autoFocus />
+                  <Input type="time" compact value={editValue} autoFocus
+                    aria-label={t('editPunchLabel', { time: inPunch.time })}
+                    onChange={value => setAction({ kind: 'edit', id: inPunch.id, value })} />
                 ) : (
                   <span className="text-sm font-semibold tabular-nums text-primary">{inPunch.time}</span>
                 )}
                 <ArrowIcon />
                 {isEditingOut && outPunch ? (
-                  <input type="time" value={editValue}
-                    onChange={e => setAction({ kind: 'edit', id: outPunch.id, value: e.target.value })}
-                    className={inputClass} autoFocus />
+                  <Input type="time" compact value={editValue} autoFocus
+                    aria-label={t('editPunchLabel', { time: outPunch.time })}
+                    onChange={value => setAction({ kind: 'edit', id: outPunch.id, value })} />
                 ) : outPunch ? (
                   <span className="text-sm font-semibold tabular-nums text-secondary">{outPunch.time}</span>
                 ) : (
                   <span className="text-sm text-text-muted">…</span>
                 )}
-                <button
+                <Button
+                  size="sm"
                   onClick={async () => {
                     if (!editValue) return;
                     await onEdit(isEditingIn ? inPunch.id : outPunch!.id, editValue);
                     setAction(null);
                   }}
                   disabled={!editValue}
-                  className="px-3 py-1 bg-primary text-white text-xs font-medium rounded-lg disabled:opacity-40 hover:opacity-90 ml-1"
+                  className="ml-1"
                 >
                   {t('confirm')}
-                </button>
-                <button onClick={() => setAction(null)} className="text-xs text-text/40 hover:text-text/70">
+                </Button>
+                <Button variant="link" size="text" onClick={() => setAction(null)}>
                   {t('editCancel')}
-                </button>
+                </Button>
               </div>
             ) : (
               /* Pair row — normal. Times carry a dotted underline so they read as
@@ -194,13 +197,15 @@ function PunchTimeline({
                 <span className="flex-1" />
                 {/* Hidden until hover only where hover exists (fine pointer); always
                     visible on touch, and revealed on keyboard focus. */}
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => onDelete(outPunch ? [inPunch.id, outPunch.id] : [inPunch.id])}
                   aria-label={t('deletePunchLabel', { time: inPunch.time })}
-                  className="inline-flex items-center justify-center size-11 sm:size-8 -mr-2 sm:mr-0 rounded-lg hover:bg-text/8 text-text/40 hover:text-secondary pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:group-focus-within:opacity-100 focus-visible:opacity-100"
+                  className="-mr-2 sm:mr-0 sm:-my-0.5 text-text/40 hover:text-secondary pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:group-focus-within:opacity-100 focus-visible:opacity-100"
                 >
                   <TrashIcon />
-                </button>
+                </Button>
               </div>
             )}
           </Fragment>
@@ -223,21 +228,13 @@ function ManualInput({
 }) {
   const t = useTranslations('ClockTab');
   const [value, setValue] = useState('');
-  const inputId = useId();
   return (
     <div className="flex items-center gap-2 py-1">
-      <label htmlFor={inputId} className="text-sm text-text/60 whitespace-nowrap">{label}</label>
-      <input id={inputId} type="time" value={value} onChange={e => setValue(e.target.value)}
-        className="rounded-lg border border-text/15 bg-background px-2 py-1 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 dark:[&::-webkit-calendar-picker-indicator]:invert"
-        autoFocus
-      />
-      <button onClick={() => value && onConfirm(value)}
-        disabled={!value}
-        className="px-3 py-1 bg-primary text-white text-sm rounded-lg disabled:opacity-40 hover:opacity-90"
-      >
+      <Input type="time" compact label={label} labelStyle="inline" value={value} onChange={setValue} autoFocus />
+      <Button size="sm" onClick={() => value && onConfirm(value)} disabled={!value}>
         {t('confirm')}
-      </button>
-      <button onClick={onCancel} className="text-sm text-text-muted hover:text-text">{t('cancel')}</button>
+      </Button>
+      <Button variant="link" size="text" onClick={onCancel}>{t('cancel')}</Button>
     </div>
   );
 }
@@ -268,13 +265,13 @@ function DatePickerPopup({ current, onSelect, onClose }: { current: string; onSe
   return (
     <div className="popover-enter absolute top-full left-0 z-50 mt-2 bg-background border border-text/15 rounded-xl shadow-xl p-3 w-64" role="dialog" aria-label={t('pickDate')}>
       <div className="flex items-center justify-between mb-2">
-        <button onClick={prevM} className={DAY_NAV_BUTTON_CLASS} aria-label={t('previousMonth')}>
+        <Button variant="ghost" size="icon" onClick={prevM} aria-label={t('previousMonth')}>
           <ChevronLeft size={16} aria-hidden />
-        </button>
+        </Button>
         <span className="text-sm font-semibold capitalize" aria-live="polite">{MONTHS[viewMonth - 1]} {viewYear}</span>
-        <button onClick={nextM} className={DAY_NAV_BUTTON_CLASS} aria-label={t('nextMonth')}>
+        <Button variant="ghost" size="icon" onClick={nextM} aria-label={t('nextMonth')}>
           <ChevronRight size={16} aria-hidden />
-        </button>
+        </Button>
       </div>
       <div className="grid grid-cols-7 mb-1">
         {DAY_HEADERS.map((d, i) => (
@@ -367,23 +364,9 @@ function DayProgress({ progressPct, isPaused, startTime, endTime }: {
 
 // ── Clock actions ────────────────────────────────────────────────────────────
 
-const CLOCK_BUTTON_TONE = {
-  in: 'border-primary bg-primary/10 text-primary hover:bg-primary/20',
-  out: 'border-secondary bg-secondary/10 text-secondary hover:bg-secondary/20',
-} as const;
+const CLOCK_BUTTON_VARIANT = { in: 'tinted-primary', out: 'tinted-danger' } as const;
 
 const CLOCK_BUTTON_ICON = { in: Play, out: Square } as const;
-
-// Manual entry is a quiet link next to a primary clock button, and becomes the
-// secondary button itself when it is the only available action (past days, leave).
-const MANUAL_LINK_CLASS = 'min-h-11 px-3 text-sm text-text/50 hover:text-text/80';
-const MANUAL_BUTTON_CLASS = 'border border-text/20 text-text/60 px-8 py-3 rounded-xl font-semibold text-base hover:bg-text/5';
-
-// Chips stay visually compact (h-8) while a pseudo-element extends the touch
-// target to 44px on coarse pointers.
-const CHIP_HIT_AREA_CLASS = 'relative h-8 pointer-coarse:after:absolute pointer-coarse:after:inset-x-0 pointer-coarse:after:-inset-y-1.5';
-
-const DAY_NAV_BUTTON_CLASS = 'inline-flex flex-none items-center justify-center size-11 sm:size-9 rounded-lg hover:bg-text/8';
 
 function ClockActions({
   kind,
@@ -409,18 +392,25 @@ function ClockActions({
     return <ManualInput label={manualLabel} onConfirm={onClock} onCancel={onCancelManual} />;
   }
   const Icon = CLOCK_BUTTON_ICON[kind];
+  // Manual entry is a quiet link next to a primary clock button, and becomes the
+  // secondary button itself when it is the only available action (past days, leave).
   return (
     <>
       {canClockNow && (
-        <button onClick={() => onClock()}
-          className={`flex items-center gap-2 border px-8 py-3 rounded-xl font-semibold text-base ${CLOCK_BUTTON_TONE[kind]}`}>
+        <Button variant={CLOCK_BUTTON_VARIANT[kind]} size="lg" onClick={() => onClock()}>
           <Icon size={18} fill="currentColor" aria-hidden />
           {label}
-        </button>
+        </Button>
       )}
-      <button onClick={onOpenManual} className={canClockNow ? MANUAL_LINK_CLASS : MANUAL_BUTTON_CLASS}>
-        {t('enterManually')}
-      </button>
+      {canClockNow ? (
+        <Button variant="link" size="text" onClick={onOpenManual} className="min-h-11 px-3">
+          {t('enterManually')}
+        </Button>
+      ) : (
+        <Button variant="outline" size="lg" onClick={onOpenManual} className="text-text-muted">
+          {t('enterManually')}
+        </Button>
+      )}
     </>
   );
 }
@@ -576,31 +566,31 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
               <DatePickerPopup current={date} onSelect={onDateChange} onClose={() => setShowPicker(false)} />
             )}
           </div>
-          <button onClick={() => onDateChange(shiftDate(date, -1))} aria-label={t('previousDay')} className={DAY_NAV_BUTTON_CLASS}>
+          <Button variant="ghost" size="icon" onClick={() => onDateChange(shiftDate(date, -1))} aria-label={t('previousDay')}>
             <ChevronLeft size={16} aria-hidden />
-          </button>
-          <button onClick={() => onDateChange(shiftDate(date, 1))} aria-label={t('nextDay')} className={DAY_NAV_BUTTON_CLASS}>
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => onDateChange(shiftDate(date, 1))} aria-label={t('nextDay')}>
             <ChevronRight size={16} aria-hidden />
-          </button>
+          </Button>
         </div>
         <div className="flex items-center gap-2 ml-auto">
           {!isToday && (
-            <button onClick={() => onDateChange(today)}
-              className={`${CHIP_HIT_AREA_CLASS} text-xs font-medium text-primary border border-primary/30 rounded-lg px-3 hover:bg-primary/8`}>
+            <Button variant="outline-primary" size="chip" onClick={() => onDateChange(today)}>
               {t('backToToday')}
-            </button>
+            </Button>
           )}
           {dayCalc && (leaveType !== null || dayCalc.workedMinutes < expectedMinutes) && (
-            <button
+            <Button
+              variant={leaveType !== null ? 'outline-tertiary' : 'outline'}
+              size="chip"
               onClick={() => setShowLeaveModal(true)}
               aria-haspopup="dialog"
-              className={`${CHIP_HIT_AREA_CLASS} flex items-center gap-1.5 rounded-lg border px-3 ${leaveType !== null ? 'border-tertiary/30 bg-tertiary/10' : 'border-text/15 text-text/70 hover:bg-text/5'}`}
             >
               <AbsenceIcon size={13} aria-hidden className={leaveType !== null ? 'text-tertiary' : 'text-text/55'} />
-              <span className={`text-xs font-medium whitespace-nowrap ${leaveType !== null ? 'text-tertiary' : 'text-text/70'}`}>
+              <span className={`whitespace-nowrap ${leaveType !== null ? 'text-tertiary' : 'text-text/70'}`}>
                 {leaveType !== null ? t(LEAVE_LABEL_KEY[leaveType]) : t('absence')}
               </span>
-            </button>
+            </Button>
           )}
           {headerAction}
         </div>
@@ -617,7 +607,7 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
       {isLoading ? (
         <div className="h-36 rounded-xl bg-text/5 animate-pulse" />
       ) : (
-        <div className="rounded-xl border border-text/10 bg-background p-6 flex flex-col items-center gap-4 text-center">
+        <Card padding="lg" className="flex flex-col items-center gap-4 text-center">
 
           {/* Leave day — no punches */}
           {punches.length === 0 && leaveType !== null && dayCalc && (
@@ -681,14 +671,14 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
               <ClockActions {...manualProps} kind="in" label={t('clockInAgain')} manualLabel={t('clockInAt')} canClockNow={isToday} onClock={handleClockIn} />
             </>
           )}
-        </div>
+        </Card>
       )}
 
       {/* Punch timeline + summary */}
       {punches.length > 0 && (
         <div className="flex flex-wrap gap-6 items-start">
           {dayCalc && (
-            <div className="flex-1 min-w-44 rounded-xl border border-text/10 bg-background divide-y divide-text/8 text-sm">
+            <Card padding="none" className="flex-1 min-w-44 divide-y divide-text/8 text-sm">
               {[
                 { label: t('summaryWorked'), value: formatMinutes(dayCalc.workedMinutes) },
                 {
@@ -710,9 +700,9 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
                   <span className="font-semibold tabular-nums">{row.value}</span>
                 </div>
               ))}
-            </div>
+            </Card>
           )}
-          <div className="flex-1 min-w-full sm:min-w-44 rounded-xl border border-text/10 divide-y divide-text/8">
+          <Card padding="none" className="flex-1 min-w-full sm:min-w-44 divide-y divide-text/8">
             <PunchTimeline
               punches={punches}
               onDelete={handleDeletePunches}
@@ -725,22 +715,17 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
                 }
               }}
             />
-          </div>
+          </Card>
         </div>
       )}
 
-      {/* Note */}
-      <div className="flex flex-col gap-1">
-        <label htmlFor="day-note" className="text-xs font-medium text-text/50">{t('noteLabel')}</label>
-        <textarea
-          id="day-note"
-          value={noteValue}
-          onChange={e => handleNoteChange(e.target.value)}
-          placeholder={t('notePlaceholder')}
-          rows={2}
-          className="w-full rounded-xl border border-text/10 bg-background px-3 py-2 text-sm placeholder:text-text/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 resize-none"
-        />
-      </div>
+      <Textarea
+        label={t('noteLabel')}
+        labelStyle="caption"
+        value={noteValue}
+        onChange={handleNoteChange}
+        placeholder={t('notePlaceholder')}
+      />
 
       <LeaveModal
         isOpen={showLeaveModal}

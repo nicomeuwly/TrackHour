@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import Modal from '@/components/ui/Modal';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 import { LEAVE_TYPES, LEAVE_LABEL_KEY, LEAVE_DESC_KEY, LEAVE_ICON } from './leaveMeta';
 import type { LeaveType } from '@/lib/types';
 
@@ -76,46 +78,30 @@ export default function LeaveModal({
         </div>
 
         {selected === 'other' && (
-          <div className="flex flex-col gap-1">
-            <label htmlFor="leave-comment" className="text-xs font-medium text-text/50">
-              {t('leaveCommentLabel')}
-            </label>
-            <input
-              id="leave-comment"
-              type="text"
-              value={comment}
-              onChange={e => setComment(e.target.value)}
-              placeholder={t('leaveCommentPlaceholder')}
-              className="w-full rounded-xl border border-text/10 bg-background px-3 py-2 text-sm placeholder:text-text/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-            />
-          </div>
+          <Input
+            label={t('leaveCommentLabel')}
+            labelStyle="caption"
+            value={comment}
+            onChange={setComment}
+            placeholder={t('leaveCommentPlaceholder')}
+          />
         )}
 
         <div className="flex items-center justify-between gap-2 pt-1">
           {current !== null ? (
-            <button
-              onClick={() => { onSave(null, note); onClose(); }}
-              className="text-sm text-secondary hover:underline"
-            >
+            <Button variant="link-danger" size="text" onClick={() => { onSave(null, note); onClose(); }}>
               {t('leaveRemove')}
-            </button>
+            </Button>
           ) : (
             <span />
           )}
           <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm text-text/50 hover:text-text/80"
-            >
+            <Button variant="link" onClick={onClose}>
               {t('cancel')}
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={selected === null}
-              className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg disabled:opacity-40 hover:opacity-90"
-            >
+            </Button>
+            <Button onClick={handleSave} disabled={selected === null}>
               {t('save')}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

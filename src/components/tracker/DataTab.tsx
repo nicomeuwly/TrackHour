@@ -14,6 +14,9 @@ import { useErrorMessage } from "@/lib/hooks/useErrorMessage";
 import { AppError } from "@/lib/errors";
 import Modal from "@/components/ui/Modal";
 import BalanceDisplay from "@/components/ui/BalanceDisplay";
+import Button from "@/components/ui/Button";
+import Card, { StatCard } from "@/components/ui/Card";
+import SegmentedControl from "@/components/ui/SegmentedControl";
 import {
   getWeekDates,
   getMonthDates,
@@ -266,37 +269,25 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
       {/* Period header */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex bg-text/6 rounded-xl p-0.5">
-            {(["week", "month"] as const).map(v => (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                aria-pressed={view === v}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium ${view === v ? "bg-background shadow-sm text-text" : "text-text/50 hover:text-text"}`}
-              >
-                {v === "week" ? t("viewWeek") : t("viewMonth")}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            options={[{ value: "week", label: t("viewWeek") }, { value: "month", label: t("viewMonth") }]}
+            value={view}
+            onChange={setView}
+          />
           {!isCurrentPeriod && (
-            <button
-              onClick={() => setRefDate(today)}
-              className="text-xs font-medium text-primary border border-primary/30 rounded-lg px-2.5 py-1 hover:bg-primary/8"
-            >
+            <Button variant="outline-primary" size="chip" onClick={() => setRefDate(today)}>
               {view === "week" ? t("thisWeek") : t("thisMonth")}
-            </button>
+            </Button>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => shiftPeriod(-1)} aria-label={view === "week" ? t("prevWeek") : t("prevMonth")}
-            className="p-2 rounded-lg hover:bg-text/8">
-            <ChevronLeft size={14} aria-hidden />
-          </button>
+          <Button variant="ghost" size="icon" onClick={() => shiftPeriod(-1)} aria-label={view === "week" ? t("prevWeek") : t("prevMonth")}>
+            <ChevronLeft size={16} aria-hidden />
+          </Button>
           <span className="flex-1 text-center text-sm font-semibold capitalize">{periodLabel}</span>
-          <button onClick={() => shiftPeriod(1)} aria-label={view === "week" ? t("nextWeek") : t("nextMonth")}
-            className="p-2 rounded-lg hover:bg-text/8">
-            <ChevronRight size={14} aria-hidden />
-          </button>
+          <Button variant="ghost" size="icon" onClick={() => shiftPeriod(1)} aria-label={view === "week" ? t("nextWeek") : t("nextMonth")}>
+            <ChevronRight size={16} aria-hidden />
+          </Button>
         </div>
       </div>
 
@@ -311,39 +302,27 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
             </div>
           ) : (
             <div className={"grid grid-cols-2 sm:grid-cols-1 gap-3 " + (view === "week" ? "sm:h-full" : "sm:h-full")}>
-              <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
-                <p className="text-xs text-text/50 mb-1">{t("totalWorked")}</p>
-                <p className="font-bold text-base">
-                  {balance ? `${formatMinutes(balance.totalWorkedMinutes)} / ${formatMinutes(balance.totalExpectedMinutes)}` : "—"}
-                </p>
-              </div>
-              <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
-                <p className="text-xs text-text/50 mb-1">{t("balance")}</p>
-                <p className="font-bold text-base">
-                  {balance ? <BalanceDisplay balanceMinutes={balance.balanceMinutes} size="base" /> : "—"}
-                </p>
-              </div>
-              <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
-                <p className="text-xs text-text/50 mb-1">{t("daysLogged")}</p>
-                <p className="font-bold text-base">
-                  {balance ? `${balance.daysLogged} / ${balance.daysExpected}` : "—"}
-                </p>
-              </div>
-              <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
-                <p className="text-xs text-text/50 mb-1">{t("avgPerDay")}</p>
-                <p className="font-bold text-base">{avgMinutes > 0 ? formatMinutes(avgMinutes) : "—"}</p>
-              </div>
+              <StatCard label={t("totalWorked")}>
+                {balance ? `${formatMinutes(balance.totalWorkedMinutes)} / ${formatMinutes(balance.totalExpectedMinutes)}` : "—"}
+              </StatCard>
+              <StatCard label={t("balance")}>
+                {balance ? <BalanceDisplay balanceMinutes={balance.balanceMinutes} size="base" /> : "—"}
+              </StatCard>
+              <StatCard label={t("daysLogged")}>
+                {balance ? `${balance.daysLogged} / ${balance.daysExpected}` : "—"}
+              </StatCard>
+              <StatCard label={t("avgPerDay")}>
+                {avgMinutes > 0 ? formatMinutes(avgMinutes) : "—"}
+              </StatCard>
               {view === "month" && (
-                <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
-                  <p className="text-xs text-text/50 mb-1">{t("completeDays")}</p>
-                  <p className="font-bold text-base">{completeDaysCount > 0 ? completeDaysCount + " / " + (balance ? balance.daysExpected : "—") : "—"}</p>
-                </div>
+                <StatCard label={t("completeDays")}>
+                  {completeDaysCount > 0 ? completeDaysCount + " / " + (balance ? balance.daysExpected : "—") : "—"}
+                </StatCard>
               )}
               {view === "month" && (
-                <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
-                  <p className="text-xs text-text/50 mb-1">{t("totalDaysOff")}</p>
-                  <p className="font-bold text-base">{daysOffCount > 0 ? daysOffCount : "—"}</p>
-                </div>
+                <StatCard label={t("totalDaysOff")}>
+                  {daysOffCount > 0 ? daysOffCount : "—"}
+                </StatCard>
               )}
             </div>
           )}
@@ -359,7 +338,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                 {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-12 rounded-xl bg-text/5 animate-pulse" />)}
               </div>
             ) : (
-              <div className="rounded-xl border border-text/10 bg-background overflow-hidden divide-y divide-text/6">
+              <Card padding="none" className="overflow-hidden divide-y divide-text/6">
                 {weekDatesArr.map((date, i) => {
                   const entry = entriesByDate[date];
                   const status = settings ? getCalendarDayStatus(date, entry, settings, today, firstTrackedDate) : "future";
@@ -408,7 +387,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                     </button>
                   );
                 })}
-              </div>
+              </Card>
             )
           )}
 
@@ -465,22 +444,18 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
       <div className="flex flex-col gap-3 pt-1">
         <h2 className="text-sm font-semibold">{t("yearSection", { year: String(refYear) })}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-          <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
-            <p className="text-xs text-text/50 mb-1">{t("yearWorkedDays")}</p>
-            <p className="font-bold text-base">{yearWorkedDays} / {yearTotalWorkdays}</p>
-          </div>
-          <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
-            <p className="text-xs text-text/50 mb-1">{t("yearOvertime")}</p>
+          <StatCard label={t("yearWorkedDays")}>
+            {yearWorkedDays} / {yearTotalWorkdays}
+          </StatCard>
+          <StatCard label={t("yearOvertime")}>
             <BalanceDisplay balanceMinutes={yearOvertime} size="base" />
-          </div>
-          <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
-            <p className="text-xs text-text/50 mb-1">{t("yearAbsences")}</p>
-            <p className="font-bold text-base">{t("yearAbsencesValue", { count: yearAbsences })}</p>
-          </div>
-          <div className="rounded-xl border border-text/10 bg-background px-4 py-3">
-            <p className="text-xs text-text/50 mb-1">{t("yearVacation")}</p>
-            <p className="font-bold text-base">{yearVacationUsed} / {settings?.annualVacationDays ?? 0} {t("daysUnit")}</p>
-          </div>
+          </StatCard>
+          <StatCard label={t("yearAbsences")}>
+            {t("yearAbsencesValue", { count: yearAbsences })}
+          </StatCard>
+          <StatCard label={t("yearVacation")}>
+            {yearVacationUsed} / {settings?.annualVacationDays ?? 0} {t("daysUnit")}
+          </StatCard>
         </div>
       </div>
 
@@ -491,24 +466,20 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
         <div className="flex flex-col gap-2">
           <p className="text-xs font-medium text-text/50 uppercase tracking-wide">{t("exportSection")}</p>
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => handleExportCSV("week")}
-              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5">
+            <Button variant="outline" onClick={() => handleExportCSV("week")}>
               {t("exportWeekCSV")}
-            </button>
-            <button onClick={() => handleExportCSV("month")}
-              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5">
+            </Button>
+            <Button variant="outline" onClick={() => handleExportCSV("month")}>
               {t("exportMonthCSV")}
-            </button>
+            </Button>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button onClick={handleExportJSON}
-              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5">
+            <Button variant="outline" onClick={handleExportJSON}>
               {t("exportJSON")}
-            </button>
-            <button onClick={() => importRef.current?.click()}
-              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5">
+            </Button>
+            <Button variant="outline" onClick={() => importRef.current?.click()}>
               {t("importJSON")}
-            </button>
+            </Button>
             <input
               ref={importRef}
               type="file"
@@ -523,24 +494,21 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
         <div className="flex flex-col gap-2">
           <p className="text-xs font-medium text-secondary uppercase tracking-wide">{t("deleteSection")}</p>
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
+              variant="outline-danger"
               onClick={() => openDeleteModal({ kind: "week", start: weekDates.start, end: weekDates.end, label: getWeekLabel(weekDates.start, weekDates.end) })}
-              className="text-sm border border-secondary/30 text-secondary rounded-lg px-3 py-2 hover:bg-secondary/10"
             >
               {t("deleteWeek")}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline-danger"
               onClick={() => openDeleteModal({ kind: "month", start: monthDates.start, end: monthDates.end, label: getMonthLabel(refYear, refMonth) })}
-              className="text-sm border border-secondary/30 text-secondary rounded-lg px-3 py-2 hover:bg-secondary/10"
             >
               {t("deleteMonth")}
-            </button>
-            <button
-              onClick={() => openDeleteModal({ kind: "all" })}
-              className="text-sm border border-secondary/30 text-secondary rounded-lg px-3 py-2 hover:bg-secondary/10"
-            >
+            </Button>
+            <Button variant="outline-danger" onClick={() => openDeleteModal({ kind: "all" })}>
               {t("deleteAll")}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -561,20 +529,12 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                   : t("deleteMonthConfirm", { label: deleteModal.label })}
             </p>
             <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setIsDeleteOpen(false)}
-                disabled={isProcessing}
-                className="px-4 py-2 text-sm font-medium border border-text/15 rounded-lg hover:bg-text/5 disabled:opacity-40"
-              >
+              <Button variant="outline" onClick={() => setIsDeleteOpen(false)} disabled={isProcessing}>
                 {t("cancel")}
-              </button>
-              <button
-                onClick={handleDeleteConfirm}
-                disabled={isProcessing}
-                className="px-4 py-2 text-sm font-medium bg-secondary text-white rounded-lg hover:opacity-90 disabled:opacity-40"
-              >
+              </Button>
+              <Button variant="danger" onClick={handleDeleteConfirm} disabled={isProcessing}>
                 {isProcessing ? t("deleting") : t("delete")}
-              </button>
+              </Button>
             </div>
           </div>
         </Modal>
