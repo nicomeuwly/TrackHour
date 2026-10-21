@@ -76,6 +76,13 @@ export function calculateBalance(workedMinutes: number, expectedHoursPerDay: num
   return workedMinutes - expectedHoursPerDay * 60;
 }
 
+const MS_PER_MINUTE = 60_000;
+
+/** Milliseconds until the next wall-clock minute, so live timers tick in sync with the clock. */
+export function msUntilNextMinute(now: Date): number {
+  return MS_PER_MINUTE - (now.getSeconds() * 1000 + now.getMilliseconds());
+}
+
 export function localDateStr(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');

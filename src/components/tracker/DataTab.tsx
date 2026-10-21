@@ -47,7 +47,7 @@ function getCellStatus(date: string, entry: DayEntry | undefined, settings: Sett
 
 const CELL_BG: Record<CellStatus, string> = {
   complete: "bg-primary/20 hover:brightness-85",
-  incomplete: "bg-secondary/20 hover:brightness-75",
+  incomplete: "bg-tertiary/20 hover:brightness-75",
   missing: "bg-secondary/10 hover:brightness-65",
   weekend: "bg-background-light hover:brightness-95",
   vacation: "bg-tertiary/15 hover:brightness-75",
@@ -67,6 +67,12 @@ const STATUS_BADGE: Record<Exclude<CellStatus, "future">, string> = {
   other: "bg-text/10 text-text/50",
   compensation: "bg-primary/15 text-primary",
 };
+
+// Leave days share colors with other statuses (vacation/partial are both amber),
+// so their icon is what tells them apart, not color alone.
+function leaveIconFor(status: CellStatus) {
+  return status in LEAVE_ICON ? LEAVE_ICON[status as keyof typeof LEAVE_ICON] : null;
+}
 
 type DeleteTarget =
   | { kind: "week"; start: string; end: string; label: string }
@@ -380,7 +386,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                       </div>
                       <div className="flex-none min-w-20">
                         {status !== "future" && (() => {
-                          const LeaveIcon = status in LEAVE_ICON ? LEAVE_ICON[status as keyof typeof LEAVE_ICON] : null;
+                          const LeaveIcon = leaveIconFor(status);
                           return (
                             <span className={`inline-flex items-center gap-1 text-xs capitalize font-medium px-2 py-1 rounded-full ${STATUS_BADGE[status]}`}>
                               {LeaveIcon && <LeaveIcon size={11} aria-hidden />}
@@ -415,6 +421,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                     const entry = entriesByDate[dateStr];
                     const status = settings ? getCellStatus(dateStr, entry, settings, today) : "future";
                     const isToday = dateStr === today;
+                    const LeaveIcon = leaveIconFor(status);
 
                     return (
                       <button
@@ -426,7 +433,9 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                         <span className={`text-xs font-semibold leading-none ${isToday ? "text-primary" : status === "future" ? "text-text/30" : ""}`}>
                           {day}
                         </span>
-                        {entry && (
+                        {LeaveIcon ? (
+                          <LeaveIcon size={11} aria-hidden className="mt-0.5 text-text/60" />
+                        ) : entry && (
                           <span className="text-[10px] text-text/50 leading-none mt-0.5 tabular-nums">
                             {formatMinutes(entry.totalWorkedMinutes)}
                           </span>

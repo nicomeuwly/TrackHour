@@ -14,6 +14,7 @@ import {
   calculateFromPunches,
   formatMinutes,
   localDateStr,
+  msUntilNextMinute,
 } from '@/lib/business/calculations';
 import { useToast } from '@/components/ui/Toast';
 import BalanceDisplay from '@/components/ui/BalanceDisplay';
@@ -378,11 +379,21 @@ export default function ClockTab({ date, onDateChange }: ClockTabProps) {
   const today = localDateStr(new Date());
   const isToday = date === today;
 
-  // Ticker — only runs for today; minute precision is enough for the progress bar
+  // Ticker — only runs for today. Aligned on the wall-clock minute so the
+  // displayed time never lags up to 59s behind the real clock.
   useEffect(() => {
     if (!isToday) return;
-    const id = setInterval(() => setNow(new Date()), 60000);
-    return () => clearInterval(id);
+    let intervalId: ReturnType<typeof setInterval> | undefined;
+    const tick = () => setNow(new Date());
+    tick();
+    const alignId = setTimeout(() => {
+      tick();
+      intervalId = setInterval(tick, 60_000);
+    }, msUntilNextMinute(new Date()));
+    return () => {
+      clearTimeout(alignId);
+      clearInterval(intervalId);
+    };
   }, [isToday]);
 
   // Sync note from hook

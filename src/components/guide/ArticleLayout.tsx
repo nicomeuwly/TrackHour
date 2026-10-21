@@ -66,7 +66,7 @@ export default async function ArticleLayout({ articleKey, locale, children }: Ar
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">{title}</h1>
         <p className="text-lg text-text/60 mb-10 leading-relaxed">{excerpt}</p>
 
-        <article className="prose prose-neutral space-y-10">{children}</article>
+        <article className="space-y-10">{children}</article>
 
         <div className="mt-12 pt-8 border-t border-text/10">
           <Link

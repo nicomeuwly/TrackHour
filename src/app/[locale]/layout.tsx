@@ -11,6 +11,7 @@ import Footer from '@/components/layout/Footer';
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 import JsonLd from '@/components/JsonLd';
 import { SITE_URL, SITE_NAME } from '@/lib/site';
+import ThemeScript from '@/components/ThemeScript';
 import '../globals.css';
 
 const inter = Inter({
@@ -41,7 +42,11 @@ export default async function RootLayout({ children, params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={inter.variable}>
+    // suppressHydrationWarning: ThemeScript adds the theme class before React hydrates.
+    <html lang={locale} className={inter.variable} suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
         <JsonLd
           data={[

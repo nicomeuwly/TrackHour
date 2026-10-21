@@ -2,13 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getSettings, updateSettings as updateSettingsService } from '@/lib/services/settings.service';
+import { applyTheme } from '@/lib/theme';
 import type { Settings } from '@/lib/types';
-
-function applyTheme(theme: string) {
-  const root = document.documentElement;
-  root.classList.remove('dark', 'light');
-  root.classList.add(theme);
-}
 
 export function useSettings() {
   const [settings, setSettings] = useState<Settings | null>(null);

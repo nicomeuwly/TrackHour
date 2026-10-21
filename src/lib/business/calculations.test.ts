@@ -13,6 +13,7 @@ import {
   calculateFromPunches,
   isFilledLeave,
   dayBalanceMinutes,
+  msUntilNextMinute,
 } from './calculations';
 import type { DayEntry, Punch, Settings, LeaveType } from '@/lib/types';
 
@@ -329,5 +330,19 @@ describe('calculateFromPunches', () => {
     const comp = calculateFromPunches(punches, baseSettings, fixedNow, '2024-01-08', 'compensation');
     expect(filled.balanceMinutes).toBe(0);      // 180 worked + 300 fill - 480
     expect(comp.balanceMinutes).toBe(-300);     // 180 worked - 480
+  });
+});
+
+describe('msUntilNextMinute', () => {
+  it('returns the time left until the next wall-clock minute', () => {
+    expect(msUntilNextMinute(new Date(2024, 0, 8, 9, 15, 30, 0))).toBe(30_000);
+  });
+
+  it('accounts for milliseconds', () => {
+    expect(msUntilNextMinute(new Date(2024, 0, 8, 9, 15, 59, 750))).toBe(250);
+  });
+
+  it('returns a full minute exactly on a minute boundary', () => {
+    expect(msUntilNextMinute(new Date(2024, 0, 8, 9, 15, 0, 0))).toBe(60_000);
   });
 });

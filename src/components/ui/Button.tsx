@@ -10,7 +10,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants = {
-  primary: 'bg-bg-light text-text hover:opacity-90',
+  primary: 'bg-background-light text-text hover:opacity-90',
   secondary: 'bg-text/10 text-text hover:bg-text/20',
   ghost: 'text-text/70 hover:bg-text/8',
   danger: 'bg-secondary text-white hover:opacity-90',
