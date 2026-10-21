@@ -90,7 +90,7 @@ export default function SettingsPanel({}: SettingsPanelProps) {
                   type="button"
                   onClick={() => toggleWorkDay(d.value)}
                   aria-pressed={local.workDays.includes(d.value)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize ${local.workDays.includes(d.value) ? 'bg-primary text-white' : 'bg-text/8 text-text/60 hover:bg-text/12'}`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize ${local.workDays.includes(d.value) ? 'bg-primary text-white' : 'bg-text/8 text-text/60 hover:bg-text/12'}`}
                 >
                   {d.label}
                 </button>

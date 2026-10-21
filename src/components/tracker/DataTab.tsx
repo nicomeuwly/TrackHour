@@ -10,6 +10,8 @@ import { useMonthEntries } from "@/lib/hooks/useMonthEntries";
 import { useYearStats } from "@/lib/hooks/useYearStats";
 import { useSettings } from "@/lib/hooks/useSettings";
 import { useToast } from "@/components/ui/Toast";
+import { useErrorMessage } from "@/lib/hooks/useErrorMessage";
+import { AppError } from "@/lib/errors";
 import Modal from "@/components/ui/Modal";
 import BalanceDisplay from "@/components/ui/BalanceDisplay";
 import {
@@ -84,12 +86,20 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
   const today = localDateStr(new Date());
   const [view, setView] = useState<"week" | "month">("week");
   const [refDate, setRefDate] = useState(today);
+  // The target outlives the open flag so the modal keeps its content while it animates out.
   const [deleteModal, setDeleteModal] = useState<DeleteTarget | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  function openDeleteModal(target: DeleteTarget) {
+    setDeleteModal(target);
+    setIsDeleteOpen(true);
+  }
   const [isProcessing, setIsProcessing] = useState(false);
   const importRef = useRef<HTMLInputElement>(null);
 
   const { settings } = useSettings();
   const { showToast } = useToast();
+  const formatError = useErrorMessage();
   const { firstTrackedDate, refresh: firstTrackedRefresh } = useFirstTrackedDate();
 
   const refYear = parseInt(refDate.slice(0, 4));
@@ -166,7 +176,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
       await exportPeriodAsCSV(dates.start, dates.end, label);
       showToast(t("toastExportCSV"), "success");
     } catch (e) {
-      showToast(String(e), "error");
+      showToast(formatError(e), "error");
     }
   }
 
@@ -175,7 +185,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
       await exportData();
       showToast(t("toastExportJSON"), "success");
     } catch (e) {
-      showToast(String(e), "error");
+      showToast(formatError(e), "error");
     }
   }
 
@@ -187,11 +197,11 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
       if (result.success) {
         showToast(t("toastImported", { count: result.entriesImported }), "success");
       } else {
-        showToast(result.errors[0] ?? "Import failed", "error");
+        showToast(formatError(result.errors[0] ?? new AppError("importFailed", { detail: "" })), "error");
       }
       refreshAll();
     } catch (err) {
-      showToast(String(err), "error");
+      showToast(formatError(err), "error");
     }
     e.target.value = "";
   }
@@ -208,9 +218,9 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
         showToast(t("toastDeleted", { count }), "success");
       }
       refreshAll();
-      setDeleteModal(null);
+      setIsDeleteOpen(false);
     } catch (err) {
-      showToast(String(err), "error");
+      showToast(formatError(err), "error");
     } finally {
       setIsProcessing(false);
     }
@@ -262,7 +272,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                 key={v}
                 onClick={() => setView(v)}
                 aria-pressed={view === v}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${view === v ? "bg-background shadow-sm text-text" : "text-text/50 hover:text-text"}`}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium ${view === v ? "bg-background shadow-sm text-text" : "text-text/50 hover:text-text"}`}
               >
                 {v === "week" ? t("viewWeek") : t("viewMonth")}
               </button>
@@ -271,7 +281,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
           {!isCurrentPeriod && (
             <button
               onClick={() => setRefDate(today)}
-              className="text-xs font-medium text-primary border border-primary/30 rounded-lg px-2.5 py-1 hover:bg-primary/8 transition-colors"
+              className="text-xs font-medium text-primary border border-primary/30 rounded-lg px-2.5 py-1 hover:bg-primary/8"
             >
               {view === "week" ? t("thisWeek") : t("thisMonth")}
             </button>
@@ -279,12 +289,12 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => shiftPeriod(-1)} aria-label={view === "week" ? t("prevWeek") : t("prevMonth")}
-            className="p-2 rounded-lg hover:bg-text/8 transition-colors">
+            className="p-2 rounded-lg hover:bg-text/8">
             <ChevronLeft size={14} aria-hidden />
           </button>
           <span className="flex-1 text-center text-sm font-semibold capitalize">{periodLabel}</span>
           <button onClick={() => shiftPeriod(1)} aria-label={view === "week" ? t("nextWeek") : t("nextMonth")}
-            className="p-2 rounded-lg hover:bg-text/8 transition-colors">
+            className="p-2 rounded-lg hover:bg-text/8">
             <ChevronRight size={14} aria-hidden />
           </button>
         </div>
@@ -363,7 +373,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                       key={date}
                       onClick={() => onNavigateToDay?.(date)}
                       aria-label={d.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric" })}
-                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-text/5 transition-colors text-left ${status === "weekend" || !hasBadge(status) ? "opacity-55" : ""}`}
+                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-text/5 active:scale-100 active:bg-text/8 text-left ${status === "weekend" || !hasBadge(status) ? "opacity-55" : ""}`}
                     >
                       <div className="w-14 flex-none">
                         <p className={`text-sm capitalize font-semibold ${date === today ? "text-primary" : ""}`}>
@@ -428,7 +438,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                         key={day}
                         onClick={() => onNavigateToDay?.(dateStr)}
                         aria-label={new Date(refYear, refMonth - 1, day).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}
-                        className={`rounded-lg p-0.5 flex flex-col items-center justify-center aspect-square min-h-9.5 transition-colors dark:hover:brightness-140 active:scale-95 ${CELL_BG[status]} ${isToday ? "ring-1 ring-primary ring-inset" : ""}`}
+                        className={`rounded-lg p-0.5 flex flex-col items-center justify-center aspect-square min-h-9.5 dark:hover:brightness-140 ${CELL_BG[status]} ${isToday ? "ring-1 ring-primary ring-inset" : ""}`}
                       >
                         <span className={`text-xs font-semibold leading-none ${isToday ? "text-primary" : !hasBadge(status) ? "text-text/30" : ""}`}>
                           {day}
@@ -482,21 +492,21 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
           <p className="text-xs font-medium text-text/50 uppercase tracking-wide">{t("exportSection")}</p>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => handleExportCSV("week")}
-              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5 transition-colors">
+              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5">
               {t("exportWeekCSV")}
             </button>
             <button onClick={() => handleExportCSV("month")}
-              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5 transition-colors">
+              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5">
               {t("exportMonthCSV")}
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
             <button onClick={handleExportJSON}
-              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5 transition-colors">
+              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5">
               {t("exportJSON")}
             </button>
             <button onClick={() => importRef.current?.click()}
-              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5 transition-colors">
+              className="text-sm border border-text/15 rounded-lg px-3 py-2 hover:bg-text/5">
               {t("importJSON")}
             </button>
             <input
@@ -514,20 +524,20 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
           <p className="text-xs font-medium text-secondary uppercase tracking-wide">{t("deleteSection")}</p>
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setDeleteModal({ kind: "week", start: weekDates.start, end: weekDates.end, label: getWeekLabel(weekDates.start, weekDates.end) })}
-              className="text-sm border border-secondary/30 text-secondary rounded-lg px-3 py-2 hover:bg-secondary/10 transition-colors"
+              onClick={() => openDeleteModal({ kind: "week", start: weekDates.start, end: weekDates.end, label: getWeekLabel(weekDates.start, weekDates.end) })}
+              className="text-sm border border-secondary/30 text-secondary rounded-lg px-3 py-2 hover:bg-secondary/10"
             >
               {t("deleteWeek")}
             </button>
             <button
-              onClick={() => setDeleteModal({ kind: "month", start: monthDates.start, end: monthDates.end, label: getMonthLabel(refYear, refMonth) })}
-              className="text-sm border border-secondary/30 text-secondary rounded-lg px-3 py-2 hover:bg-secondary/10 transition-colors"
+              onClick={() => openDeleteModal({ kind: "month", start: monthDates.start, end: monthDates.end, label: getMonthLabel(refYear, refMonth) })}
+              className="text-sm border border-secondary/30 text-secondary rounded-lg px-3 py-2 hover:bg-secondary/10"
             >
               {t("deleteMonth")}
             </button>
             <button
-              onClick={() => setDeleteModal({ kind: "all" })}
-              className="text-sm border border-secondary/30 text-secondary rounded-lg px-3 py-2 hover:bg-secondary/10 transition-colors"
+              onClick={() => openDeleteModal({ kind: "all" })}
+              className="text-sm border border-secondary/30 text-secondary rounded-lg px-3 py-2 hover:bg-secondary/10"
             >
               {t("deleteAll")}
             </button>
@@ -538,8 +548,8 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
       {/* Delete confirmation modal */}
       {deleteModal && (
         <Modal
-          isOpen
-          onClose={() => { if (!isProcessing) setDeleteModal(null); }}
+          isOpen={isDeleteOpen}
+          onClose={() => { if (!isProcessing) setIsDeleteOpen(false); }}
           title={t("deleteModalTitle")}
         >
           <div className="flex flex-col gap-5">
@@ -552,16 +562,16 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
             </p>
             <div className="flex gap-3 justify-end">
               <button
-                onClick={() => setDeleteModal(null)}
+                onClick={() => setIsDeleteOpen(false)}
                 disabled={isProcessing}
-                className="px-4 py-2 text-sm font-medium border border-text/15 rounded-lg hover:bg-text/5 transition-colors disabled:opacity-40"
+                className="px-4 py-2 text-sm font-medium border border-text/15 rounded-lg hover:bg-text/5 disabled:opacity-40"
               >
                 {t("cancel")}
               </button>
               <button
                 onClick={handleDeleteConfirm}
                 disabled={isProcessing}
-                className="px-4 py-2 text-sm font-medium bg-secondary text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-40"
+                className="px-4 py-2 text-sm font-medium bg-secondary text-white rounded-lg hover:opacity-90 disabled:opacity-40"
               >
                 {isProcessing ? t("deleting") : t("delete")}
               </button>

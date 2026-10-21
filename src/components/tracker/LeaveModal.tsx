@@ -58,7 +58,7 @@ export default function LeaveModal({
                 role="radio"
                 aria-checked={selected === type}
                 onClick={() => setSelected(type)}
-                className={`flex items-start gap-3 text-left rounded-xl border px-4 py-3 transition-colors ${selected === type ? 'border-tertiary bg-tertiary/10' : 'border-text/10 hover:bg-text/4'}`}
+                className={`flex items-start gap-3 text-left rounded-xl border px-4 py-3 ${selected === type ? 'border-tertiary bg-tertiary/10' : 'border-text/10 hover:bg-text/4'}`}
               >
                 <Icon size={20} aria-hidden className={`mt-0.5 flex-none ${selected === type ? 'text-tertiary' : 'text-text/40'}`} />
                 <div className="flex flex-col">
@@ -105,14 +105,14 @@ export default function LeaveModal({
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm text-text/50 hover:text-text/80 transition-colors"
+              className="px-4 py-2 text-sm text-text/50 hover:text-text/80"
             >
               {t('cancel')}
             </button>
             <button
               onClick={handleSave}
               disabled={selected === null}
-              className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
+              className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg disabled:opacity-40 hover:opacity-90"
             >
               {t('save')}
             </button>

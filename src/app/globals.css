@@ -58,6 +58,12 @@
   --color-secondary: var(--secondary);
   --color-tertiary: var(--tertiary);
   --font-sans: var(--font-inter), Arial, Helvetica, sans-serif;
+
+  /* Motion tokens. The built-in curves are too soft to feel intentional:
+     ease-out for UI entering/exiting and press feedback, ease-drawer for sheets. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 html {
@@ -79,5 +85,146 @@ body {
 
   50% {
     opacity: 0.7;
+  }
+}
+/* Paused-segment pulse on the live progress bar */
+.segment-pulse {
+  animation: segment-pulse 1.4s ease-in-out infinite;
+}
+
+/* ── Press feedback ─────────────────────────────────────────────────────────
+   Every button acknowledges the press instantly (Apple: feedback on pointer-down).
+   Lives in the base layer so a utility can opt out (e.g. active:scale-100 on
+   full-width rows, where shrinking the whole row reads as a glitch). Buttons must
+   not set their own transition-* utility, or it would drop `scale` from the list. */
+@layer base {
+  button {
+    transition:
+      color 150ms ease,
+      background-color 150ms ease,
+      border-color 150ms ease,
+      text-decoration-color 150ms ease,
+      opacity 150ms ease,
+      scale 160ms var(--ease-out);
+  }
+  button:not(:disabled):active {
+    scale: 0.97;
+  }
+}
+
+@layer components {
+  /* ── Modal: bottom sheet on mobile, centered dialog from sm up ─────────── */
+  .modal-root[data-state="closed"] {
+    pointer-events: none;
+  }
+  .modal-scrim {
+    transition: opacity 200ms var(--ease-out);
+    @starting-style {
+      opacity: 0;
+    }
+  }
+  .modal-scrim[data-state="closed"] {
+    opacity: 0;
+  }
+  .modal-panel {
+    transition:
+      translate 300ms var(--ease-drawer),
+      opacity 200ms var(--ease-out),
+      scale 200ms var(--ease-out);
+    @starting-style {
+      translate: 0 100%;
+    }
+  }
+  /* Exits faster than it enters: the system is responding, not the user deciding. */
+  .modal-panel[data-state="closed"] {
+    translate: 0 100%;
+    transition-duration: 200ms;
+  }
+  @media (width >= 40rem) {
+    .modal-panel {
+      @starting-style {
+        translate: none;
+        opacity: 0;
+        scale: 0.96;
+      }
+    }
+    .modal-panel[data-state="closed"] {
+      translate: none;
+      opacity: 0;
+      scale: 0.96;
+      transition-duration: 150ms;
+    }
+  }
+
+  /* ── Toasts enter and leave through the same (bottom) edge ────────────── */
+  .toast {
+    transition:
+      translate 400ms ease,
+      opacity 400ms ease;
+    @starting-style {
+      translate: 0 100%;
+      opacity: 0;
+    }
+  }
+  .toast[data-state="closed"] {
+    translate: 0 100%;
+    opacity: 0;
+    transition-duration: 200ms;
+  }
+
+  /* ── Popovers grow out of their trigger, not from their center ────────── */
+  .popover-enter {
+    transform-origin: top left;
+    transition:
+      opacity 150ms var(--ease-out),
+      scale 150ms var(--ease-out);
+    @starting-style {
+      opacity: 0;
+      scale: 0.97;
+    }
+  }
+
+  /* ── One-off soft entrance for rare moments (day complete) ────────────── */
+  .enter-soft {
+    transition:
+      opacity 250ms var(--ease-out),
+      scale 250ms var(--ease-out);
+    @starting-style {
+      opacity: 0;
+      scale: 0.97;
+    }
+  }
+}
+
+/* Reduced motion means gentler, not none: movement becomes a fade, loops stop. */
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):active {
+    scale: none;
+  }
+  .modal-panel,
+  .modal-panel[data-state="closed"],
+  .toast,
+  .toast[data-state="closed"],
+  .popover-enter,
+  .enter-soft {
+    translate: none;
+    scale: none;
+    transition: opacity 200ms ease;
+    @starting-style {
+      translate: none;
+      scale: none;
+      opacity: 0;
+    }
+  }
+  .modal-panel[data-state="closed"] {
+    opacity: 0;
+  }
+  .animate-pulse {
+    animation: none;
+  }
+  /* Keep the "in progress" segment distinguishable without the loop. */
+  .segment-pulse {
+    animation: none;
+    opacity: 0.55;
   }
 }

@@ -17,6 +17,7 @@ import {
   msUntilNextMinute,
 } from '@/lib/business/calculations';
 import { useToast } from '@/components/ui/Toast';
+import { useErrorMessage } from '@/lib/hooks/useErrorMessage';
 import BalanceDisplay from '@/components/ui/BalanceDisplay';
 import LeaveModal from '@/components/tracker/LeaveModal';
 import { LEAVE_LABEL_KEY, LEAVE_DESC_KEY, LEAVE_ICON, ABSENCE_ICON } from '@/components/tracker/leaveMeta';
@@ -152,11 +153,11 @@ function PunchTimeline({
                     setAction(null);
                   }}
                   disabled={!editValue}
-                  className="px-3 py-1 bg-primary text-white text-xs font-medium rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity ml-1"
+                  className="px-3 py-1 bg-primary text-white text-xs font-medium rounded-lg disabled:opacity-40 hover:opacity-90 ml-1"
                 >
                   {t('confirm')}
                 </button>
-                <button onClick={() => setAction(null)} className="text-xs text-text/40 hover:text-text/70 transition-colors">
+                <button onClick={() => setAction(null)} className="text-xs text-text/40 hover:text-text/70">
                   {t('editCancel')}
                 </button>
               </div>
@@ -196,7 +197,7 @@ function PunchTimeline({
                 <button
                   onClick={() => onDelete(outPunch ? [inPunch.id, outPunch.id] : [inPunch.id])}
                   aria-label={t('deletePunchLabel', { time: inPunch.time })}
-                  className="inline-flex items-center justify-center size-11 sm:size-8 -mr-2 sm:mr-0 rounded-lg hover:bg-text/8 text-text/40 hover:text-secondary transition-colors pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:group-focus-within:opacity-100 focus-visible:opacity-100"
+                  className="inline-flex items-center justify-center size-11 sm:size-8 -mr-2 sm:mr-0 rounded-lg hover:bg-text/8 text-text/40 hover:text-secondary pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:group-focus-within:opacity-100 focus-visible:opacity-100"
                 >
                   <TrashIcon />
                 </button>
@@ -231,11 +232,11 @@ function ManualInput({
       />
       <button onClick={() => value && onConfirm(value)}
         disabled={!value}
-        className="px-3 py-1 bg-primary text-white text-sm rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
+        className="px-3 py-1 bg-primary text-white text-sm rounded-lg disabled:opacity-40 hover:opacity-90"
       >
         {t('confirm')}
       </button>
-      <button onClick={onCancel} className="text-sm text-text/40 hover:text-text/70 transition-colors">{t('cancel')}</button>
+      <button onClick={onCancel} className="text-sm text-text/40 hover:text-text/70">{t('cancel')}</button>
     </div>
   );
 }
@@ -263,7 +264,7 @@ function DatePickerPopup({ current, onSelect, onClose }: { current: string; onSe
   function nextM() { if (viewMonth === 12) { setViewYear(y => y + 1); setViewMonth(1); } else setViewMonth(m => m + 1); }
 
   return (
-    <div className="absolute top-full left-0 z-50 mt-2 bg-background border border-text/15 rounded-xl shadow-xl p-3 w-64" role="dialog">
+    <div className="popover-enter absolute top-full left-0 z-50 mt-2 bg-background border border-text/15 rounded-xl shadow-xl p-3 w-64" role="dialog">
       <div className="flex items-center justify-between mb-2">
         <button onClick={prevM} className="p-1 rounded hover:bg-text/8" aria-label="←">
           <ChevronLeft size={14} aria-hidden />
@@ -287,7 +288,7 @@ function DatePickerPopup({ current, onSelect, onClose }: { current: string; onSe
           const isToday = dateStr === today;
           return (
             <button key={day} onClick={() => { onSelect(dateStr); onClose(); }}
-              className={`aspect-square rounded-lg text-xs font-medium transition-colors ${isSelected ? 'bg-primary text-white' : isToday ? 'ring-1 ring-primary text-primary' : 'hover:bg-text/8'}`}
+              className={`aspect-square rounded-lg text-xs font-medium ${isSelected ? 'bg-primary text-white' : isToday ? 'ring-1 ring-primary text-primary' : 'hover:bg-text/8'}`}
             >
               {day}
             </button>
@@ -333,11 +334,10 @@ function SegmentedProgressBar({ progressPct, isPaused }: { progressPct: number; 
         return (
           <div
             key={i}
-            className="flex-1 h-12 rounded-sm bg-primary"
+            className={`flex-1 h-12 rounded-sm bg-primary ${isPartial && !isPaused ? 'segment-pulse' : ''}`}
             style={{
               backgroundImage: isPaused ? PAUSE_HATCH : undefined,
               opacity: isPartial && isPaused ? 0.45 : undefined,
-              animation: isPartial && !isPaused ? 'segment-pulse 1.4s ease-in-out infinite' : undefined,
             }}
           />
         );
@@ -374,14 +374,14 @@ const CLOCK_BUTTON_ICON = { in: Play, out: Square } as const;
 
 // Manual entry is a quiet link next to a primary clock button, and becomes the
 // secondary button itself when it is the only available action (past days, leave).
-const MANUAL_LINK_CLASS = 'min-h-11 px-3 text-sm text-text/50 hover:text-text/80 transition-colors';
-const MANUAL_BUTTON_CLASS = 'border border-text/20 text-text/60 px-8 py-3 rounded-xl font-semibold text-base hover:bg-text/5 transition-colors';
+const MANUAL_LINK_CLASS = 'min-h-11 px-3 text-sm text-text/50 hover:text-text/80';
+const MANUAL_BUTTON_CLASS = 'border border-text/20 text-text/60 px-8 py-3 rounded-xl font-semibold text-base hover:bg-text/5';
 
 // Chips stay visually compact (h-8) while a pseudo-element extends the touch
 // target to 44px on coarse pointers.
 const CHIP_HIT_AREA_CLASS = 'relative h-8 pointer-coarse:after:absolute pointer-coarse:after:inset-x-0 pointer-coarse:after:-inset-y-1.5';
 
-const DAY_NAV_BUTTON_CLASS = 'inline-flex flex-none items-center justify-center size-11 sm:size-9 rounded-lg hover:bg-text/8 transition-colors';
+const DAY_NAV_BUTTON_CLASS = 'inline-flex flex-none items-center justify-center size-11 sm:size-9 rounded-lg hover:bg-text/8';
 
 function ClockActions({
   kind,
@@ -411,7 +411,7 @@ function ClockActions({
     <>
       {canClockNow && (
         <button onClick={() => onClock()}
-          className={`flex items-center gap-2 border px-8 py-3 rounded-xl font-semibold text-base transition-colors ${CLOCK_BUTTON_TONE[kind]}`}>
+          className={`flex items-center gap-2 border px-8 py-3 rounded-xl font-semibold text-base ${CLOCK_BUTTON_TONE[kind]}`}>
           <Icon size={18} fill="currentColor" aria-hidden />
           {label}
         </button>
@@ -432,6 +432,7 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
   const { settings } = useSettings();
   const { used: vacationUsed, refresh: refreshVacation } = useVacationUsage(parseInt(date.slice(0, 4)));
   const { showToast } = useToast();
+  const formatError = useErrorMessage();
   const [now, setNow] = useState(new Date());
   const [manualMode, setManualMode] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
@@ -496,11 +497,11 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
             try {
               await restorePunches(deleted);
               showToast(t('toastRestored'), 'success');
-            } catch (e) { showToast(String(e).replace('Error: ', ''), 'error'); }
+            } catch (e) { showToast(formatError(e), 'error'); }
           },
         },
       });
-    } catch (e) { showToast(String(e).replace('Error: ', ''), 'error'); }
+    } catch (e) { showToast(formatError(e), 'error'); }
   }
 
   async function handleClockIn(manualTime?: string) {
@@ -508,7 +509,7 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
       await clockIn(manualTime);
       setManualMode(false);
       showToast(t('toastClockIn'), 'success');
-    } catch (e) { showToast(String(e).replace('Error: ', ''), 'error'); }
+    } catch (e) { showToast(formatError(e), 'error'); }
   }
 
   async function handleClockOut(manualTime?: string) {
@@ -516,7 +517,7 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
       await clockOut(manualTime);
       setManualMode(false);
       showToast(t('toastClockOut'), 'info');
-    } catch (e) { showToast(String(e).replace('Error: ', ''), 'error'); }
+    } catch (e) { showToast(formatError(e), 'error'); }
   }
 
   function handleNoteChange(v: string) {
@@ -552,7 +553,7 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
               onClick={() => setShowPicker(s => !s)}
               aria-haspopup="dialog"
               aria-expanded={showPicker}
-              className="flex items-center gap-2 min-h-11 max-w-full hover:bg-text/5 rounded-xl px-2 py-1 transition-colors text-left"
+              className="flex items-center gap-2 min-h-11 max-w-full hover:bg-text/5 rounded-xl px-2 py-1 text-left"
             >
               <Calendar size={24} aria-hidden className="flex-none" />
               <div className="min-w-0">
@@ -574,7 +575,7 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
         <div className="flex items-center gap-2 ml-auto">
           {!isToday && (
             <button onClick={() => onDateChange(today)}
-              className={`${CHIP_HIT_AREA_CLASS} text-xs font-medium text-primary border border-primary/30 rounded-lg px-3 hover:bg-primary/8 transition-colors`}>
+              className={`${CHIP_HIT_AREA_CLASS} text-xs font-medium text-primary border border-primary/30 rounded-lg px-3 hover:bg-primary/8`}>
               {t('backToToday')}
             </button>
           )}
@@ -582,7 +583,7 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
             <button
               onClick={() => setShowLeaveModal(true)}
               aria-haspopup="dialog"
-              className={`${CHIP_HIT_AREA_CLASS} flex items-center gap-1.5 rounded-lg border px-3 transition-colors ${leaveType !== null ? 'border-tertiary/30 bg-tertiary/10' : 'border-text/15 text-text/70 hover:bg-text/5'}`}
+              className={`${CHIP_HIT_AREA_CLASS} flex items-center gap-1.5 rounded-lg border px-3 ${leaveType !== null ? 'border-tertiary/30 bg-tertiary/10' : 'border-text/15 text-text/70 hover:bg-text/5'}`}
             >
               <AbsenceIcon size={13} aria-hidden className={leaveType !== null ? 'text-tertiary' : 'text-text/55'} />
               <span className={`text-xs font-medium whitespace-nowrap ${leaveType !== null ? 'text-tertiary' : 'text-text/70'}`}>
@@ -595,9 +596,9 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
       </div>
 
       {/* Error */}
-      {error && (
+      {error != null && (
         <p role="alert" className="text-sm text-secondary bg-secondary/10 rounded-xl px-4 py-2">
-          {error}
+          {formatError(error)}
         </p>
       )}
 
@@ -659,7 +660,9 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
           {/* Day complete, or a past day that ended clocked out */}
           {punches.length > 0 && lastType === 'out' && dayCalc && !isOnBreak && (
             <>
-              <div>
+              {/* The only "delight" moment: a soft entrance when today's work is done.
+                  Not on past days, which users browse often. */}
+              <div className={isToday ? 'enter-soft' : undefined}>
                 <p className="text-2xl font-bold text-primary">{t('dayComplete')}</p>
                 <p className="text-sm text-text/50 mt-1">{formatMinutes(dayCalc.workedMinutes)} {t('workedSuffix')}</p>
               </div>
@@ -697,7 +700,7 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
                   await editPunch(id, newTime);
                   showToast(t('toastEdited'), 'success');
                 } catch (e) {
-                  showToast(String(e).replace('Error: ', ''), 'error');
+                  showToast(formatError(e), 'error');
                 }
               }}
             />

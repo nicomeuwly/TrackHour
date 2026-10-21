@@ -11,7 +11,8 @@ export function useClockDay(date: string) {
   const [note, setNote] = useState('');
   const [leaveType, setLeaveTypeState] = useState<LeaveType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Kept as thrown (not stringified) so AppError codes reach the UI for translation.
+  const [error, setError] = useState<unknown>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -22,7 +23,7 @@ export function useClockDay(date: string) {
       setNote(entry?.note ?? '');
       setLeaveTypeState(entry?.leaveType ?? null);
     } catch (e) {
-      setError(String(e));
+      setError(e);
     } finally {
       setIsLoading(false);
     }
@@ -35,9 +36,8 @@ export function useClockDay(date: string) {
       await addPunch(date, 'in', manualTime, !!manualTime);
       await load();
     } catch (e) {
-      const msg = String(e);
-      setError(msg);
-      throw new Error(msg);
+      setError(e);
+      throw e;
     }
   }, [date, load]);
 
@@ -46,9 +46,8 @@ export function useClockDay(date: string) {
       await addPunch(date, 'out', manualTime, !!manualTime);
       await load();
     } catch (e) {
-      const msg = String(e);
-      setError(msg);
-      throw new Error(msg);
+      setError(e);
+      throw e;
     }
   }, [date, load]);
 
@@ -58,9 +57,8 @@ export function useClockDay(date: string) {
       await load();
       return deleted;
     } catch (e) {
-      const msg = String(e);
-      setError(msg);
-      throw new Error(msg);
+      setError(e);
+      throw e;
     }
   }, [load]);
 
@@ -69,9 +67,8 @@ export function useClockDay(date: string) {
       await restorePunchesService(deleted);
       await load();
     } catch (e) {
-      const msg = String(e).replace('Error: ', '');
-      setError(msg);
-      throw new Error(msg);
+      setError(e);
+      throw e;
     }
   }, [load]);
 
@@ -80,9 +77,8 @@ export function useClockDay(date: string) {
       await updatePunchService(id, newTime);
       await load();
     } catch (e) {
-      const msg = String(e).replace('Error: ', '');
-      setError(msg);
-      throw new Error(msg);
+      setError(e);
+      throw e;
     }
   }, [load]);
 
@@ -91,7 +87,7 @@ export function useClockDay(date: string) {
     try {
       await updateEntryNote(date, text);
     } catch (e) {
-      setError(String(e));
+      setError(e);
     }
   }, [date]);
 
@@ -100,7 +96,7 @@ export function useClockDay(date: string) {
       await setLeaveTypeService(date, type);
       setLeaveTypeState(type);
     } catch (e) {
-      setError(String(e));
+      setError(e);
     }
   }, [date]);
 

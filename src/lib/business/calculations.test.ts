@@ -17,7 +17,10 @@ import {
   getCalendarDayStatus,
   dayRowBalance,
   isValidPunchSequence,
+  validateNewPunch,
+  validatePunchEdit,
 } from './calculations';
+import { AppError } from '@/lib/errors';
 import type { DayEntry, Punch, Settings, LeaveType } from '@/lib/types';
 
 const baseSettings: Settings = {
@@ -436,5 +439,53 @@ describe('isValidPunchSequence', () => {
 
   it('rejects two punches at the same time', () => {
     expect(isValidPunchSequence([makePunch(d, '09:00', 'in'), makePunch(d, '09:00', 'out')])).toBe(false);
+  });
+});
+
+describe('validateNewPunch', () => {
+  const d = '2024-01-08';
+  const expectCode = (err: AppError | null, code: string, params?: Record<string, string>) => {
+    expect(err).toBeInstanceOf(AppError);
+    expect(err?.code).toBe(code);
+    if (params) expect(err?.params).toEqual(params);
+  };
+
+  it('accepts a first clock-in and an alternating punch', () => {
+    expect(validateNewPunch(undefined, 'in', '09:00', false)).toBeNull();
+    expect(validateNewPunch(makePunch(d, '09:00', 'in'), 'out', '12:00', false)).toBeNull();
+  });
+
+  it('rejects clocking the same direction twice', () => {
+    expectCode(validateNewPunch(makePunch(d, '09:00', 'in'), 'in', '10:00', false), 'alreadyClockedIn');
+    expectCode(validateNewPunch(makePunch(d, '12:00', 'out'), 'out', '13:00', false), 'alreadyClockedOut');
+  });
+
+  it('rejects clocking out before any clock-in', () => {
+    expectCode(validateNewPunch(undefined, 'out', '09:00', false), 'clockOutBeforeIn');
+  });
+
+  it('rejects a manual time that is not after the last punch', () => {
+    expectCode(validateNewPunch(makePunch(d, '09:00', 'in'), 'out', '09:00', true), 'timeMustBeAfter', { time: '09:00' });
+  });
+});
+
+describe('validatePunchEdit', () => {
+  const d = '2024-01-08';
+
+  it('accepts a time strictly between its neighbours', () => {
+    expect(validatePunchEdit(makePunch(d, '09:00', 'in'), makePunch(d, '13:00', 'in'), '12:00')).toBeNull();
+    expect(validatePunchEdit(undefined, undefined, '12:00')).toBeNull();
+  });
+
+  it('rejects a time not after the previous punch', () => {
+    const err = validatePunchEdit(makePunch(d, '09:00', 'in'), undefined, '08:30');
+    expect(err?.code).toBe('timeMustBeAfter');
+    expect(err?.params).toEqual({ time: '09:00' });
+  });
+
+  it('rejects a time not before the next punch', () => {
+    const err = validatePunchEdit(undefined, makePunch(d, '12:00', 'out'), '12:00');
+    expect(err?.code).toBe('timeMustBeBefore');
+    expect(err?.params).toEqual({ time: '12:00' });
   });
 });

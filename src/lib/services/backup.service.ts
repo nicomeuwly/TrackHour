@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { getAllEntries } from '@/lib/services/entries.service';
 import { getPunchesByRange } from '@/lib/services/punches.service';
 import { getSettings, updateSettings } from '@/lib/services/settings.service';
+import { AppError } from '@/lib/errors';
 import type { Punch, DayEntry, Settings } from '@/lib/types';
 
 interface Backup {
@@ -24,7 +25,7 @@ function normalizeEntry(e: DayEntry & { vacationMinutes?: number }): DayEntry {
 export interface ImportResult {
   success: boolean;
   entriesImported: number;
-  errors: string[];
+  errors: AppError[];
 }
 
 export async function exportData(): Promise<string> {
@@ -47,20 +48,20 @@ export async function exportData(): Promise<string> {
 }
 
 export async function importData(file: File): Promise<ImportResult> {
-  const errors: string[] = [];
+  const errors: AppError[] = [];
   let entriesImported = 0;
 
   let raw: string;
   try { raw = await file.text(); }
-  catch { return { success: false, entriesImported: 0, errors: ['Failed to read file.'] }; }
+  catch { return { success: false, entriesImported: 0, errors: [new AppError('importReadFailed')] }; }
 
   let data: unknown;
   try { data = JSON.parse(raw); }
-  catch { return { success: false, entriesImported: 0, errors: ['Invalid JSON format.'] }; }
+  catch { return { success: false, entriesImported: 0, errors: [new AppError('importInvalidJson')] }; }
 
   const d = data as Backup;
   if (!d || (d.version !== 2 && d.version !== 3) || !Array.isArray(d.punches) || !Array.isArray(d.entries)) {
-    return { success: false, entriesImported: 0, errors: ['Unsupported backup format. Only v2 and v3 backups are supported.'] };
+    return { success: false, entriesImported: 0, errors: [new AppError('importUnsupportedFormat')] };
   }
 
   try {
@@ -68,11 +69,11 @@ export async function importData(file: File): Promise<ImportResult> {
     await db.entries.bulkPut(d.entries.map(normalizeEntry));
     entriesImported = d.entries.length;
   } catch (e) {
-    errors.push(`Import failed: ${String(e)}`);
+    errors.push(new AppError('importFailed', { detail: String(e) }));
   }
 
   try { await updateSettings(d.settings); }
-  catch (e) { errors.push(`Settings import failed: ${String(e)}`); }
+  catch (e) { errors.push(new AppError('settingsImportFailed', { detail: String(e) })); }
 
   return { success: errors.length === 0, entriesImported, errors };
 }

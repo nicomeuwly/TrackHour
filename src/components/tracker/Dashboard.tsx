@@ -46,7 +46,7 @@ function DashboardInner() {
               {t('welcomeSetup')}
             </button>
             <button onClick={() => dismissWelcome(false)} aria-label="Dismiss"
-              className="text-text/30 hover:text-text/60 transition-colors">
+              className="text-text/30 hover:text-text/60">
               <X size={14} aria-hidden />
             </button>
           </div>
@@ -66,7 +66,7 @@ function DashboardInner() {
             <button
               onClick={() => setSettingsOpen(true)}
               aria-label={t('settingsTitle')}
-              className="inline-flex items-center justify-center size-11 sm:size-9 rounded-xl hover:bg-text/8 transition-colors text-text/60 hover:text-text"
+              className="inline-flex items-center justify-center size-11 sm:size-9 rounded-xl hover:bg-text/8 text-text/60 hover:text-text"
             >
               <Settings size={18} aria-hidden />
             </button>

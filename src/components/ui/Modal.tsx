@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useId } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
@@ -12,10 +12,23 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
+// Longest exit transition in .modal-panel / .modal-scrim.
+const MODAL_EXIT_MS = 200;
+
 export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
   const t = useTranslations('Common');
   const titleId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Stay mounted through the exit transition (see .modal-panel in globals.css), so the
+  // sheet leaves the way it came in. Reopening mid-exit just retargets the transition.
+  const [isPresent, setIsPresent] = useState(isOpen);
+  if (isOpen && !isPresent) setIsPresent(true);
+  useEffect(() => {
+    if (isOpen || !isPresent) return;
+    const id = setTimeout(() => setIsPresent(false), MODAL_EXIT_MS);
+    return () => clearTimeout(id);
+  }, [isOpen, isPresent]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -48,23 +61,27 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isPresent) return null;
+  const state = isOpen ? 'open' : 'closed';
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      data-state={state}
+      className="modal-root fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
       role="dialog"
       aria-modal
       aria-labelledby={titleId}
     >
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        data-state={state}
+        className="modal-scrim absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden
       />
       <div
         ref={containerRef}
-        className="relative z-10 w-full sm:max-w-lg bg-background rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90dvh] overflow-y-auto"
+        data-state={state}
+        className="modal-panel relative z-10 w-full sm:max-w-lg bg-background rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90dvh] overflow-y-auto"
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-text/10">
           <h2 id={titleId} className="font-semibold text-base">
@@ -73,7 +90,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
           <button
             onClick={onClose}
             aria-label={t('close')}
-            className="p-1.5 rounded-lg hover:bg-text/8 transition-colors text-text/50"
+            className="p-1.5 rounded-lg hover:bg-text/8 text-text/50"
           >
             <X size={16} aria-hidden />
           </button>

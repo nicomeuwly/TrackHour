@@ -71,7 +71,7 @@ export default async function ArticleLayout({ articleKey, locale, children }: Ar
         <div className="mt-12 pt-8 border-t border-text/10">
           <Link
             href="/time-tracker"
-            className="inline-flex items-center gap-2 bg-text text-background px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 bg-text text-background px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition-[opacity,scale] ease-out active:scale-[0.97]"
           >
             {t('ctaText')}
             <ArrowRight size={18} aria-hidden />

@@ -19,7 +19,7 @@ export default function LocaleSwitcher() {
         <div className="flex items-center gap-1 text-sm font-medium">
             <button
                 onClick={() => switchLocale('en')}
-                className={locale === 'en' ? 'text-text' : 'text-text/40 hover:text-text/70 transition-colors'}
+                className={locale === 'en' ? 'text-text' : 'text-text/40 hover:text-text/70'}
                 aria-label="Switch to English"
             >
                 EN
@@ -27,7 +27,7 @@ export default function LocaleSwitcher() {
             <span className="text-text/20">|</span>
             <button
                 onClick={() => switchLocale('fr')}
-                className={locale === 'fr' ? 'text-text' : 'text-text/40 hover:text-text/70 transition-colors'}
+                className={locale === 'fr' ? 'text-text' : 'text-text/40 hover:text-text/70'}
                 aria-label="Passer en français"
             >
                 FR

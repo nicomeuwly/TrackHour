@@ -1,4 +1,5 @@
 import type { Punch, DayEntry, DayCalculation, Settings, WeekBalance, MonthBalance, DayStatus, LeaveType, CalendarDayStatus } from '@/lib/types';
+import { AppError } from '@/lib/errors';
 
 /** True when the leave tops the day up to expected hours (balance-neutral).
  *  `compensation` and no-leave return false. */
@@ -86,6 +87,31 @@ export function isValidPunchSequence(punches: Punch[]): boolean {
     const prev = sorted[i - 1];
     return punch.type === expectedType && (!prev || prev.time < punch.time);
   });
+}
+
+/** Rule for adding a punch after `last` (the day's latest punch). Returns the
+ *  violation, or null when the punch is allowed. Times are "HH:mm". */
+export function validateNewPunch(
+  last: Punch | undefined,
+  type: 'in' | 'out',
+  time: string,
+  isManual: boolean,
+): AppError | null {
+  if (last && last.type === type) return new AppError(type === 'in' ? 'alreadyClockedIn' : 'alreadyClockedOut');
+  if (!last && type === 'out') return new AppError('clockOutBeforeIn');
+  if (last && isManual && time <= last.time) return new AppError('timeMustBeAfter', { time: last.time });
+  return null;
+}
+
+/** Rule for moving a punch to `newTime`: it must stay strictly between its neighbours. */
+export function validatePunchEdit(
+  prev: Punch | undefined,
+  next: Punch | undefined,
+  newTime: string,
+): AppError | null {
+  if (prev && newTime <= prev.time) return new AppError('timeMustBeAfter', { time: prev.time });
+  if (next && newTime >= next.time) return new AppError('timeMustBeBefore', { time: next.time });
+  return null;
 }
 
 /** Converts "HH:mm" to minutes since midnight. E.g. "09:30" → 570 */

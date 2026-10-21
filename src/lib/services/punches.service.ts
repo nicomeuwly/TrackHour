@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
-import { parseTime, isValidPunchSequence } from '@/lib/business/calculations';
+import { parseTime, isValidPunchSequence, validateNewPunch, validatePunchEdit } from '@/lib/business/calculations';
+import { AppError } from '@/lib/errors';
 import type { Punch, DayEntry, LeaveType } from '@/lib/types';
 
 export async function getPunchesByDate(date: string): Promise<Punch[]> {
@@ -76,15 +77,8 @@ export async function addPunch(
   const now = new Date();
   const punchTime = time ?? `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-  if (last && last.type === type) {
-    throw new Error(`Already clocked ${type}. Please clock ${type === 'in' ? 'out' : 'in'} first.`);
-  }
-  if (!last && type === 'out') {
-    throw new Error('Cannot clock out without clocking in first.');
-  }
-  if (last && isManual && punchTime <= last.time) {
-    throw new Error(`Time must be after ${last.time}.`);
-  }
+  const violation = validateNewPunch(last, type, punchTime, isManual);
+  if (violation) throw violation;
 
   const punch: Punch = {
     id: crypto.randomUUID(),
@@ -109,12 +103,8 @@ export async function updatePunch(id: string, newTime: string): Promise<void> {
   const prev = allPunches[idx - 1];
   const next = allPunches[idx + 1];
 
-  if (prev && newTime <= prev.time) {
-    throw new Error(`Time must be after ${prev.time}.`);
-  }
-  if (next && newTime >= next.time) {
-    throw new Error(`Time must be before ${next.time}.`);
-  }
+  const violation = validatePunchEdit(prev, next, newTime);
+  if (violation) throw violation;
 
   await db.punches.update(id, { time: newTime, isManual: true });
   await updateDayEntry(punch.date);
@@ -138,7 +128,7 @@ export async function restorePunches(punches: Punch[]): Promise<void> {
     const restored = punches.filter(p => p.date === date);
     const existing = await getPunchesByDate(date);
     if (!isValidPunchSequence([...existing, ...restored])) {
-      throw new Error('Cannot undo: the day has changed since the deletion.');
+      throw new AppError('undoConflict');
     }
     await db.punches.bulkAdd(restored);
     await updateDayEntry(date);

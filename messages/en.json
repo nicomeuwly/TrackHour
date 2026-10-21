@@ -304,5 +304,18 @@
         "language": "Language",
         "theme": "Theme",
         "loading": "Loading…"
+    },
+    "Errors": {
+        "alreadyClockedIn": "Already clocked in. Clock out first.",
+        "alreadyClockedOut": "Already clocked out. Clock in first.",
+        "clockOutBeforeIn": "Clock in before clocking out.",
+        "timeMustBeAfter": "Time must be after {time}.",
+        "timeMustBeBefore": "Time must be before {time}.",
+        "undoConflict": "Cannot undo: the day has changed since the deletion.",
+        "importReadFailed": "Could not read the file.",
+        "importInvalidJson": "This file is not valid JSON.",
+        "importUnsupportedFormat": "Unsupported backup format. Only v2 and v3 backups are supported.",
+        "importFailed": "Import failed: {detail}",
+        "settingsImportFailed": "Settings import failed: {detail}"
     }
 }

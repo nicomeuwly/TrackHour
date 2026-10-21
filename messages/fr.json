@@ -304,5 +304,18 @@
         "language": "Langue",
         "theme": "Thème",
         "loading": "Chargement…"
+    },
+    "Errors": {
+        "alreadyClockedIn": "Arrivée déjà pointée. Pointez d'abord le départ.",
+        "alreadyClockedOut": "Départ déjà pointé. Pointez d'abord l'arrivée.",
+        "clockOutBeforeIn": "Pointez l'arrivée avant le départ.",
+        "timeMustBeAfter": "L'heure doit être après {time}.",
+        "timeMustBeBefore": "L'heure doit être avant {time}.",
+        "undoConflict": "Annulation impossible : la journée a changé depuis la suppression.",
+        "importReadFailed": "Impossible de lire le fichier.",
+        "importInvalidJson": "Ce fichier n'est pas un JSON valide.",
+        "importUnsupportedFormat": "Format de sauvegarde non pris en charge. Seules les sauvegardes v2 et v3 sont acceptées.",
+        "importFailed": "Échec de l'import : {detail}",
+        "settingsImportFailed": "Échec de l'import des paramètres : {detail}"
     }
 }

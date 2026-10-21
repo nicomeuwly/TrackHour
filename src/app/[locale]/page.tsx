@@ -62,7 +62,7 @@ export default async function HomePage({ params }: Props) {
                 </p>
                 <Link
                     href="/time-tracker"
-                    className="inline-block bg-text text-background px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
+                    className="inline-block bg-text text-background px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition-[opacity,scale] ease-out active:scale-[0.97]"
                 >
                     {t('ctaButton')}
                 </Link>
