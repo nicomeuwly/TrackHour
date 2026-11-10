@@ -296,7 +296,7 @@
         "yearSection": "Année {year}",
         "yearWorkedDays": "Jours travaillés",
         "yearOvertime": "Heures supp.",
-        "absenceOvertime": "Heures supp. pendant absences",
+        "absenceOvertime": "Heures en absence",
         "yearAbsences": "Absences",
         "yearAbsencesValue": "{count, plural, one {# jour} other {# jours}}",
         "yearVacation": "Vacances",
