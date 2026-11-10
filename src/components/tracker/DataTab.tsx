@@ -307,11 +307,6 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
               </StatCard>
               <StatCard label={t("balance")}>
                 {balance ? <BalanceDisplay balanceMinutes={balance.balanceMinutes} size="base" /> : "—"}
-                {balance && balance.absenceOvertimeMinutes > 0 && (
-                  <p className="text-xs font-normal text-text-muted mt-0.5 tabular-nums">
-                    {t("absenceOvertimeOf", { time: formatMinutes(balance.absenceOvertimeMinutes) })}
-                  </p>
-                )}
               </StatCard>
               <StatCard label={t("daysLogged")}>
                 {balance ? `${balance.daysLogged} / ${balance.daysExpected}` : "—"}
@@ -327,6 +322,15 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
               {view === "month" && (
                 <StatCard label={t("totalDaysOff")}>
                   {daysOffCount > 0 ? daysOffCount : "—"}
+                </StatCard>
+              )}
+              {/* Always positive: time worked during covered absences. Compensation is
+                  excluded since time worked there only reduces the deduction (+/-). */}
+              {view === "month" && (
+                <StatCard label={t("absenceOvertime")}>
+                  {balance && balance.absenceOvertimeMinutes > 0
+                    ? <BalanceDisplay balanceMinutes={balance.absenceOvertimeMinutes} size="base" />
+                    : "—"}
                 </StatCard>
               )}
             </div>
@@ -448,17 +452,15 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
       {/* Annual summary — always visible, independent of week/month view */}
       <div className="flex flex-col gap-3 pt-1">
         <h2 className="text-sm font-semibold">{t("yearSection", { year: String(refYear) })}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <StatCard label={t("yearWorkedDays")}>
             {yearWorkedDays} / {yearTotalWorkdays}
           </StatCard>
           <StatCard label={t("yearOvertime")}>
             <BalanceDisplay balanceMinutes={yearOvertime} size="base" />
-            {yearAbsenceOvertime > 0 && (
-              <p className="text-xs font-normal text-text-muted mt-0.5 tabular-nums">
-                {t("absenceOvertimeOf", { time: formatMinutes(yearAbsenceOvertime) })}
-              </p>
-            )}
+          </StatCard>
+          <StatCard label={t("absenceOvertime")}>
+            {yearAbsenceOvertime > 0 ? <BalanceDisplay balanceMinutes={yearAbsenceOvertime} size="base" /> : "—"}
           </StatCard>
           <StatCard label={t("yearAbsences")}>
             {t("yearAbsencesValue", { count: yearAbsences })}
