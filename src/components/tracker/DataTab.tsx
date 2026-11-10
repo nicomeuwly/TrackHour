@@ -114,7 +114,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
     useWeekEntries(refDate);
   const { entries: monthEntries, monthBalance, isLoading: monthLoading, refresh: monthRefresh } =
     useMonthEntries(refYear, refMonth);
-  const { overtimeMinutes: yearOvertime, absenceDays: yearAbsences, vacationUsed: yearVacationUsed, workedDays: yearWorkedDays, totalWorkdays: yearTotalWorkdays, refresh: yearRefresh } =
+  const { overtimeMinutes: yearOvertime, absenceOvertimeMinutes: yearAbsenceOvertime, absenceDays: yearAbsences, vacationUsed: yearVacationUsed, workedDays: yearWorkedDays, totalWorkdays: yearTotalWorkdays, refresh: yearRefresh } =
     useYearStats(refYear, settings);
 
   // Locale-aware date helpers
@@ -307,6 +307,11 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
               </StatCard>
               <StatCard label={t("balance")}>
                 {balance ? <BalanceDisplay balanceMinutes={balance.balanceMinutes} size="base" /> : "—"}
+                {balance && balance.absenceOvertimeMinutes > 0 && (
+                  <p className="text-xs font-normal text-text-muted mt-0.5 tabular-nums">
+                    {t("absenceOvertimeOf", { time: formatMinutes(balance.absenceOvertimeMinutes) })}
+                  </p>
+                )}
               </StatCard>
               <StatCard label={t("daysLogged")}>
                 {balance ? `${balance.daysLogged} / ${balance.daysExpected}` : "—"}
@@ -449,6 +454,11 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
           </StatCard>
           <StatCard label={t("yearOvertime")}>
             <BalanceDisplay balanceMinutes={yearOvertime} size="base" />
+            {yearAbsenceOvertime > 0 && (
+              <p className="text-xs font-normal text-text-muted mt-0.5 tabular-nums">
+                {t("absenceOvertimeOf", { time: formatMinutes(yearAbsenceOvertime) })}
+              </p>
+            )}
           </StatCard>
           <StatCard label={t("yearAbsences")}>
             {t("yearAbsencesValue", { count: yearAbsences })}

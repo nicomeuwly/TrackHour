@@ -1,10 +1,20 @@
 import type { Punch, DayEntry, DayCalculation, Settings, WeekBalance, MonthBalance, DayStatus, LeaveType, CalendarDayStatus } from '@/lib/types';
 import { AppError } from '@/lib/errors';
 
-/** True when the leave tops the day up to expected hours (balance-neutral).
- *  `compensation` and no-leave return false. */
+/** True when the leave covers the day's expected hours on its own (vacation,
+ *  sick, other). `compensation` and no-leave return false. */
 export function isFilledLeave(leaveType: LeaveType | null): boolean {
   return leaveType !== null && leaveType !== 'compensation';
+}
+
+/** Minutes worked during a covered absence (vacation, sick, other). The leave already
+ *  covers the expected hours, so this time is entirely extra overtime, reported
+ *  separately. Zero for compensation (work there reduces the compensation instead)
+ *  and for regular days. On a non-workday leave entry the worked time is overtime
+ *  anyway, so it is reported here too without changing the balance. */
+export function absenceOvertimeMinutes(entry: DayEntry | undefined): number {
+  if (!entry || !isFilledLeave(entry.leaveType)) return 0;
+  return entry.totalWorkedMinutes;
 }
 
 /** True when the given date falls on one of the configured working days. */
@@ -16,20 +26,22 @@ export function isWorkday(date: string, workDays: number[]): boolean {
 
 /**
  * Balance contribution of a single day, used for weekly/monthly aggregation.
- * On a workday: worked + leave top-up - expected (compensation is not topped up,
- * so it yields a full-day deficit that draws down overtime). On a non-workday:
- * only worked minutes count as overtime; absences carry no expectation.
+ * On a workday:
+ * - covered leave (vacation, sick, other): the leave covers the expected hours, so
+ *   every worked minute is overtime (balance = worked);
+ * - compensation: not covered, so the day draws down overtime by the hours not
+ *   worked (balance = worked - expected; work beyond expected is overtime);
+ * - regular day: worked - expected.
+ * On a non-workday: only worked minutes count as overtime; absences carry no expectation.
  */
 export function dayBalanceMinutes(
   entry: DayEntry | undefined,
   settings: Settings,
   workday: boolean,
 ): number {
-  const expected = settings.expectedHoursPerDay * 60;
   const worked = entry?.totalWorkedMinutes ?? 0;
-  if (!workday) return worked;
-  const fill = isFilledLeave(entry?.leaveType ?? null) ? Math.max(0, expected - worked) : 0;
-  return worked + fill - expected;
+  if (!workday || isFilledLeave(entry?.leaveType ?? null)) return worked;
+  return worked - settings.expectedHoursPerDay * 60;
 }
 
 /**
@@ -202,7 +214,7 @@ export function calculateWeekBalance(entries: DayEntry[], settings: Settings, pe
   if (periodStart && periodEnd) {
     daysExpected = countExpectedDays(periodStart, periodEnd, settings.workDays);
   } else if (entries.length === 0) {
-    return { totalWorkedMinutes: 0, totalExpectedMinutes: 0, balanceMinutes: 0, daysLogged: 0, daysExpected: 0 };
+    return { totalWorkedMinutes: 0, totalExpectedMinutes: 0, balanceMinutes: 0, absenceOvertimeMinutes: 0, daysLogged: 0, daysExpected: 0 };
   } else {
     const dates = entries.map(e => e.date).sort();
     daysExpected = countExpectedDays(dates[0], dates[dates.length - 1], settings.workDays);
@@ -212,14 +224,18 @@ export function calculateWeekBalance(entries: DayEntry[], settings: Settings, pe
   // Overtime balance counts only days that have been logged: unlogged workdays are
   // hours still to do, not a deficit against accumulated overtime. The current day
   // is excluded until it is finished (see countsTowardBalance).
-  const balanceMinutes = entries.reduce((sum, e) => {
-    if (today && !countsTowardBalance(e, settings, today)) return sum;
-    return sum + dayBalanceMinutes(e, settings, isWorkday(e.date, settings.workDays));
-  }, 0);
+  const counted = today ? entries.filter(e => countsTowardBalance(e, settings, today)) : entries;
+  const balanceMinutes = counted.reduce(
+    (sum, e) => sum + dayBalanceMinutes(e, settings, isWorkday(e.date, settings.workDays)),
+    0,
+  );
+  // Part of balanceMinutes earned while on covered leave, shown separately.
+  const absenceOvertime = counted.reduce((sum, e) => sum + absenceOvertimeMinutes(e), 0);
   return {
     totalWorkedMinutes,
     totalExpectedMinutes,
     balanceMinutes,
+    absenceOvertimeMinutes: absenceOvertime,
     daysLogged: entries.length,
     daysExpected,
   };
@@ -277,9 +293,9 @@ export function calculateFromPunches(
   const lastPunchType = lastPunch?.type ?? null;
   const expectedMinutes = settings.expectedHoursPerDay * 60;
 
-  const effectiveFill = isFilledLeave(leaveType)
-    ? Math.max(0, expectedMinutes - workedMinutes)
-    : 0;
+  // Covered leave counts as the full expected day, so any work on top is overtime.
+  const coveredLeave = isFilledLeave(leaveType);
+  const leaveCoverMinutes = coveredLeave ? expectedMinutes : 0;
 
   let projectedEndTime: string | null = null;
   if (leaveType === null && lastPunch !== null && isToday && (lastPunchType === 'in' || workedMinutes < expectedMinutes)) {
@@ -318,7 +334,8 @@ export function calculateFromPunches(
     liveBreakMinutes: Math.round(breakMinutes + ongoingBreak),
     isBreakSufficient: breakMinutes >= settings.minimumBreakMinutes,
     projectedEndTime,
-    balanceMinutes: Math.round(workedMinutes + effectiveFill - expectedMinutes),
+    balanceMinutes: Math.round(workedMinutes + leaveCoverMinutes - expectedMinutes),
+    absenceOvertimeMinutes: coveredLeave ? Math.round(workedMinutes) : 0,
     leaveType,
     status,
     lastPunchType,

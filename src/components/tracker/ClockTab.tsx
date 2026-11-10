@@ -693,6 +693,10 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
                   ),
                 },
                 { label: t('summaryBalance'), value: <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} /> },
+                // Covered leave: the whole logged time is overtime, shown on its own row.
+                ...(dayCalc.absenceOvertimeMinutes > 0
+                  ? [{ label: t('summaryAbsenceOvertime'), value: formatMinutes(dayCalc.absenceOvertimeMinutes) }]
+                  : []),
                 { label: t('summaryExpected'), value: formatMinutes((settings?.expectedHoursPerDay ?? 8) * 60) },
               ].map(row => (
                 <div key={row.label} className="flex items-center justify-between px-4 py-2.5">
