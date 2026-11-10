@@ -13,6 +13,7 @@ import {
   calculateFromPunches,
   isFilledLeave,
   dayBalanceMinutes,
+  absenceOvertimeMinutes,
   msUntilNextMinute,
   getCalendarDayStatus,
   dayRowBalance,
@@ -170,6 +171,33 @@ describe('calculateWeekBalance', () => {
     expect(r.balanceMinutes).toBe(-480);
   });
 
+  it('time worked during a vacation day adds to the balance and is reported separately', () => {
+    const entries = [
+      ...['2024-01-08','2024-01-09','2024-01-10','2024-01-11'].map(d => makeDayEntry(d, 480)),
+      makeDayEntry('2024-01-12', 120, 'vacation'),
+    ];
+    const r = calculateWeekBalance(entries, baseSettings, '2024-01-08', '2024-01-12');
+    expect(r.balanceMinutes).toBe(120);
+    expect(r.absenceOvertimeMinutes).toBe(120);
+  });
+
+  it('time worked on a compensation day reduces the deduction and is not absence overtime', () => {
+    const r = calculateWeekBalance([makeDayEntry('2024-01-08', 180, 'compensation')], baseSettings, '2024-01-08', '2024-01-08');
+    expect(r.balanceMinutes).toBe(-300);
+    expect(r.absenceOvertimeMinutes).toBe(0);
+  });
+
+  it('absence overtime is zero for an empty period', () => {
+    expect(calculateWeekBalance([], baseSettings).absenceOvertimeMinutes).toBe(0);
+  });
+
+  it('counts absence overtime of today live, since leave days always count', () => {
+    const today = '2024-01-10';
+    const r = calculateWeekBalance([makeDayEntry(today, 45, 'sick')], baseSettings, today, today, today);
+    expect(r.balanceMinutes).toBe(45);
+    expect(r.absenceOvertimeMinutes).toBe(45);
+  });
+
   it('overtime accumulated over a week is spent by a compensation day', () => {
     // 4 days at 10h (=+8h overtime), then a compensation day → net 0
     const entries = [
@@ -206,8 +234,51 @@ describe('dayBalanceMinutes', () => {
   it('partial work on a compensation day only spends the remaining hours', () => {
     expect(dayBalanceMinutes(makeDayEntry('2024-01-08', 180, 'compensation'), baseSettings, true)).toBe(-300);
   });
+  it('work beyond expected on a compensation day becomes positive overtime', () => {
+    expect(dayBalanceMinutes(makeDayEntry('2024-01-08', 540, 'compensation'), baseSettings, true)).toBe(60);
+  });
+  it('work equal to expected on a compensation day cancels the deduction', () => {
+    expect(dayBalanceMinutes(makeDayEntry('2024-01-08', 480, 'compensation'), baseSettings, true)).toBe(0);
+  });
+  it('all time worked during a filled leave is overtime', () => {
+    expect(dayBalanceMinutes(makeDayEntry('2024-01-08', 120, 'vacation'), baseSettings, true)).toBe(120);
+    expect(dayBalanceMinutes(makeDayEntry('2024-01-08', 600, 'sick'), baseSettings, true)).toBe(600);
+    expect(dayBalanceMinutes(makeDayEntry('2024-01-08', 60, 'other'), baseSettings, true)).toBe(60);
+  });
   it('non-workdays only count worked overtime', () => {
     expect(dayBalanceMinutes(makeDayEntry('2024-01-06', 120, null), baseSettings, false)).toBe(120);
+  });
+});
+
+describe('absenceOvertimeMinutes', () => {
+  it('is the worked time on a filled leave day', () => {
+    expect(absenceOvertimeMinutes(makeDayEntry('2024-01-08', 150, 'vacation'))).toBe(150);
+    expect(absenceOvertimeMinutes(makeDayEntry('2024-01-08', 90, 'sick'))).toBe(90);
+    expect(absenceOvertimeMinutes(makeDayEntry('2024-01-08', 30, 'other'))).toBe(30);
+  });
+  it('is zero for compensation, no leave, or a missing entry', () => {
+    expect(absenceOvertimeMinutes(makeDayEntry('2024-01-08', 150, 'compensation'))).toBe(0);
+    expect(absenceOvertimeMinutes(makeDayEntry('2024-01-08', 150, null))).toBe(0);
+    expect(absenceOvertimeMinutes(undefined)).toBe(0);
+  });
+  it('on a non-workday leave entry, worked time is overtime either way (balance unchanged)', () => {
+    const sat = makeDayEntry('2024-01-06', 90, 'vacation');
+    expect(dayBalanceMinutes(sat, baseSettings, false)).toBe(90);
+    expect(absenceOvertimeMinutes(sat)).toBe(90);
+    const r = calculateWeekBalance([sat], baseSettings, '2024-01-01', '2024-01-07');
+    expect(r.balanceMinutes).toBe(90);
+    expect(r.absenceOvertimeMinutes).toBe(90);
+  });
+  it('is passed through by calculateMonthBalance', () => {
+    const r = calculateMonthBalance([makeDayEntry('2024-01-08', 60, 'other')], baseSettings, '2024-01-01', '2024-01-31');
+    expect(r.absenceOvertimeMinutes).toBe(60);
+  });
+  it('still counts leave overtime when today is an excluded in-progress regular day', () => {
+    const today = '2024-01-10';
+    const entries = [makeDayEntry('2024-01-08', 120, 'sick'), makeDayEntry(today, 200)];
+    const r = calculateWeekBalance(entries, baseSettings, '2024-01-08', '2024-01-12', today);
+    expect(r.balanceMinutes).toBe(120);
+    expect(r.absenceOvertimeMinutes).toBe(120);
   });
 });
 
@@ -334,8 +405,41 @@ describe('calculateFromPunches', () => {
     ];
     const filled = calculateFromPunches(punches, baseSettings, fixedNow, '2024-01-08', 'sick');
     const comp = calculateFromPunches(punches, baseSettings, fixedNow, '2024-01-08', 'compensation');
-    expect(filled.balanceMinutes).toBe(0);      // 180 worked + 300 fill - 480
+    expect(filled.balanceMinutes).toBe(180);    // leave covers the day, 180 worked is extra
     expect(comp.balanceMinutes).toBe(-300);     // 180 worked - 480
+  });
+
+  it('exposes time worked during a filled leave as absence overtime', () => {
+    const punches = [
+      makePunch('2024-01-08', '09:00', 'in'),
+      makePunch('2024-01-08', '12:00', 'out'),
+    ];
+    const filled = calculateFromPunches(punches, baseSettings, fixedNow, '2024-01-08', 'vacation');
+    const comp = calculateFromPunches(punches, baseSettings, fixedNow, '2024-01-08', 'compensation');
+    const none = calculateFromPunches(punches, baseSettings, fixedNow, '2024-01-08');
+    expect(filled.absenceOvertimeMinutes).toBe(180);
+    expect(comp.absenceOvertimeMinutes).toBe(0);
+    expect(none.absenceOvertimeMinutes).toBe(0);
+  });
+
+  it('work beyond expected on a covered leave is all overtime', () => {
+    const punches = [
+      makePunch('2024-01-08', '08:00', 'in'),
+      makePunch('2024-01-08', '18:00', 'out'),
+    ];
+    const r = calculateFromPunches(punches, baseSettings, fixedNow, '2024-01-08', 'sick');
+    expect(r.balanceMinutes).toBe(600);
+    expect(r.absenceOvertimeMinutes).toBe(600);
+  });
+
+  it('work beyond expected on a compensation day turns into positive overtime', () => {
+    const punches = [
+      makePunch('2024-01-08', '08:00', 'in'),
+      makePunch('2024-01-08', '17:00', 'out'),
+    ];
+    const r = calculateFromPunches(punches, baseSettings, fixedNow, '2024-01-08', 'compensation');
+    expect(r.balanceMinutes).toBe(60);
+    expect(r.absenceOvertimeMinutes).toBe(0);
   });
 });
 

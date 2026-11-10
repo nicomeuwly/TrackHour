@@ -1,12 +1,12 @@
 import { db } from '@/lib/db';
 import { getEntriesByRange, getAllEntries } from '@/lib/services/entries.service';
 import { getSettings } from '@/lib/services/settings.service';
-import { formatMinutesAsDecimal, dayBalanceMinutes, isWorkday } from '@/lib/business/calculations';
+import { formatMinutesAsDecimal, dayBalanceMinutes, absenceOvertimeMinutes, isWorkday } from '@/lib/business/calculations';
 
 export async function exportPeriodAsCSV(startDate: string, endDate: string, label: string): Promise<void> {
   const [entries, settings] = await Promise.all([getEntriesByRange(startDate, endDate), getSettings()]);
 
-  const headers = ['Date', 'Day', 'Worked (h)', 'Break (min)', 'Balance (h)', 'Leave', 'Note'];
+  const headers = ['Date', 'Day', 'Worked (h)', 'Break (min)', 'Balance (h)', 'Leave', 'Note', 'Absence overtime (h)'];
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const rows = entries.map(e => {
@@ -20,6 +20,8 @@ export async function exportPeriodAsCSV(startDate: string, endDate: string, labe
       (balance / 60).toFixed(2),
       e.leaveType ?? '',
       `"${(e.note ?? '').replace(/"/g, '""')}"`,
+      // Appended last so existing column positions stay stable for importers.
+      formatMinutesAsDecimal(absenceOvertimeMinutes(e)),
     ].join(',');
   });
 

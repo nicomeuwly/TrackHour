@@ -9,9 +9,10 @@ export interface Punch {
 
 /**
  * Type of full-day absence.
- * - `vacation`, `sick`, `other`: balance-neutral, top the day up to expected hours.
- * - `compensation`: not topped up, so the day counts as a full-day deficit that
- *   draws down the accumulated overtime balance.
+ * - `vacation`, `sick`, `other`: cover the day's expected hours, so any time worked
+ *   on such a day is entirely overtime (tracked separately as absence overtime).
+ * - `compensation`: not covered, so the day draws down the accumulated overtime by
+ *   the expected hours minus any time worked (excess work becomes overtime).
  */
 export type LeaveType = 'vacation' | 'sick' | 'other' | 'compensation';
 
@@ -33,6 +34,8 @@ export interface DayCalculation {
   isBreakSufficient: boolean;
   projectedEndTime: string | null;
   balanceMinutes: number;
+  /** Worked minutes on a covered absence (vacation, sick, other): all overtime. */
+  absenceOvertimeMinutes: number;
   leaveType: LeaveType | null;
   status: DayStatus;
   lastPunchType: 'in' | 'out' | null;
@@ -54,6 +57,8 @@ export interface WeekBalance {
   totalWorkedMinutes: number;
   totalExpectedMinutes: number;
   balanceMinutes: number;
+  /** Part of balanceMinutes earned by working during covered absences. */
+  absenceOvertimeMinutes: number;
   daysLogged: number;
   daysExpected: number;
 }

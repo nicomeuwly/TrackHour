@@ -647,7 +647,23 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
           )}
 
           {/* On break (today, day not complete yet) */}
-          {punches.length > 0 && lastType === 'out' && dayCalc && isOnBreak && (
+          {/* Leave day with at least one finished work session: show the leave and the
+              extra time together, never "on break" or "day complete". */}
+          {punches.length > 0 && lastType === 'out' && dayCalc && leaveType !== null && (
+            <>
+              <div>
+                <AbsenceIcon size={30} aria-hidden className="block mx-auto mb-2 text-tertiary" />
+                <p className="text-2xl font-bold text-tertiary">{t(LEAVE_LABEL_KEY[leaveType])}</p>
+                <p className="text-sm text-text/50 mt-1 tabular-nums">
+                  {t(leaveType === 'compensation' ? 'leaveWorkedCompensation' : 'leaveWorkedExtra', { time: formatMinutes(dayCalc.workedMinutes) })}
+                </p>
+              </div>
+              <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} size="lg" />
+              <ClockActions {...manualProps} kind="in" label={t('clockInAgain')} manualLabel={t('clockInAt')} canClockNow={isToday} onClock={handleClockIn} />
+            </>
+          )}
+
+          {punches.length > 0 && lastType === 'out' && dayCalc && leaveType === null && isOnBreak && (
             <>
               <p className="text-lg font-semibold text-text-muted flex items-center justify-center gap-2">
                 <Coffee size={20} aria-hidden />
@@ -659,7 +675,7 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
           )}
 
           {/* Day complete, or a past day that ended clocked out */}
-          {punches.length > 0 && lastType === 'out' && dayCalc && !isOnBreak && (
+          {punches.length > 0 && lastType === 'out' && dayCalc && leaveType === null && !isOnBreak && (
             <>
               {/* The only "delight" moment: a soft entrance when today's work is done.
                   Not on past days, which users browse often. */}
@@ -693,6 +709,10 @@ export default function ClockTab({ date, onDateChange, headerAction }: ClockTabP
                   ),
                 },
                 { label: t('summaryBalance'), value: <BalanceDisplay balanceMinutes={dayCalc.balanceMinutes} /> },
+                // Covered leave: the whole logged time is overtime, shown on its own row.
+                ...(dayCalc.absenceOvertimeMinutes > 0
+                  ? [{ label: t('summaryAbsenceOvertime'), value: formatMinutes(dayCalc.absenceOvertimeMinutes) }]
+                  : []),
                 { label: t('summaryExpected'), value: formatMinutes((settings?.expectedHoursPerDay ?? 8) * 60) },
               ].map(row => (
                 <div key={row.label} className="flex items-center justify-between px-4 py-2.5">

@@ -114,7 +114,7 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
     useWeekEntries(refDate);
   const { entries: monthEntries, monthBalance, isLoading: monthLoading, refresh: monthRefresh } =
     useMonthEntries(refYear, refMonth);
-  const { overtimeMinutes: yearOvertime, absenceDays: yearAbsences, vacationUsed: yearVacationUsed, workedDays: yearWorkedDays, totalWorkdays: yearTotalWorkdays, refresh: yearRefresh } =
+  const { overtimeMinutes: yearOvertime, absenceOvertimeMinutes: yearAbsenceOvertime, absenceDays: yearAbsences, vacationUsed: yearVacationUsed, workedDays: yearWorkedDays, totalWorkdays: yearTotalWorkdays, refresh: yearRefresh } =
     useYearStats(refYear, settings);
 
   // Locale-aware date helpers
@@ -324,6 +324,15 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                   {daysOffCount > 0 ? daysOffCount : "—"}
                 </StatCard>
               )}
+              {/* Always positive: time worked during covered absences. Compensation is
+                  excluded since time worked there only reduces the deduction (+/-). */}
+              {view === "month" && (
+                <StatCard label={t("absenceOvertime")}>
+                  {balance && balance.absenceOvertimeMinutes > 0
+                    ? <BalanceDisplay balanceMinutes={balance.absenceOvertimeMinutes} size="base" />
+                    : "—"}
+                </StatCard>
+              )}
             </div>
           )}
         </div>
@@ -338,7 +347,9 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                 {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-12 rounded-xl bg-text/5 animate-pulse" />)}
               </div>
             ) : (
-              <Card padding="none" className="overflow-hidden divide-y divide-text/6">
+              // Shared grid: rows are subgrids, so the balance and badge columns take the
+              // width of their widest cell and stay aligned across all days.
+              <Card padding="none" className="overflow-hidden divide-y divide-text/6 grid grid-cols-[auto_minmax(0,1fr)_auto_auto]">
                 {weekDatesArr.map((date, i) => {
                   const entry = entriesByDate[date];
                   const status = settings ? getCalendarDayStatus(date, entry, settings, today, firstTrackedDate) : "future";
@@ -352,28 +363,28 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
                       key={date}
                       onClick={() => onNavigateToDay?.(date)}
                       aria-label={d.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric" })}
-                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-text/5 active:scale-100 active:bg-text/8 text-left ${status === "weekend" || !hasBadge(status) ? "opacity-55" : ""}`}
+                      className={`col-span-full grid grid-cols-subgrid items-center gap-x-3 px-4 py-3 hover:bg-text/5 active:scale-100 active:bg-text/8 text-left ${status === "weekend" || !hasBadge(status) ? "opacity-55" : ""}`}
                     >
-                      <div className="w-14 flex-none">
-                        <p className={`text-sm capitalize font-semibold ${date === today ? "text-primary" : ""}`}>
+                      <div className="min-w-14">
+                        <p className={`text-sm whitespace-nowrap capitalize font-semibold ${date === today ? "text-primary" : ""}`}>
                           {DAY_LABELS[i]} <span className="font-normal text-text/50">{dayNum}</span>
                         </p>
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0">
                         {entry ? (
                           <p className="text-sm font-medium">{formatMinutes(entry.totalWorkedMinutes)}</p>
                         ) : (
                           <p className="text-sm text-text/45">—</p>
                         )}
                       </div>
-                      <div className="flex-none min-w-20 text-right">
+                      <div className="min-w-20 text-right">
                         {balanceMinutes !== null ? (
                           <BalanceDisplay balanceMinutes={balanceMinutes} />
                         ) : (
                           <span className="text-sm text-text/45">—</span>
                         )}
                       </div>
-                      <div className="flex-none min-w-20">
+                      <div className="min-w-20">
                         {hasBadge(status) && (() => {
                           const LeaveIcon = leaveIconFor(status);
                           return (
@@ -443,12 +454,15 @@ export default function DataTab({ onNavigateToDay }: DataTabProps) {
       {/* Annual summary — always visible, independent of week/month view */}
       <div className="flex flex-col gap-3 pt-1">
         <h2 className="text-sm font-semibold">{t("yearSection", { year: String(refYear) })}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <StatCard label={t("yearWorkedDays")}>
             {yearWorkedDays} / {yearTotalWorkdays}
           </StatCard>
           <StatCard label={t("yearOvertime")}>
             <BalanceDisplay balanceMinutes={yearOvertime} size="base" />
+          </StatCard>
+          <StatCard label={t("absenceOvertime")}>
+            {yearAbsenceOvertime > 0 ? <BalanceDisplay balanceMinutes={yearAbsenceOvertime} size="base" /> : "—"}
           </StatCard>
           <StatCard label={t("yearAbsences")}>
             {t("yearAbsencesValue", { count: yearAbsences })}
