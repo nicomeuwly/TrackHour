@@ -210,7 +210,7 @@
         "summaryBreak": "Pause",
         "summaryBalance": "Solde",
         "summaryAbsenceOvertime": "Heures supp. pendant l'absence",
-        "leaveWorkedExtra": "{time} travaillées en plus du congé",
+        "leaveWorkedExtra": "{time} travaillées en plus de l'absence",
         "leaveWorkedCompensation": "{time} travaillées, moins d'heures à compenser",
         "summaryExpected": "Prévu",
         "noteLabel": "Note",

@@ -210,7 +210,7 @@
         "summaryBreak": "Break",
         "summaryBalance": "Balance",
         "summaryAbsenceOvertime": "Overtime during absence",
-        "leaveWorkedExtra": "{time} worked on top of the leave",
+        "leaveWorkedExtra": "{time} worked on top of the absence",
         "leaveWorkedCompensation": "{time} worked, less to compensate",
         "summaryExpected": "Expected",
         "noteLabel": "Note",
